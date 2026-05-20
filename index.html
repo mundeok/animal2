@@ -505,9 +505,10 @@
             background-color: #fff;
             border: 6px solid #000;
             border-radius: 8px;
-            padding: 15px;
-            font-size: 22px;
+            padding: 10px 15px;
+            font-size: 16px;
             line-height: 1.5;
+            overflow-y: auto;
         }
 
         .btn-pokedex {
@@ -839,7 +840,7 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            font-size: 28px;
+            font-size: clamp(14px, 2vw, 24px);
             font-weight: bold;
             cursor: pointer;
             white-space: nowrap;
@@ -847,7 +848,7 @@
             border: none;
             box-shadow: none;
             color: #1a1a1a;
-            padding-left: 20px;
+            padding-left: 8px;
             transition: transform 0.1s;
         }
 
@@ -2081,11 +2082,11 @@
             else if (mapName === 'pond') {
                 if (t === 9 && !hasFrog) a = "개구리";
                 else if (t === 7) a = ran < 0.4 ? "소금쟁이" : (ran < 0.7 ? "잠자리" : "물방개");
-                else if (t === 6 && hasFrog) a = ran < 0.4 ? "붕어" : (ran < 0.7 ? "미꾸라지" : "수달");
+                else if (t === 6 && hasFrog) a = ran < 0.25 ? "붕어" : (ran < 0.5 ? "미꾸라지" : (ran < 0.75 ? "수달" : "다슬기"));
             }
-            else if (mapName === 'desert' && t === 13) { a = ran < 0.3 ? "낙타" : (ran < 0.6 ? "사막여우" : (ran < 0.8 ? "도마뱀" : "전갈")); }
+            else if (mapName === 'desert' && t === 13) { a = ran < 0.25 ? "낙타" : (ran < 0.5 ? "사막여우" : (ran < 0.7 ? "도마뱀" : (ran < 0.85 ? "전갈" : "이집트 땅거북"))); }
             else if (mapName === 'polar') { if (t === 15) a = ran < 0.3 ? "펭귄" : (ran < 0.6 ? "순록" : (ran < 0.8 ? "북극여우" : "북극곰")); else if (t === 17) a = ran < 0.7 ? "바다표범" : "펭귄"; }
-            else if (mapName === 'sea') { if (t === 27) a = ran < 0.4 ? "게" : "짱뚱어"; else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
+            else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
 
             if (a && Math.random() < 0.3) battle(a);
         }
