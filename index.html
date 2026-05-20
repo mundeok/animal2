@@ -455,6 +455,7 @@
                 charFrame = 0;
                 const p = document.getElementById('player');
                 if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
+                dx = 0; dy = 0;
             };
 
             screen.addEventListener('touchstart', (e) => { startMove(e); }, {passive: false});
