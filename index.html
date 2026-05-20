@@ -165,12 +165,21 @@
                 </div>
             </div>
             
-            <div class="map-ui-bottom">
-                <div class="message-box-map" id="msg-box">맵을 터치해서 이동하고, 아래쪽 🌀포탈을 타세요!</div>
+<div class="map-ui-bottom">
+                <div class="message-box-map" id="msg-box">맵 터치 또는 방향키로 이동하세요!</div>
                 <div class="ui-buttons-container">
                     <div class="btn-ui pokedex-btn" onclick="openPokedex()">📖 도감</div>
                     <div class="btn-ui reset-btn" onclick="resetGame()">🔄 리셋</div>
                 </div>
+            </div>
+
+            <div id="dpad">
+                <div class="dpad-btn dpad-up" data-dir="up">▲</div>
+                <div class="dpad-btn dpad-left" data-dir="left">◀</div>
+                <div class="dpad-btn dpad-right" data-dir="right">▶</div>
+                <div class="dpad-btn dpad-down" data-dir="down">▼</div>
+            </div>
+        
             </div>
         </div>
 
@@ -420,58 +429,68 @@
             move(dx, dy);
         }
 
-function initTouchMovement() {
+/* 🚀 하이브리드 이동 엔진 (절대 브레이크 탑재) */
+        let globalMoveInterval = null; // 💡 무한 이동 방지용 중앙 통제 변수
+
+        // 🛑 브레이크 함수: 어떤 상황이든 호출되면 무조건 멈춤!
+        function stopAllMovement() {
+            if (globalMoveInterval) {
+                clearInterval(globalMoveInterval);
+                globalMoveInterval = null;
+            }
+            charFrame = 0;
+            const p = document.getElementById('player');
+            if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
+        }
+
+        function initHybridControls() {
+            // ================= 1. 반투명 십자키 조작 =================
+            document.querySelectorAll('.dpad-btn').forEach(btn => {
+                const startBtnMove = (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    stopAllMovement(); // 💡 꼬임 방지: 이동 전 일단 브레이크 한 번 밟음
+                    const dir = btn.dataset.dir;
+                    dpadMove(dir);
+                    globalMoveInterval = setInterval(() => dpadMove(dir), 150);
+                };
+                btn.addEventListener('touchstart', startBtnMove, { passive: false });
+                btn.addEventListener('mousedown', startBtnMove);
+            });
+
+            // ================= 2. 맵 터치 조작 =================
             const screen = document.getElementById('map-bg');
-            if (!screen) return;
-            
-            let moveInterval = null;
             let currentDir = null;
 
-            const calculateDirection = (x, y, rect) => {
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                const dx = x - centerX;
-                const dy = y - centerY;
-                if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
-                else return dy > 0 ? 'down' : 'up';
+            const calcDir = (x, y, rect) => {
+                const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+                if (Math.abs(x - cx) > Math.abs(y - cy)) return (x - cx) > 0 ? 'right' : 'left';
+                else return (y - cy) > 0 ? 'down' : 'up';
             };
 
-            const startMove = (e) => {
-                // UI 버튼 클릭은 무시
-                if(e.target.closest('.btn-ui') || e.target.closest('.message-box-map')) return; 
+            const startScreenMove = (e) => {
+                // UI 버튼이나 십자키를 눌렀을 땐 맵 터치로 인식 안 함!
+                if(e.target.closest('.btn-ui') || e.target.closest('.message-box-map') || e.target.closest('#dpad')) return; 
                 
                 const touch = e.touches ? e.touches[0] : e;
-                const rect = screen.getBoundingClientRect();
-                const dir = calculateDirection(touch.clientX, touch.clientY, rect);
+                const dir = calcDir(touch.clientX, touch.clientY, screen.getBoundingClientRect());
 
                 if (currentDir !== dir) {
                     currentDir = dir;
+                    stopAllMovement(); // 방향 바뀔 때 브레이크
                     dpadMove(currentDir);
-                    clearInterval(moveInterval);
-                    moveInterval = setInterval(() => dpadMove(currentDir), 150); 
+                    globalMoveInterval = setInterval(() => dpadMove(currentDir), 150); 
                 }
             };
 
-            const stopMove = () => {
-                clearInterval(moveInterval);
-                moveInterval = null;
-                currentDir = null;
-                charFrame = 0;
-                const p = document.getElementById('player');
-                if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
-            };
+            screen.addEventListener('touchstart', startScreenMove, {passive: false});
+            screen.addEventListener('touchmove', (e) => { e.preventDefault(); startScreenMove(e); }, {passive: false});
 
-            screen.addEventListener('touchstart', (e) => { startMove(e); }, {passive: false});
-            screen.addEventListener('touchmove', (e) => { e.preventDefault(); startMove(e); }, {passive: false});
-            screen.addEventListener('touchend', stopMove);
-            screen.addEventListener('touchcancel', stopMove);
-            
-            // 마우스 대응
-            let isMouseDown = false;
-            screen.addEventListener('mousedown', (e) => { isMouseDown = true; startMove(e); });
-            screen.addEventListener('mousemove', (e) => { if(isMouseDown) startMove(e); });
-            window.addEventListener('mouseup', () => { isMouseDown = false; stopMove(); });
-        }
+            // ================= 3. 무한 직진 방지 절대 브레이크 센서 =================
+            // 💡 윈도우 전체에 센서를 달아서 태블릿을 툭 내려놓거나 창을 내리면 강제 정지!
+            window.addEventListener('touchend', () => { currentDir = null; stopAllMovement(); });
+            window.addEventListener('touchcancel', () => { currentDir = null; stopAllMovement(); });
+            window.addEventListener('mouseup', () => { currentDir = null; stopAllMovement(); });
+            window.addEventListener('blur', () => { currentDir = null; stopAllMovement(); }); // 앱 전환 시 멈춤
         }
 
         const garden = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 23, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3]];
@@ -1005,7 +1024,7 @@ function initTouchMovement() {
             
             draw();
             updatePlayerUI();
-            initTouchMovement();
+            initHybridControls();
         };
 
         function updateHpBar(bar, hpPercent) {
