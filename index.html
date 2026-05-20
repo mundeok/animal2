@@ -491,15 +491,28 @@
         }
 
 .map-ui-bottom {
-    position: fixed; /* 화면 고정 */
-    bottom: calc(3vmin + env(safe-area-inset-bottom));
-    left: 20vmin;
-    right: 20vmin;
-    display: flex;
-    align-items: flex-end;
-    gap: 2vmin;
-    z-index: 100;
-}
+            position: fixed; 
+            bottom: calc(3vmin + env(safe-area-inset-bottom));
+            left: 44vmin;  /* 👈 왼쪽 십자키(약 41vmin) 영역 완전 회피 */
+            right: 25vmin; /* 👈 우측 메뉴 버튼 영역 완전 회피 */
+            display: flex;
+            align-items: flex-end;
+            gap: 2vmin;
+            z-index: 100;
+        }
+
+@media (orientation: portrait) {
+            .map-ui-bottom {
+                /* 가로 공간이 부족하니까 대화창을 십자키 위로 올려버림! */
+                bottom: 45vmin; 
+                left: 5vmin;
+                right: 5vmin;
+            }
+            .message-box-map {
+                height: 100px; /* 세로 모드에선 대화창을 살짝 얇게 */
+            }
+        }
+
 
         .message-box-map {
             flex: 1;
