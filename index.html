@@ -2524,16 +2524,16 @@ function initTouchMovement() {
             }
 
             // 3. 튜토리얼 진행 상태에 따른 대사창 출력
-            if (!isTutorialDone) {
-                msg(`⚡ <b>오프닝 튜토리얼</b><br>방향키(키보드)나 화면 왼쪽 아래의 십자키를 움직여서 맨 위에 계신 <b>[👨‍🔬 박사님]</b>께 바짝 다가가 말을 거세요!`);
-            } else {
-                msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
-            }
-
+if (!isTutorialDone) {
+            msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
+        } else {
+            msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
+        }
+            
             // 4. 화면 최종 렌더링 및 모바일 조작계 가동
-            draw();
-            updatePlayerUI();
-            initDpad();
+draw();
+        updatePlayerUI();
+        initTouchMovement();
         };
         function updateHpBar(bar, hpPercent) {
             if (!bar) return;
