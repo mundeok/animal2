@@ -1895,30 +1895,34 @@
             move(dx, dy);
         }
 
-        function initDpad() {
-            let dpadInterval = null;
-            document.querySelectorAll('.dpad-btn[data-dir]').forEach(btn => {
-                const dir = btn.dataset.dir;
-                const start = (e) => {
-                    e.preventDefault();
-                    dpadMove(dir);
-                    clearInterval(dpadInterval);
-                    dpadInterval = setInterval(() => dpadMove(dir), 180);
-                };
-                const stop = () => {
-                    clearInterval(dpadInterval);
-                    dpadInterval = null;
-                    charFrame = 0;
-                    const p = document.getElementById('player');
-                    if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
-                };
-                btn.addEventListener('touchstart', start, { passive: false });
-                btn.addEventListener('touchend', stop);
-                btn.addEventListener('mousedown', start);
-                btn.addEventListener('mouseup', stop);
-                btn.addEventListener('mouseleave', stop);
-            });
+// 💡 기존 initDpad를 이걸로 대체! (터치와 마우스 입력을 통합)
+function initDpad() {
+    const handleInput = (e, type) => {
+        // e.type이 touchstart/mousedown일 때만 이동 실행
+        const dir = e.currentTarget.dataset.dir;
+        if (type === 'start') {
+            dpadMove(dir);
+            clearInterval(window.dpadInterval);
+            window.dpadInterval = setInterval(() => dpadMove(dir), 150);
+        } else {
+            clearInterval(window.dpadInterval);
+            charFrame = 0;
+            const p = document.getElementById('player');
+            if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
         }
+    };
+
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+        // 모바일/터치
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); handleInput(e, 'start'); }, { passive: false });
+        btn.addEventListener('touchend', (e) => { e.preventDefault(); handleInput(e, 'end'); });
+        
+        // 크롬북/마우스
+        btn.addEventListener('mousedown', (e) => handleInput(e, 'start'));
+        btn.addEventListener('mouseup', (e) => handleInput(e, 'end'));
+        btn.addEventListener('mouseleave', (e) => handleInput(e, 'end'));
+    });
+}
 
         /* 🚀 5. 맵 데이터 */
         const garden = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 23, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 1, 1, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 1, 1, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 1, 1, 2, 2, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3]];
