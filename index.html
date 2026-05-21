@@ -486,6 +486,7 @@
             if (dir === 'left') { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; }
             if (dir === 'right') { dx = 1; charDir = 1; p.style.transform = "scaleX(-1)"; }
             if (dir === 'up') { dy = -1; charDir = 3; p.style.transform = "scaleX(1)"; }
+            p.style.clipPath = "none";
             charFrame = (charFrame + 1) % 6;
             if (p) p.style.backgroundPosition = `${charFrame * 20}% ${charDir * 33.33}%`;
             move(dx, dy);
@@ -502,7 +503,10 @@
             }
             charFrame = 0;
             const p = document.getElementById('player');
-            if (p) p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
+            if (p) {
+                p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
+                p.style.clipPath = "none";
+            }
         }
 
         function initHybridControls() {
@@ -1046,10 +1050,10 @@
 
         window.onkeydown = (e) => {
             const k = e.key; let dx = 0, dy = 0; const p = document.getElementById('player');
-            if (k === 'ArrowDown') { dy = 1; charDir = 0; p.style.transform = "scale(1.0) scaleX(1)"; p.style.clipPath = "inset(0% 0 15% 0)"; }
-            if (k === 'ArrowLeft') { dx = -1; charDir = 1; p.style.transform = "scale(1.1) scaleX(1)"; p.style.clipPath = "inset(20% 0 15% 0)"; }
-            if (k === 'ArrowRight') { dx = 1; charDir = 1; p.style.transform = "scale(1.1) scaleX(-1)"; p.style.clipPath = "inset(20% 0 15% 0)"; }
-            if (k === 'ArrowUp') { dy = -1; charDir = 3; p.style.transform = "scale(1.0) scaleX(1)"; p.style.clipPath = "inset(20% 0 0 0)"; }
+            if (k === 'ArrowDown') { dy = 1; charDir = 0; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
+            if (k === 'ArrowLeft') { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
+            if (k === 'ArrowRight') { dx = 1; charDir = 1; p.style.transform = "scaleX(-1)"; p.style.clipPath = "none"; }
+            if (k === 'ArrowUp') { dy = -1; charDir = 3; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
             if (dx !== 0 || dy !== 0) {
                 e.preventDefault();
                 charFrame = (charFrame + 1) % 6;
