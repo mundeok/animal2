@@ -14,8 +14,8 @@
         .view-section { width: 100%; height: 100%; display: none; flex-direction: column; padding: 20px; align-items: center; justify-content: center; }
 
         /* ================= MAP 시스템 ================= */
-        #map-view { display: flex; }
-        .map-wrapper { width: 100%; max-width: 70vmin; height: 70vmin; background-color: #000; padding: 10px; border-radius: 10px; position: relative; display: flex; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); }
+        #map-view { display: flex; padding-bottom: calc(clamp(120px, 20vmin, 175px) + 3vmin + env(safe-area-inset-bottom, 20px) + 20px); }
+        .map-wrapper { width: min(70vmin, calc(100dvh - clamp(120px, 20vmin, 175px) - 4vmin - env(safe-area-inset-bottom, 20px) - 80px)); max-width: 70vmin; height: min(70vmin, calc(100dvh - clamp(120px, 20vmin, 175px) - 4vmin - env(safe-area-inset-bottom, 20px) - 80px)); background-color: #000; padding: 10px; border-radius: 10px; position: relative; display: flex; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); }
         .map-screen { width: 100%; height: 100%; background-color: #d2b48c; position: relative; overflow: hidden; border: 4px solid #fff; image-rendering: pixelated; transition: background-color 0.5s; cursor: crosshair; }
         .grid-container { display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(16, 1fr); width: 100%; height: 100%; }
         .tile { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 3vmin; border: none !important; outline: none !important; }
@@ -60,7 +60,7 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
-        #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); display: flex; justify-content: center; align-items: center; z-index: 20; transition: top 0.1s linear, left 0.1s linear; background-image: url('static/player_sprite.png'); background-size: 600% auto; background-repeat: no-repeat; image-rendering: pixelated; color: transparent; }
+        #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); display: flex; justify-content: center; align-items: center; z-index: 20; transition: top 0.1s linear, left 0.1s linear; background-image: url('static/player_sprite.png'); background-size: 600% 400%; background-repeat: no-repeat; image-rendering: pixelated; color: transparent; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
         .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom, 20px)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
@@ -72,7 +72,7 @@
         .reset-btn { background: #64748b; }
 
         /* ================= D-PAD 조이스틱 ================= */
-        #dpad { position: fixed; bottom: calc(150px + env(safe-area-inset-bottom, 20px)); left: 3vmin; width: min(28vmin, 160px); height: min(28vmin, 160px); z-index: 150; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 3px; opacity: 0.85; pointer-events: auto; }
+        #dpad { position: fixed; bottom: calc(clamp(120px, 20vmin, 175px) + 3vmin + env(safe-area-inset-bottom, 20px) + 10px); left: 3vmin; width: min(28vmin, 160px); height: min(28vmin, 160px); z-index: 150; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 3px; opacity: 0.85; pointer-events: auto; }
         .dpad-btn { display: flex; align-items: center; justify-content: center; background: rgba(20,20,20,0.65); border: 3px solid rgba(255,255,255,0.55); border-radius: 8px; color: white; font-size: min(6vmin, 28px); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; box-shadow: 0 3px 8px rgba(0,0,0,0.5); transition: background 0.1s, transform 0.1s; }
         .dpad-btn:active { background: rgba(255,255,255,0.35); transform: scale(0.88); }
         .dpad-up { grid-area: up; }
@@ -101,29 +101,29 @@
         .sand-wind { position: absolute; width: 200%; height: 100%; background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent); animation: wind 3s linear infinite; }
         @keyframes wind { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
 
-        .sprite-enemy { position: absolute; top: 40px; right: 50px; width: 200px; height: 200px; background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; animation: float 2s infinite ease-in-out; z-index: 5; }
-        .enemy-status { position: absolute; top: 30px; left: 30px; width: 320px; background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-bottom-right-radius: 20px; padding: 10px 15px; z-index: 15; display: none; }
-        .sprite-player { position: absolute; bottom: 40px; left: 60px; width: 240px; height: 240px; background-image: url('static/player_back.png'); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; z-index: 10; transform: none; }
-        .player-status { position: absolute; bottom: 20px; right: 30px; width: 340px; background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-top-left-radius: 20px; padding: 10px 15px; z-index: 15; display: none; }
+        .sprite-enemy { position: absolute; top: max(20px, 3vmin); right: max(30px, 4vmin); width: min(200px, 28vmin); height: min(200px, 28vmin); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; animation: float 2s infinite ease-in-out; z-index: 5; }
+        .enemy-status { position: absolute; top: max(15px, 2vmin); left: max(15px, 2vmin); width: min(320px, 48%); background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-bottom-right-radius: 20px; padding: clamp(6px, 1.2vmin, 10px) clamp(8px, 1.5vmin, 15px); z-index: 15; display: none; }
+        .sprite-player { position: absolute; bottom: max(20px, 3vmin); left: max(30px, 4vmin); width: min(240px, 32vmin); height: min(240px, 32vmin); background-image: url('static/player_back.png'); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; z-index: 10; transform: none; }
+        .player-status { position: absolute; bottom: max(10px, 2vmin); right: max(15px, 2vmin); width: min(340px, 48%); background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-top-left-radius: 20px; padding: clamp(6px, 1.2vmin, 10px) clamp(8px, 1.5vmin, 15px); z-index: 15; display: none; }
 
         .hp-container, .exp-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-        .hp-label, .exp-label { font-size: 18px; font-weight: bold; width: 35px; text-shadow: 1px 1px #000; }
+        .hp-label, .exp-label { font-size: clamp(11px, 2vmin, 18px); font-weight: bold; width: clamp(28px, 4vmin, 35px); text-shadow: 1px 1px #000; }
         .hp-label { color: #fbbf24; }
-        .exp-label { font-size: 14px; color: #3b82f6; }
+        .exp-label { font-size: clamp(10px, 1.6vmin, 14px); color: #3b82f6; }
         .hp-bar-bg, .exp-bar-bg { flex: 1; background: #1a1a1a; padding: 2px; border-radius: 6px; }
         .hp-bar-bg { height: 16px; } .exp-bar-bg { height: 10px; }
         .hp-fill, .exp-fill { height: 100%; transition: width 0.5s; border-radius: 3px; }
         .hp-fill { background: #22c55e; width: 100%; } .exp-fill { background: #3b82f6; width: 0%; }
 
-        .ui-panel { height: 200px; width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0; }
-        .message-box-battle { flex: 1; padding: 15px 25px 25px 25px; font-size: 26px; line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: 190px; }
-        .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: 26px; }
+        .ui-panel { height: min(200px, 35vh); width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0; }
+        .message-box-battle { flex: 1; padding: clamp(8px, 2vmin, 15px) clamp(10px, 2.5vmin, 25px) clamp(10px, 2.5vmin, 25px); font-size: clamp(13px, 2.6vmin, 26px); line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: min(190px, 33vh); }
+        .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: clamp(13px, 2.6vmin, 26px); }
         .action-menu, .quiz-box { flex: 1; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
         .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(13px, 2vw, 22px); font-weight: bold; cursor: pointer; white-space: nowrap; background: #f0f9ff; border: 3px solid #1a1a1a; border-radius: 10px; box-shadow: 0 3px 0 #1a1a1a; color: #1a1a1a; padding: 6px 12px; transition: transform 0.1s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent; }
         .menu-item:active { transform: translateY(3px); box-shadow: 0 0 0 #1a1a1a; }
         .menu-item::before { content: '▶'; margin-right: 8px; color: #3b82f6; }
         .menu-item:hover::before { opacity: 1; }
-        .blink-cursor { position: absolute; bottom: 15px; right: 25px; font-size: 28px; animation: blink 0.8s infinite; }
+        .blink-cursor { position: absolute; bottom: clamp(8px, 2vmin, 15px); right: clamp(10px, 2.5vmin, 25px); font-size: clamp(16px, 3vmin, 28px); animation: blink 0.8s infinite; }
         .ui-panel.waiting { animation: panelPulse 1.4s ease-in-out infinite; }
         @keyframes panelPulse { 0%, 100% { background: #fff; } 50% { background: #dbeafe; } }
 
@@ -200,14 +200,14 @@
             <div class="battle-container">
                 <div class="battle-field">
                     <div class="enemy-status" id="enemy-hp-panel">
-                        <span id="enemy-name" style="font-size:24px; font-weight:bold;">동물</span>
+                        <span id="enemy-name" style="font-size:clamp(14px,2.8vmin,24px); font-weight:bold;">동물</span>
                         <div class="hp-container"><span class="hp-label">HP</span>
                             <div class="hp-bar-bg"><div class="hp-fill" id="enemy-hp"></div></div>
                         </div>
                     </div>
                     <div class="sprite-enemy" id="enemy-sprite"></div>
                     <div class="player-status" id="player-hp-panel">
-                        <span id="player-name-level" style="font-size:24px; font-weight:bold;">학생 Lv.1</span>
+                        <span id="player-name-level" style="font-size:clamp(14px,2.8vmin,24px); font-weight:bold;">학생 Lv.1</span>
                         <div class="hp-container"><span class="hp-label">HP</span>
                             <div class="hp-bar-bg"><div class="hp-fill" style="width: 100%;"></div></div>
                         </div>
