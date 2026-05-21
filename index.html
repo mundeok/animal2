@@ -63,7 +63,7 @@
         #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); display: flex; justify-content: center; align-items: center; z-index: 20; transition: top 0.1s linear, left 0.1s linear; background-image: url('static/player_sprite.png'); background-size: 600% auto; background-repeat: no-repeat; image-rendering: pixelated; color: transparent; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
-        .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
+        .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom, 20px)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
         .message-box-map { flex: 1; height: 120px; background-color: #fff; border: 6px solid #000; border-radius: 8px; padding: 10px 15px; font-size: clamp(14px, 3vmin, 20px); line-height: 1.5; overflow-y: auto; font-weight: bold; word-break: keep-all;}
         .ui-buttons-container { display: flex; flex-direction: column; gap: 1.5vmin; flex-shrink: 0; }
         .btn-ui { padding: 1.5vmin 3vmin; border: 4px solid #000; border-radius: 8px; color: white; font-size: clamp(14px, 2.5vmin, 22px); box-shadow: 0 4px #000; text-align: center; cursor: pointer; font-weight: bold; }
@@ -71,12 +71,21 @@
         .pokedex-btn { background: #ef4444; }
         .reset-btn { background: #64748b; }
 
+        /* ================= D-PAD 조이스틱 ================= */
+        #dpad { position: fixed; bottom: calc(150px + env(safe-area-inset-bottom, 20px)); left: 3vmin; width: min(28vmin, 160px); height: min(28vmin, 160px); z-index: 150; display: grid; grid-template-areas: ". up ." "left . right" ". down ."; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 3px; opacity: 0.85; pointer-events: auto; }
+        .dpad-btn { display: flex; align-items: center; justify-content: center; background: rgba(20,20,20,0.65); border: 3px solid rgba(255,255,255,0.55); border-radius: 8px; color: white; font-size: min(6vmin, 28px); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; box-shadow: 0 3px 8px rgba(0,0,0,0.5); transition: background 0.1s, transform 0.1s; }
+        .dpad-btn:active { background: rgba(255,255,255,0.35); transform: scale(0.88); }
+        .dpad-up { grid-area: up; }
+        .dpad-left { grid-area: left; }
+        .dpad-right { grid-area: right; }
+        .dpad-down { grid-area: down; }
+
         .status-bar { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 15px; border-radius: 8px; font-size: 18px; z-index: 50; border: 2px solid #fff; }
 
         /* ================= BATTLE 시스템 ================= */
         #battle-view { background: rgba(0, 0, 0, 0.95); position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 200; display: none; justify-content: center; align-items: center; }
-        .battle-container { width: 800px; height: 600px; background-color: #f8f8f8; border: 8px solid #1a1a1a; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
-        .battle-field { height: 400px; width: 100%; position: relative; background: #f8f8f8; border-bottom: 6px solid #1a1a1a; flex-shrink: 0; }
+        .battle-container { width: min(800px, 95vw); height: min(600px, 92vh); background-color: #f8f8f8; border: 8px solid #1a1a1a; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+        .battle-field { flex: 1; min-height: 0; width: 100%; position: relative; background: #f8f8f8; border-bottom: 6px solid #1a1a1a; overflow: hidden; }
         .battle-field::before { content: ''; position: absolute; bottom: 30px; left: 40px; width: 280px; height: 70px; background: #e2e8f0; border-radius: 50%; }
         .battle-field::after { content: ''; position: absolute; top: 170px; right: 40px; width: 220px; height: 60px; background: #e2e8f0; border-radius: 50%; }
         .battle-field.garden { background: linear-gradient(to bottom, #d9f99d 0%, #ffffff 100%); }
@@ -114,7 +123,9 @@
         .menu-item:active { transform: translateX(5px); }
         .menu-item::before { content: '▶'; margin-right: 10px; opacity: 0; transition: 0.1s; }
         .menu-item:hover::before { opacity: 1; }
-        .blink-cursor { position: absolute; bottom: 15px; right: 25px; font-size: 28px; }
+        .blink-cursor { position: absolute; bottom: 15px; right: 25px; font-size: 28px; animation: blink 0.8s infinite; }
+        .ui-panel.waiting { animation: panelPulse 1.4s ease-in-out infinite; }
+        @keyframes panelPulse { 0%, 100% { background: #fff; } 50% { background: #dbeafe; } }
 
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -259,6 +270,26 @@
         </div>
     </div>
 
+    <!-- 탐험가 이름 입력 모달 -->
+    <div id="modal-name" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:#fff; border:8px solid #1a1a1a; border-radius:16px; padding:30px 25px; width:90%; max-width:480px; text-align:center; font-family:'NeoDunggeunmo',monospace;">
+            <p id="modal-name-msg" style="font-size:clamp(15px,4vmin,22px); margin-bottom:20px; line-height:1.8; white-space:pre-line;"></p>
+            <input id="modal-name-input" type="text" maxlength="8" style="width:100%; font-size:clamp(18px,5vmin,28px); padding:12px; border:5px solid #1a1a1a; border-radius:10px; font-family:'NeoDunggeunmo',monospace; text-align:center; margin-bottom:20px; box-sizing:border-box;" placeholder="이름 입력 (최대 8글자)">
+            <button id="modal-name-ok" style="padding:14px 36px; background:#22c55e; color:white; border:5px solid #1a1a1a; border-radius:10px; font-size:clamp(16px,4.5vmin,24px); font-family:'NeoDunggeunmo',monospace; cursor:pointer; box-shadow:0 4px #1a1a1a;">확인 ✓</button>
+        </div>
+    </div>
+
+    <!-- 리셋 확인 모달 -->
+    <div id="modal-confirm" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:#fff; border:8px solid #1a1a1a; border-radius:16px; padding:30px 25px; width:90%; max-width:420px; text-align:center; font-family:'NeoDunggeunmo',monospace;">
+            <p id="modal-confirm-msg" style="font-size:clamp(15px,4vmin,20px); margin-bottom:25px; line-height:1.8;"></p>
+            <div style="display:flex; gap:15px; justify-content:center;">
+                <button id="modal-confirm-yes" style="padding:14px 28px; background:#ef4444; color:white; border:5px solid #1a1a1a; border-radius:10px; font-size:clamp(16px,4vmin,22px); font-family:'NeoDunggeunmo',monospace; cursor:pointer; box-shadow:0 4px #1a1a1a;">예</button>
+                <button id="modal-confirm-no" style="padding:14px 28px; background:#64748b; color:white; border:5px solid #1a1a1a; border-radius:10px; font-size:clamp(16px,4vmin,22px); font-family:'NeoDunggeunmo',monospace; cursor:pointer; box-shadow:0 4px #1a1a1a;">아니요</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const animalDB = {
             "배추흰나비": { id: 1, icon: "🦋", isCaught: false, habitat: "화단", look: "날개가 2쌍 있습니다.", move: "훨훨 납니다.", trait: "빨대 모양 입으로 꿀을 먹으며 애벌레와 어른(성충) 모습이 많이 달라집니다.", q: [{ q: "날개는 몇 쌍일까?", o: ["1쌍", "2쌍", "3쌍"], a: 1 }, { q: "꿀을 먹는 입의 모양은?", o: ["빨대", "바늘", "이빨"], a: 0 }, { q: "어릴 때(애벌레)의 이름은?", o: ["구더기", "배추벌레", "장구벌레"], a: 1 }, { q: "어른벌레가 되기 전 거치는 단계는?", o: ["알", "번데기", "허물"], a: 1 }, { q: "주로 먹는 것은 무엇일까?", o: ["나뭇잎", "다른 곤충", "꽃의 꿀"], a: 2 }] },
@@ -327,6 +358,35 @@
         let observeUsedInBattle = false; 
         let isObserveBuffActive = false; 
 
+        function showNamePrompt(message, defaultVal, callback) {
+            const modal = document.getElementById('modal-name');
+            const input = document.getElementById('modal-name-input');
+            document.getElementById('modal-name-msg').textContent = message;
+            input.value = defaultVal || '';
+            modal.style.display = 'flex';
+            setTimeout(() => input.focus(), 150);
+            const onOk = () => {
+                modal.style.display = 'none';
+                document.getElementById('modal-name-ok').removeEventListener('click', onOk);
+                callback(input.value.trim() || null);
+            };
+            document.getElementById('modal-name-ok').addEventListener('click', onOk);
+            input.addEventListener('keydown', function onEnter(e) {
+                if (e.key === 'Enter') { input.removeEventListener('keydown', onEnter); onOk(); }
+            });
+        }
+
+        function showConfirm(message, callback) {
+            const modal = document.getElementById('modal-confirm');
+            document.getElementById('modal-confirm-msg').textContent = message;
+            modal.style.display = 'flex';
+            const yes = document.getElementById('modal-confirm-yes');
+            const no = document.getElementById('modal-confirm-no');
+            const cleanup = () => { modal.style.display = 'none'; yes.onclick = null; no.onclick = null; };
+            yes.onclick = () => { cleanup(); callback(true); };
+            no.onclick = () => { cleanup(); callback(false); };
+        }
+
         function saveGame() {
             const caught = Object.keys(animalDB).filter(k => animalDB[k].isCaught);
             const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone }; 
@@ -348,9 +408,9 @@
         }
 
         function resetGame() {
-            if (confirm("모든 데이터를 지우고 처음부터 시작하겠습니까?")) {
-                localStorage.clear(); location.reload();
-            }
+            showConfirm("모든 데이터를 지우고\n처음부터 시작하겠습니까?", (confirmed) => {
+                if (confirmed) { localStorage.clear(); location.reload(); }
+            });
         }
 
         function renderBadges() {
@@ -626,7 +686,7 @@
                 else if (t === 6 && hasFrog) a = ran < 0.25 ? "붕어" : (ran < 0.5 ? "미꾸라지" : (ran < 0.75 ? "수달" : "다슬기"));
             }
             else if (mapName === 'desert' && t === 13) { a = ran < 0.25 ? "낙타" : (ran < 0.5 ? "사막여우" : (ran < 0.7 ? "도마뱀" : (ran < 0.85 ? "전갈" : "이집트 땅거북"))); }
-            else if (mapName === 'polar') { if (t === 15) a = ran < 0.3 ? "펭귄" : (ran < 0.6 ? "순록" : (ran < 0.8 ? "북극여우" : "북극곰")); else if (t === 17) a = ran < 0.7 ? "바다표범" : "펭귄"; }
+            else if (mapName === 'polar') { if (t === 14) a = ran < 0.5 ? "순록" : (ran < 0.8 ? "북극여우" : "펭귄"); else if (t === 15) a = ran < 0.3 ? "펭귄" : (ran < 0.6 ? "순록" : (ran < 0.8 ? "북극여우" : "북극곰")); else if (t === 17) a = ran < 0.7 ? "바다표범" : "펭귄"; }
             else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
 
             if (a && Math.random() < 0.3) battle(a);
@@ -683,14 +743,16 @@
 
             const j = (a.charCodeAt(a.length - 1) - 44032) % 28 > 0 ? '이' : '가';
             type(`앗! 야생의\n${a}${j}\n나타났다!`, () => {
-                document.getElementById('battle-text').innerHTML += '<br><span class="blink-cursor">▼</span>';
+                document.getElementById('battle-text').innerHTML += '<br><span class="blink-cursor">▼</span><span style="display:block;text-align:center;font-size:14px;color:#888;margin-top:6px;">화면을 탭하세요</span>';
                 wait = true;
+                document.getElementById('ui-panel').classList.add('waiting');
             });
         }
 
         document.getElementById('ui-panel').onclick = () => {
             if (wait) {
                 wait = false;
+                document.getElementById('ui-panel').classList.remove('waiting');
                 document.getElementById('enemy-hp-panel').style.display = 'block';
                 document.getElementById('player-hp-panel').style.display = 'block';
                 document.getElementById('msg-box-battle').classList.add('split');
@@ -997,7 +1059,18 @@
         };
 
         window.onload = () => {
-            loadGame(); 
+            loadGame();
+
+            const startGame = () => {
+                if (!isTutorialDone) {
+                    msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
+                } else {
+                    msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
+                }
+                draw();
+                updatePlayerUI();
+                initHybridControls();
+            };
 
             if (!localStorage.getItem('beastGame_player') || playerName === "탐험가" || !isTutorialDone) {
                 localStorage.clear();
@@ -1006,25 +1079,16 @@
                 mapName = 'lab'; px = 7; py = 12; charDir = 3; curMap = lab;
                 isTutorialDone = false;
 
-                let nameInput = prompt("과학실에 오신 것을 환영합니다!\n당신의 탐험가 이름을 입력하세요!", "홍길동");
-                if (nameInput && nameInput.trim() !== "") {
-                    playerName = nameInput.trim();
-                } else {
-                    playerName = "지우"; 
-                }
+                draw(); updatePlayerUI(); initHybridControls();
 
-                saveGame(); 
-            }
-
-            if (!isTutorialDone) {
-                msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
+                showNamePrompt("과학실에 오신 것을 환영합니다!\n당신의 탐험가 이름을 입력하세요!", "홍길동", (nameInput) => {
+                    playerName = (nameInput && nameInput.trim()) ? nameInput.trim() : "지우";
+                    saveGame();
+                    msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
+                });
             } else {
-                msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
+                startGame();
             }
-            
-            draw();
-            updatePlayerUI();
-            initHybridControls();
         };
 
         function updateHpBar(bar, hpPercent) {
