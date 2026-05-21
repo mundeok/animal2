@@ -64,7 +64,7 @@
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
         .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom, 20px)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
-        .message-box-map { flex: 1; height: 120px; background-color: #fff; border: 6px solid #000; border-radius: 8px; padding: 10px 15px; font-size: clamp(14px, 3vmin, 20px); line-height: 1.5; overflow-y: auto; font-weight: bold; word-break: keep-all;}
+        .message-box-map { flex: 1; height: clamp(120px, 20vmin, 175px); background-color: #fff; border: 6px solid #000; border-radius: 8px; padding: 10px 15px; font-size: clamp(14px, 3vmin, 20px); line-height: 1.5; overflow-y: auto; font-weight: bold; word-break: keep-all; scroll-behavior: smooth; }
         .ui-buttons-container { display: flex; flex-direction: column; gap: 1.5vmin; flex-shrink: 0; }
         .btn-ui { padding: 1.5vmin 3vmin; border: 4px solid #000; border-radius: 8px; color: white; font-size: clamp(14px, 2.5vmin, 22px); box-shadow: 0 4px #000; text-align: center; cursor: pointer; font-weight: bold; }
         .btn-ui:active { transform: translateY(4px); box-shadow: 0 0 #000; }
@@ -119,9 +119,9 @@
         .message-box-battle { flex: 1; padding: 15px 25px 25px 25px; font-size: 26px; line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: 190px; }
         .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: 26px; }
         .action-menu, .quiz-box { flex: 1; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
-        .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(14px, 2vw, 24px); font-weight: bold; cursor: pointer; white-space: nowrap; background: transparent; border: none; box-shadow: none; color: #1a1a1a; padding-left: 8px; transition: transform 0.1s; }
-        .menu-item:active { transform: translateX(5px); }
-        .menu-item::before { content: '▶'; margin-right: 10px; opacity: 0; transition: 0.1s; }
+        .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(13px, 2vw, 22px); font-weight: bold; cursor: pointer; white-space: nowrap; background: #f0f9ff; border: 3px solid #1a1a1a; border-radius: 10px; box-shadow: 0 3px 0 #1a1a1a; color: #1a1a1a; padding: 6px 12px; transition: transform 0.1s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent; }
+        .menu-item:active { transform: translateY(3px); box-shadow: 0 0 0 #1a1a1a; }
+        .menu-item::before { content: '▶'; margin-right: 8px; color: #3b82f6; }
         .menu-item:hover::before { opacity: 1; }
         .blink-cursor { position: absolute; bottom: 15px; right: 25px; font-size: 28px; animation: blink 0.8s infinite; }
         .ui-panel.waiting { animation: panelPulse 1.4s ease-in-out infinite; }
@@ -158,11 +158,13 @@
         @keyframes shakeMonster { 0% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
         .monster-hit { animation: shakeMonster 0.4s; }
         .monster-caught { animation: catchPulse 0.6s; }
+        @keyframes enemyEntrance { 0% { opacity:0; transform:translateX(180px) scale(0.65); } 55% { opacity:1; transform:translateX(-12px) scale(1.07); } 78% { transform:translateX(6px) scale(0.97); } 100% { opacity:1; transform:translateX(0) scale(1); } }
     </style>
 </head>
 
 <body>
     <div id="badge-popup" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 15px 25px; border: 4px solid #fbbf24; border-radius: 10px; z-index: 2000; display: none; text-align: center; font-size: 20px;"></div>
+    <div id="encounter-flash" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; pointer-events:none; opacity:0;"></div>
     
     <div class="game-container">
         <div id="map-view" class="view-section">
@@ -692,10 +694,12 @@
             if (a && Math.random() < 0.3) battle(a);
         }
 
-        function msg(t) { document.getElementById('msg-box').innerHTML = t; }
+        function msg(t) { const b = document.getElementById('msg-box'); b.innerHTML = t; b.scrollTop = 0; }
 
         function battle(a) {
             locked = true; curA = a; stg = 0; hp = 100;
+            const fl = document.getElementById('encounter-flash');
+            if (fl) { fl.style.transition = 'none'; fl.style.opacity = '1'; fl.style.display = 'block'; setTimeout(() => { fl.style.transition = 'opacity 0.5s'; fl.style.opacity = '0'; setTimeout(() => fl.style.display = 'none', 500); }, 200); }
             observeUsedInBattle = false;
             isObserveBuffActive = false;
             
@@ -715,6 +719,8 @@
             playerSprite.innerText = "";
 
             enemySprite.style.backgroundImage = `url('static/${fullFileMap[a] || "ant.png"}')`;
+            enemySprite.style.animation = 'enemyEntrance 0.75s cubic-bezier(0.15, 0.85, 0.3, 1.1) forwards';
+            setTimeout(() => { enemySprite.style.animation = 'float 2s infinite ease-in-out'; }, 820);
             document.getElementById('enemy-name').innerText = `야생의 ${a}`;
 
             const weatherLayer = document.getElementById('weather-layer');
