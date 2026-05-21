@@ -60,7 +60,8 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
-        #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); display: flex; justify-content: center; align-items: center; z-index: 20; transition: top 0.1s linear, left 0.1s linear; background-image: url('static/player_sprite.png'); background-size: 600% 400%; background-repeat: no-repeat; image-rendering: pixelated; color: transparent; }
+        #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); z-index: 20; transition: top 0.1s linear, left 0.1s linear; overflow: hidden; }
+        #player-inner { position: absolute; top: 0; left: 0; width: 600%; height: 400%; background-image: url('static/player_sprite.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
         .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom, 20px)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
@@ -174,7 +175,7 @@
                 <div class="map-screen" id="map-bg">
                     <div id="fade-overlay"></div>
                     <div class="grid-container" id="map-grid"></div>
-                    <div id="player"></div>
+                    <div id="player"><div id="player-inner"></div></div>
                 </div>
             </div>
             
@@ -479,16 +480,24 @@
             });
         }
 
+        function setPlayerFrame(frame, dir) {
+            const inner = document.getElementById('player-inner');
+            if (!inner) return;
+            // 각 열(frame)은 컨테이너 너비의 1/6, 각 행(dir)은 컨테이너 높이의 1/4
+            // left/top % 는 #player 크기 기준 → 정확히 1프레임씩 이동
+            inner.style.left = `${-frame * 100 / 6}%`;   // 0~5프레임 → 0%, -16.67%, ...
+            inner.style.top  = `${-dir   * 100 / 4}%`;   // 0~3행   → 0%, -25%, ...
+        }
+
         function dpadMove(dir) {
             if (locked || (document.getElementById('battle-view') && document.getElementById('battle-view').style.display === 'flex')) return;
             let dx = 0, dy = 0; const p = document.getElementById('player');
-            if (dir === 'down') { dy = 1; charDir = 0; p.style.transform = "scaleX(1)"; }
-            if (dir === 'left') { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; }
-            if (dir === 'right') { dx = 1; charDir = 1; p.style.transform = "scaleX(-1)"; }
-            if (dir === 'up') { dy = -1; charDir = 3; p.style.transform = "scaleX(1)"; }
-            p.style.clipPath = "none";
+            if (dir === 'down')  { dy =  1; charDir = 0; p.style.transform = "scaleX(1)"; }
+            if (dir === 'left')  { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; }
+            if (dir === 'right') { dx =  1; charDir = 1; p.style.transform = "scaleX(-1)"; }
+            if (dir === 'up')    { dy = -1; charDir = 2; p.style.transform = "scaleX(1)"; }
             charFrame = (charFrame + 1) % 6;
-            if (p) p.style.backgroundPosition = `${charFrame * 20}% ${charDir * 33.33}%`;
+            setPlayerFrame(charFrame, charDir);
             move(dx, dy);
         }
 
@@ -502,11 +511,7 @@
                 globalMoveInterval = null;
             }
             charFrame = 0;
-            const p = document.getElementById('player');
-            if (p) {
-                p.style.backgroundPosition = `0% ${charDir * 33.33}%`;
-                p.style.clipPath = "none";
-            }
+            setPlayerFrame(0, charDir);
         }
 
         function initHybridControls() {
@@ -1050,21 +1055,21 @@
 
         window.onkeydown = (e) => {
             const k = e.key; let dx = 0, dy = 0; const p = document.getElementById('player');
-            if (k === 'ArrowDown') { dy = 1; charDir = 0; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
-            if (k === 'ArrowLeft') { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
-            if (k === 'ArrowRight') { dx = 1; charDir = 1; p.style.transform = "scaleX(-1)"; p.style.clipPath = "none"; }
-            if (k === 'ArrowUp') { dy = -1; charDir = 3; p.style.transform = "scaleX(1)"; p.style.clipPath = "none"; }
+            if (k === 'ArrowDown')  { dy =  1; charDir = 0; p.style.transform = "scaleX(1)"; }
+            if (k === 'ArrowLeft')  { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; }
+            if (k === 'ArrowRight') { dx =  1; charDir = 1; p.style.transform = "scaleX(-1)"; }
+            if (k === 'ArrowUp')    { dy = -1; charDir = 2; p.style.transform = "scaleX(1)"; }
             if (dx !== 0 || dy !== 0) {
                 e.preventDefault();
                 charFrame = (charFrame + 1) % 6;
-                p.style.backgroundPosition = `${charFrame * 20}% ${charDir * 33.33}%`;
+                setPlayerFrame(charFrame, charDir);
                 move(dx, dy);
             }
         };
         window.onkeyup = (e) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 charFrame = 0;
-                document.getElementById('player').style.backgroundPosition = `0% ${charDir * 33.33}%`;
+                setPlayerFrame(0, charDir);
             }
         };
 
