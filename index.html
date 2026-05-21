@@ -483,10 +483,10 @@
         function setPlayerFrame(frame, dir) {
             const inner = document.getElementById('player-inner');
             if (!inner) return;
-            // 각 열(frame)은 컨테이너 너비의 1/6, 각 행(dir)은 컨테이너 높이의 1/4
-            // left/top % 는 #player 크기 기준 → 정확히 1프레임씩 이동
-            inner.style.left = `${-frame * 100 / 6}%`;   // 0~5프레임 → 0%, -16.67%, ...
-            inner.style.top  = `${-dir   * 100 / 4}%`;   // 0~3행   → 0%, -25%, ...
+            // %는 부모(#player) 크기 기준 = 정확히 1프레임 크기
+            // frame 1칸 이동 = 부모 너비 1배(100%), row 1칸 = 부모 높이 1배(100%)
+            inner.style.left = `${-frame * 100}%`;
+            inner.style.top  = `${-dir   * 100}%`;
         }
 
         function dpadMove(dir) {
