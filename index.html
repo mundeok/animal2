@@ -61,7 +61,7 @@
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
         #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); z-index: 20; transition: top 0.1s linear, left 0.1s linear; overflow: hidden; }
-        #player-inner { position: absolute; top: 0; left: 0; width: 600%; height: 400%; background-image: url('static/player_sprite.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
+        #player-inner { position: absolute; top: 0; left: 0; background-image: url('static/player_sprite.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
         .map-ui-bottom { position: fixed; bottom: calc(3vmin + env(safe-area-inset-bottom, 20px)); left: 50%; transform: translateX(-50%); width: 90vw; max-width: 800px; display: flex; align-items: flex-end; gap: 2vmin; z-index: 100; pointer-events: auto; }
@@ -354,7 +354,8 @@
         let inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 }; 
         let pLevel = 1, pExp = 0, maxExp = 100;
         let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp; 
-        let charFrame = 0, charDir = 3; 
+        let charFrame = 0, charDir = 0;
+        let _sfW = 0, _sfH = 0; // 스프라이트 1프레임 자연 픽셀 크기
         let playerName = "탐험가"; 
         let isTutorialDone = false;  
         let currentBattleQuizzes = []; 
@@ -482,11 +483,21 @@
 
         function setPlayerFrame(frame, dir) {
             const inner = document.getElementById('player-inner');
-            if (!inner) return;
-            // %는 부모(#player) 크기 기준 = 정확히 1프레임 크기
-            // frame 1칸 이동 = 부모 너비 1배(100%), row 1칸 = 부모 높이 1배(100%)
-            inner.style.left = `${-frame * 100}%`;
-            inner.style.top  = `${-dir   * 100}%`;
+            const p     = document.getElementById('player');
+            if (!inner || !p || _sfW === 0) return;
+
+            // 엘리먼트 너비 기준으로 스케일 계산 (1프레임 너비 = 엘리먼트 너비)
+            const scale = p.offsetWidth / _sfW;
+            const fw = _sfW * scale;   // 렌더 프레임 너비 (= 엘리먼트 너비)
+            const fh = _sfH * scale;   // 렌더 프레임 높이 (자연 비율 유지)
+
+            // inner div를 시트 전체 크기로 설정 (px 고정 → % 계산 불필요)
+            inner.style.width  = (fw * 6) + 'px';
+            inner.style.height = (fh * 4) + 'px';
+
+            // 원하는 프레임/행이 #player 창에 딱 맞도록 이동
+            inner.style.left = (-frame * fw) + 'px';
+            inner.style.top  = (-dir   * fh) + 'px';
         }
 
         function dpadMove(dir) {
@@ -1074,6 +1085,19 @@
         };
 
         window.onload = () => {
+            // 스프라이트 자연 크기 측정 → pixel-perfect 프레임 계산용
+            const _simg = new Image();
+            _simg.onload = function() {
+                _sfW = _simg.naturalWidth  / 6;   // 6열
+                _sfH = _simg.naturalHeight / 4;   // 4행
+                setPlayerFrame(charFrame, charDir);
+            };
+            _simg.src = 'static/player_sprite.png';
+            // 창 크기 바뀔 때마다 px 재계산
+            window.addEventListener('resize', () => {
+                if (_sfW > 0) setPlayerFrame(charFrame, charDir);
+            });
+
             loadGame();
 
             const startGame = () => {
@@ -1091,7 +1115,7 @@
                 localStorage.clear();
                 inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
                 pLevel = 1; pExp = 0; maxExp = 100; earnedBadges = [];
-                mapName = 'lab'; px = 7; py = 12; charDir = 3; curMap = lab;
+                mapName = 'lab'; px = 7; py = 12; charDir = 0; curMap = lab;
                 isTutorialDone = false;
 
                 draw(); updatePlayerUI(); initHybridControls();
