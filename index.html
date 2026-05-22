@@ -17,7 +17,7 @@
         #map-view { display: flex; padding-bottom: calc(clamp(120px, 20vmin, 175px) + 3vmin + env(safe-area-inset-bottom, 20px) + 20px); }
         .map-wrapper { width: min(70vmin, calc(100dvh - clamp(120px, 20vmin, 175px) - 4vmin - env(safe-area-inset-bottom, 20px) - 80px)); max-width: 70vmin; height: min(70vmin, calc(100dvh - clamp(120px, 20vmin, 175px) - 4vmin - env(safe-area-inset-bottom, 20px) - 80px)); background-color: #000; padding: 10px; border-radius: 10px; position: relative; display: flex; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); }
         .map-screen { width: 100%; height: 100%; background-color: #d2b48c; position: relative; overflow: hidden; border: 4px solid #fff; image-rendering: pixelated; transition: background-color 0.5s; cursor: crosshair; }
-        .grid-container { display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(16, 1fr); width: 100%; height: 100%; }
+        .grid-container { display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(16, 1fr); width: calc(100% * 16 / 9); height: calc(100% * 16 / 9); position: absolute; top: 0; left: 0; will-change: transform; transition: transform 0.12s linear; }
         .tile { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 3vmin; border: none !important; outline: none !important; }
 
         /* 🎨 타일 매핑 */
@@ -60,7 +60,7 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
-        #player { position: absolute; width: calc(100% / 16 * 1.6); height: calc(100% / 16 * 2.0); margin-top: calc(-100% / 16 * 0.8); margin-left: calc(-100% / 16 * 0.3); z-index: 20; transition: top 0.1s linear, left 0.1s linear; overflow: hidden; }
+        #player { position: absolute; width: calc(100% / 9 * 1.6); height: calc(100% / 9 * 2.0); margin-top: calc(-100% / 9 * 0.8); margin-left: calc(-100% / 9 * 0.3); z-index: 20; transition: top 0.12s linear, left 0.12s linear; overflow: hidden; }
         #player-inner { position: absolute; top: 0; left: 0; background-image: url('static/player_sprite.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
@@ -356,6 +356,7 @@
         let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp; 
         let charFrame = 0, charDir = 0;
         let _sfW = 0, _sfH = 0; // 스프라이트 1프레임 자연 픽셀 크기
+        let camX = 0, camY = 0;  // ★ 카메라 뷰포트 위치 (9×9 타일)
         let playerName = "탐험가"; 
         let isTutorialDone = false;  
         let currentBattleQuizzes = []; 
@@ -604,15 +605,28 @@
             document.getElementById('map-bg').style.backgroundColor = bgMap[mapName];
             const cls = ['tile-dirt', 'tile-grass', 'tile-flower', 'tile-tree', 'tile-school', 'tile-door', 'tile-water', 'tile-lilypad', 'tile-bridge', 'tile-wetgrass', 'tile-portal', 'tile-rock', 'tile-sand', 'tile-cactus', 'tile-snow', 'tile-snowtree', 'tile-igloo', 'tile-ice', 'tile-lab-floor', 'tile-wall', 'tile-desk', 'tile-npc', 'tile-board', 'tile-hole', 'tile-deepdirt', 'tile-root', 'tile-ladder', 'tile-mud', 'tile-seaweed', 'tile-deepsea'];
 
-            for (let y = 0; y < curMap.length; y++) {
-                for (let x = 0; x < 16; x++) {
+            // ★ 카메라 뷰포트 계산 (9×9, 플레이어 중앙 고정)
+            const VIEW = 9, MAP_W = 16, MAP_H = curMap.length;
+            camX = Math.max(0, Math.min(px - 4, MAP_W - VIEW));  // 카메라 좌상단 X
+            camY = Math.max(0, Math.min(py - 4, MAP_H - VIEW));  // 카메라 좌상단 Y
+
+            for (let y = 0; y < MAP_H; y++) {
+                for (let x = 0; x < MAP_W; x++) {
                     const d = document.createElement('div');
                     d.className = 'tile ' + (cls[curMap[y][x]] || 'tile-dirt');
                     if (curMap[y][x] === 10) d.innerText = '🌀'; else if (curMap[y][x] === 21) d.innerText = '👨‍🔬';
                     grid.appendChild(d);
                 }
             }
-            const p = document.getElementById('player'); p.style.left = `calc(100%/16*${px})`; p.style.top = `calc(100%/16*${py})`;
+
+            // 그리드를 카메라 위치로 이동
+            // translate %는 요소 자신 기준 → 타일 1칸 = 100%/MAP_W of 그리드 너비
+            grid.style.transform = `translate(${-(camX / MAP_W * 100).toFixed(4)}%, ${-(camY / MAP_H * 100).toFixed(4)}%)`;
+
+            // 플레이어: 뷰포트 내 상대 위치로 배치
+            const p = document.getElementById('player');
+            p.style.left = `calc(100%/${VIEW}*${px - camX})`;
+            p.style.top  = `calc(100%/${VIEW}*${py - camY})`;
         }
 
         function move(dx, dy) {
