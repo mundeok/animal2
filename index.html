@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>동물의 세계 - 풀터치 마스터</title>
+    <title>동물의 세계</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@latest/neodgm/style.css">
     <style>
         #fade-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; }
@@ -192,10 +192,96 @@
         .ball-throw { position: absolute; font-size: min(30px, 5vmin); line-height: 1;
             animation: ballThrow 0.45s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
             z-index: 20; pointer-events: none; }
+
+        /* ================= TITLE SCREEN ================= */
+        #title-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('static/title_bg.png') center center / cover no-repeat #050d1a;
+            z-index: 10000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden; transition: opacity 0.55s ease;
+        }
+        #title-view::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.28); z-index: 1; pointer-events: none; }
+        #title-particles { display: none; }
+        .tparticle { position: absolute; border-radius: 50%; animation: tpfall linear infinite; }
+        @keyframes tpfall {
+            0%   { transform: translateY(-20px) scale(0); opacity: 0; }
+            12%  { opacity: 0.8; transform: scale(1); }
+            88%  { opacity: 0.3; }
+            100% { transform: translateY(105vh) scale(0.4); opacity: 0; }
+        }
+
+        #title-content { display: flex; flex-direction: column; align-items: center;
+            gap: clamp(18px, 4.5vmin, 36px); z-index: 2; padding: 24px; }
+
+        #title-logo { text-align: center; animation: titleSlideIn 0.7s cubic-bezier(0.2,0.9,0.3,1.05) both; }
+        #title-main { font-size: clamp(34px, 9vmin, 66px); color: #ffe346; letter-spacing: 2px;
+            text-shadow: 0 0 18px #ffe346, 0 0 35px #f59e0b, 3px 3px 0 #000;
+            animation: glowPulse 2.8s ease-in-out infinite; }
+        #title-sub { font-size: clamp(12px, 3.2vmin, 22px); color: #fbbf24; letter-spacing: 5px;
+            margin-top: 8px; text-shadow: 1px 1px 0 #000, 0 0 12px #f59e0b; }
+
+        #title-animals { display: flex; gap: clamp(12px, 4vmin, 30px);
+            font-size: clamp(28px, 8vmin, 56px);
+            animation: titleSlideIn 0.75s 0.12s cubic-bezier(0.2,0.9,0.3,1.05) both; }
+        .t-animal { display: inline-block; animation: abounce 1.6s ease-in-out infinite alternate; }
+        .t-animal:nth-child(1){animation-delay:0s}   .t-animal:nth-child(2){animation-delay:0.32s}
+        .t-animal:nth-child(3){animation-delay:0.64s} .t-animal:nth-child(4){animation-delay:0.96s}
+        .t-animal:nth-child(5){animation-delay:1.28s}
+
+        #title-buttons { display: flex; flex-direction: column; align-items: center; gap: 14px;
+            animation: titleSlideIn 0.75s 0.25s cubic-bezier(0.2,0.9,0.3,1.05) both; }
+        .t-btn { padding: clamp(13px, 2.8vmin, 20px) clamp(38px, 11vmin, 90px);
+            border: 3px solid rgba(255,255,255,0.35); border-radius: 10px; cursor: pointer; text-align: center;
+            transition: transform 0.1s, box-shadow 0.1s; letter-spacing: 2px;
+            min-width: clamp(220px, 58vmin, 350px); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+        .t-btn:active { transform: translateY(5px); box-shadow: 0 0 !important; }
+        .t-btn-primary { background: rgba(22,163,74,0.78); color: #fff; font-size: clamp(18px, 4.2vmin, 30px);
+            box-shadow: 0 7px 0 rgba(20,83,45,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .t-btn-secondary { background: rgba(15,23,42,0.72); color: #94a3b8; font-size: clamp(13px, 2.8vmin, 20px);
+            box-shadow: 0 5px 0 rgba(0,0,0,0.6); border-color: rgba(100,116,139,0.5); }
+        #t-save-info { font-size: 0.58em; opacity: 0.85; margin-top: 3px; color: #bbf7d0; letter-spacing: 1px; }
+        #title-footer { color: rgba(255,255,255,0.55); font-size: clamp(9px, 1.8vmin, 13px); z-index: 2; }
+
+        /* 풀스크린 버튼 */
+        .fs-btn { background: #1d4ed8 !important; }
+
+        @keyframes titleSlideIn { from { opacity:0; transform:translateY(28px) scale(0.92); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes glowPulse { 0%,100% { text-shadow: 0 0 18px #ffe346, 0 0 35px #f59e0b, 3px 3px 0 #000; } 50% { text-shadow: 0 0 30px #fef08a, 0 0 60px #ffe346, 0 0 90px #f59e0b, 3px 3px 0 #000; } }
+        @keyframes abounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-14px) scale(1.1); } }
     </style>
 </head>
 
 <body>
+    <!-- ★ 타이틀 화면 -->
+    <div id="title-view">
+        <div id="title-particles"></div>
+        <div id="title-content">
+            <div id="title-logo">
+                <div id="title-main">🌿 동물의 세계</div>
+                <div id="title-sub">문 덕 초 등 학 교</div>
+            </div>
+            <div id="title-animals">
+                <span class="t-animal">🦋</span>
+                <span class="t-animal">🐸</span>
+                <span class="t-animal">🐧</span>
+                <span class="t-animal">🦊</span>
+                <span class="t-animal">🦈</span>
+            </div>
+            <div id="title-buttons">
+                <!-- 저장 있을 때: 계속하기 + 새 게임 -->
+                <div id="t-continue" class="t-btn t-btn-primary" style="display:none">
+                    <span>▶ 계속하기</span>
+                    <span id="t-save-info"></span>
+                </div>
+                <!-- 저장 없을 때: 시작하기만 -->
+                <div id="t-start" class="t-btn t-btn-primary">▶ 시작하기</div>
+                <div id="t-newgame" class="t-btn t-btn-secondary" style="display:none">✦ 새 게임</div>
+            </div>
+            <div id="title-footer">2026 과학탐구 · 동물의 세계 탐험 프로젝트</div>
+        </div>
+    </div>
+
     <div id="badge-popup" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; padding: 15px 25px; border: 4px solid #fbbf24; border-radius: 10px; z-index: 2000; display: none; text-align: center; font-size: 20px;"></div>
     <div id="encounter-flash" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#fff; z-index:5000; pointer-events:none; opacity:0;"></div>
     
@@ -217,6 +303,7 @@
                 <div class="ui-buttons-container">
                     <div class="btn-ui pokedex-btn" onclick="openPokedex()">📖 도감</div>
                     <div class="btn-ui reset-btn" onclick="resetGame()">🔄 리셋</div>
+                    <div class="btn-ui fs-btn" id="fs-btn" onclick="toggleFullscreen()">⛶ 전체</div>
                 </div>
             </div>
 
@@ -1165,6 +1252,96 @@
             }
         }
 
+        /* ========== 풀스크린 ========== */
+        function toggleFullscreen() {
+            const el = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
+            } else {
+                (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+            }
+        }
+        function _updateFsBtn() {
+            const btn = document.getElementById('fs-btn');
+            if (!btn) return;
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            btn.textContent = isFs ? '⊠ 창모드' : '⛶ 전체';
+        }
+        document.addEventListener('fullscreenchange', _updateFsBtn);
+        document.addEventListener('webkitfullscreenchange', _updateFsBtn);
+
+        /* ========== 타이틀 화면 ========== */
+        function initTitleParticles() {
+            const c = document.getElementById('title-particles');
+            if (!c) return;
+            const cols = ['#4ade80','#86efac','#bbf7d0','#fbbf24','#34d399','#a3e635'];
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement('div');
+                p.className = 'tparticle';
+                const sz = Math.random() * 5 + 2;
+                p.style.cssText = `width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};`
+                    + `left:${Math.random()*100}%;animation-duration:${Math.random()*7+5}s;`
+                    + `animation-delay:${Math.random()*6}s;opacity:0;`;
+                c.appendChild(p);
+            }
+        }
+
+        function showTitleScreen() {
+            const titleEl   = document.getElementById('title-view');
+            const contBtn   = document.getElementById('t-continue');
+            const startBtn  = document.getElementById('t-start');
+            const newBtn    = document.getElementById('t-newgame');
+            const saveInfo  = document.getElementById('t-save-info');
+
+            const hasSave = !!(localStorage.getItem('beastGame_player') && isTutorialDone);
+            if (hasSave) {
+                const caught = Object.values(animalDB).filter(d => d.isCaught).length;
+                saveInfo.textContent = `${playerName} · Lv.${pLevel} · ${caught}/33마리`;
+                contBtn.style.display  = 'flex';
+                startBtn.style.display = 'none';
+                newBtn.style.display   = 'block';
+            } else {
+                contBtn.style.display  = 'none';
+                startBtn.style.display = 'flex';
+                newBtn.style.display   = 'none';
+            }
+            titleEl.style.opacity = '1';
+            titleEl.style.display = 'flex';
+
+            contBtn.onclick  = () => _startFromTitle(false);
+            startBtn.onclick = () => _startFromTitle(true);
+            newBtn.onclick   = () => {
+                if (confirm('저장된 데이터가 삭제됩니다.\n새로 시작하시겠습니까?')) _startFromTitle(true);
+            };
+        }
+
+        function _startFromTitle(isNew) {
+            const titleEl = document.getElementById('title-view');
+            if (isNew) {
+                localStorage.clear();
+                Object.values(animalDB).forEach(d => d.isCaught = false);
+                inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
+                pLevel = 1; pExp = 0; maxExp = 100; earnedBadges = [];
+                mapName = 'lab'; px = 7; py = 12; charDir = 0; curMap = lab;
+                isTutorialDone = false;
+            }
+            // 맵 먼저 그려두고 타이틀 페이드아웃
+            draw(); updatePlayerUI(); initHybridControls();
+            titleEl.style.opacity = '0';
+            setTimeout(() => {
+                titleEl.style.display = 'none';
+                if (isNew) {
+                    showNamePrompt("과학실에 오신 것을 환영합니다!\n당신의 탐험가 이름을 입력하세요!", "홍길동", (nameInput) => {
+                        playerName = (nameInput && nameInput.trim()) ? nameInput.trim() : "지우";
+                        saveGame();
+                        msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
+                    });
+                } else {
+                    msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
+                }
+            }, 550);
+        }
+
         window.onkeydown = (e) => {
             const dirMap = { ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up' };
             const dir = dirMap[e.key];
@@ -1178,44 +1355,15 @@
         };
 
         window.onload = () => {
-            // 모든 스프라이트 미리 로드 → 첫 이동 시 깜빡거림 방지
+            // 스프라이트 사전 로드
             [0, 1, 3].forEach(dir => {
-                for (let f = 0; f < 4; f++) {
-                    new Image().src = `static/sprites/player_d${dir}_f${f}.png`;
-                }
+                for (let f = 0; f < 4; f++) new Image().src = `static/sprites/player_d${dir}_f${f}.png`;
             });
             setPlayerFrame(charFrame, charDir);
-
             loadGame();
-
-            const startGame = () => {
-                if (!isTutorialDone) {
-                    msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
-                } else {
-                    msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
-                }
-                draw();
-                updatePlayerUI();
-                initHybridControls();
-            };
-
-            if (!localStorage.getItem('beastGame_player') || playerName === "탐험가" || !isTutorialDone) {
-                localStorage.clear();
-                inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
-                pLevel = 1; pExp = 0; maxExp = 100; earnedBadges = [];
-                mapName = 'lab'; px = 7; py = 12; charDir = 0; curMap = lab;
-                isTutorialDone = false;
-
-                draw(); updatePlayerUI(); initHybridControls();
-
-                showNamePrompt("과학실에 오신 것을 환영합니다!\n당신의 탐험가 이름을 입력하세요!", "홍길동", (nameInput) => {
-                    playerName = (nameInput && nameInput.trim()) ? nameInput.trim() : "지우";
-                    saveGame();
-                    msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
-                });
-            } else {
-                startGame();
-            }
+            // 타이틀 파티클 생성 후 타이틀 화면 표시
+            initTitleParticles();
+            showTitleScreen();
         };
 
         function updateHpBar(bar, hpPercent) {
