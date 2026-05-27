@@ -60,7 +60,8 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
-        #player { position: absolute; width: calc(100% / 9 * 1.3); height: calc(100% / 9 * 1.7); margin-top: calc(-100% / 9 * 0.7); margin-left: calc(-100% / 9 * 0.15); z-index: 20; }
+        #player { position: absolute; width: calc(100% / 9 * 1.0); height: calc(100% / 9 * 1.4); margin-top: calc(-100% / 9 * 0.4); margin-left: 0; z-index: 20; }
+        #map-foreground { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; overflow: hidden; }
         #player-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; }
 
         /* 🚀 하단 터치 UI 영역 완벽 고정 */
@@ -102,7 +103,7 @@
         .sand-wind { position: absolute; width: 200%; height: 100%; background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent); animation: wind 3s linear infinite; }
         @keyframes wind { 0% { transform: translateX(-50%); } 100% { transform: translateX(0%); } }
 
-        .sprite-enemy { position: absolute; top: max(20px, 3vmin); right: max(30px, 4vmin); width: min(200px, 28vmin); height: min(200px, 28vmin); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; animation: float 2s infinite ease-in-out; z-index: 5; }
+        .sprite-enemy { position: absolute; top: max(20px, 3vmin); right: max(30px, 4vmin); width: min(200px, 28vmin); height: min(200px, 28vmin); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; z-index: 5; }
         .enemy-status { position: absolute; top: max(15px, 2vmin); left: max(15px, 2vmin); width: min(320px, 48%); background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-bottom-right-radius: 20px; padding: clamp(6px, 1.2vmin, 10px) clamp(8px, 1.5vmin, 15px); z-index: 15; display: none; }
         .sprite-player { position: absolute; bottom: max(20px, 3vmin); left: max(30px, 4vmin); width: min(240px, 32vmin); height: min(240px, 32vmin); background-image: url('static/player_back.png'); background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; z-index: 10; transform: none; }
         .player-status { position: absolute; bottom: max(10px, 2vmin); right: max(15px, 2vmin); width: min(340px, 48%); background: #fff; border: 6px solid #1a1a1a; border-radius: 8px; border-top-left-radius: 20px; padding: clamp(6px, 1.2vmin, 10px) clamp(8px, 1.5vmin, 15px); z-index: 15; display: none; }
@@ -155,11 +156,42 @@
         .badge-section { margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 10px; }
         .badge-list { display: flex; flex-wrap: wrap; gap: 5px; }
 
-        @keyframes catchPulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-        @keyframes shakeMonster { 0% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-        .monster-hit { animation: shakeMonster 0.4s; }
-        .monster-caught { animation: catchPulse 0.6s; }
+        /* 적 애니메이션 클래스 */
+        .enemy-floating { animation: float 2s infinite ease-in-out; }
+        .enemy-entrance { animation: enemyEntrance 0.75s cubic-bezier(0.15, 0.85, 0.3, 1.1) forwards; }
         @keyframes enemyEntrance { 0% { opacity:0; transform:translateX(180px) scale(0.65); } 55% { opacity:1; transform:translateX(-12px) scale(1.07); } 78% { transform:translateX(6px) scale(0.97); } 100% { opacity:1; transform:translateX(0) scale(1); } }
+
+        /* 피격 효과 - 빨간 번쩍 + 강한 흔들기 */
+        @keyframes shakeMonster {
+            0%   { transform: translateX(0);    filter: brightness(1); }
+            10%  { transform: translateX(-16px); filter: brightness(4) sepia(1) hue-rotate(290deg) saturate(5); }
+            25%  { transform: translateX(16px);  filter: brightness(4) sepia(1) hue-rotate(290deg) saturate(5); }
+            40%  { transform: translateX(-12px); filter: brightness(3) sepia(1) hue-rotate(290deg) saturate(3); }
+            55%  { transform: translateX(10px);  filter: brightness(2) sepia(0.5) hue-rotate(290deg); }
+            70%  { transform: translateX(-6px);  filter: brightness(1.3); }
+            85%  { transform: translateX(4px);   filter: brightness(1); }
+            100% { transform: translateX(0);     filter: brightness(1); }
+        }
+        .monster-hit { animation: shakeMonster 0.55s ease-out !important; }
+
+        /* 포획 효과 - 빛나며 줄어들기 */
+        @keyframes catchPulse {
+            0%   { transform: scale(1);    filter: brightness(1); opacity: 1; }
+            20%  { transform: scale(1.25); filter: brightness(3) hue-rotate(180deg); opacity: 0.9; }
+            45%  { transform: scale(0.75); filter: brightness(5); opacity: 0.7; }
+            70%  { transform: scale(1.1);  filter: brightness(2) hue-rotate(60deg); opacity: 0.9; }
+            100% { transform: scale(1);    filter: brightness(1); opacity: 1; }
+        }
+        .monster-caught { animation: catchPulse 0.75s ease-in-out !important; }
+
+        /* 볼 던지기 효과 */
+        @keyframes ballThrow {
+            0%   { left: 12%; top: 68%; transform: scale(0.6) rotate(0deg);   opacity: 1; }
+            100% { left: 68%; top: 8%;  transform: scale(1.4) rotate(540deg); opacity: 0; }
+        }
+        .ball-throw { position: absolute; font-size: min(30px, 5vmin); line-height: 1;
+            animation: ballThrow 0.45s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+            z-index: 20; pointer-events: none; }
     </style>
 </head>
 
@@ -176,6 +208,7 @@
                     <div id="fade-overlay"></div>
                     <div class="grid-container" id="map-grid"></div>
                     <div id="player"><div id="player-inner"></div></div>
+                    <div id="map-foreground"></div>
                 </div>
             </div>
             
@@ -491,6 +524,9 @@
             inner.style.backgroundImage = `url('static/sprites/player_d${dir}_f${frame}.png')`;
         }
 
+        // 나무/장애물 레이어 데이터 (draw()에서 채워짐)
+        let _fgTiles = [];
+
         // ★ 시각 위치 → CSS 반영 (카메라 + 플레이어 동시 업데이트)
         function updateVisualPos() {
             const VIEW = 9, MAP_W = curMap[0].length, MAP_H = curMap.length;
@@ -502,6 +538,27 @@
             p.style.left = ((visualX - vCamX) / VIEW * 100).toFixed(4) + '%';
             p.style.top  = ((visualY - vCamY) / VIEW * 100).toFixed(4) + '%';
             grid.style.transform = `translate(${-(vCamX / MAP_W * 100).toFixed(4)}%, ${-(vCamY / MAP_H * 100).toFixed(4)}%)`;
+            renderForeground(vCamX, vCamY, VIEW);
+        }
+
+        // 플레이어 앞에 있어야 할 장애물 타일을 foreground 레이어에 다시 그림
+        function renderForeground(vCamX, vCamY, VIEW) {
+            const fg = document.getElementById('map-foreground');
+            if (!fg) return;
+            fg.innerHTML = '';
+            const playerTileY = Math.floor(visualY);
+            const tw = 100 / VIEW; // 타일 1칸 = % 단위
+            _fgTiles.forEach(({cls, x, y, emoji}) => {
+                if (y < playerTileY) return;          // 플레이어보다 위 → 뒤에 있음, 스킵
+                const vx = (x - vCamX) * tw;
+                const vy = (y - vCamY) * tw;
+                if (vx < -tw || vx > 100 || vy < -tw || vy > 100) return; // 화면 밖
+                const d = document.createElement('div');
+                d.className = 'tile ' + cls;
+                d.style.cssText = `position:absolute;left:${vx.toFixed(3)}%;top:${vy.toFixed(3)}%;width:${tw.toFixed(3)}%;height:${tw.toFixed(3)}%;`;
+                if (emoji) d.innerText = emoji;
+                fg.appendChild(d);
+            });
         }
 
         function dpadMove(dir) {
@@ -558,10 +615,10 @@
         const garden = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 3, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 3, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3, 2, 1, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 3, 3], [3, 1, 2, 1, 2, 1, 23, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 3, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 2, 1, 2, 1, 2, 1, 0, 0, 2, 1, 2, 1, 2, 1, 2, 1, 3, 1, 2, 3, 2, 3, 3], [3, 1, 2, 1, 2, 1, 2, 0, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]];
         const lab = [[19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19], [19, 19, 19, 19, 22, 22, 22, 22, 22, 22, 19, 19, 19, 19, 19, 19], [18, 18, 18, 18, 18, 18, 18, 21, 18, 18, 18, 18, 18, 18, 18, 18], [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 18, 18, 18, 18], [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18], [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18], [19, 19, 19, 19, 19, 19, 19, 18, 18, 19, 19, 19, 19, 19, 19, 19], [19, 19, 19, 19, 19, 19, 19, 10, 10, 19, 19, 19, 19, 19, 19, 19]];
         const underground = [[24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 25, 25, 24, 24, 25, 24, 24, 25, 25, 24, 24, 25, 25, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 25, 25, 24, 24, 24, 24, 25, 25, 24, 24, 24, 24, 24], [24, 25, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 24, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 25, 25, 25, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 25, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 24, 24, 24], [24, 24, 24, 25, 25, 24, 24, 24, 24, 25, 25, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 25, 25, 24, 24, 25, 24, 24, 25, 25, 24, 24, 25, 25, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24], [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24]];
-        const pond = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3], [3, 9, 9, 9, 9, 9, 9, 0, 0, 9, 9, 9, 9, 9, 9, 3], [9, 9, 6, 6, 6, 6, 9, 0, 0, 9, 6, 6, 6, 6, 9, 9], [9, 6, 6, 7, 6, 6, 6, 8, 8, 6, 6, 6, 7, 6, 6, 9], [9, 6, 6, 6, 6, 7, 6, 8, 8, 6, 7, 6, 6, 6, 6, 9], [9, 6, 7, 6, 6, 6, 6, 8, 8, 6, 6, 6, 6, 7, 6, 9], [9, 6, 6, 6, 6, 6, 6, 8, 8, 6, 6, 6, 6, 6, 6, 9], [9, 6, 6, 6, 7, 6, 6, 8, 8, 6, 6, 7, 6, 6, 6, 9], [9, 6, 7, 6, 6, 6, 6, 8, 8, 6, 6, 6, 6, 6, 6, 9], [9, 6, 6, 6, 6, 6, 6, 8, 8, 6, 7, 6, 6, 7, 6, 9], [9, 6, 6, 7, 6, 6, 6, 8, 8, 6, 6, 6, 6, 6, 6, 9], [9, 6, 6, 6, 6, 7, 6, 8, 8, 6, 6, 6, 7, 6, 6, 9], [9, 9, 6, 6, 6, 6, 9, 0, 0, 9, 6, 6, 6, 6, 9, 9], [3, 9, 9, 9, 9, 9, 9, 0, 0, 9, 9, 9, 9, 9, 9, 3], [3, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3]];
-        const desert = [[11, 11, 11, 11, 11, 11, 11, 5, 5, 11, 11, 11, 11, 11, 11, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 13, 12, 12, 13, 12, 0, 0, 12, 13, 12, 12, 13, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 13, 12, 12, 12, 0, 0, 12, 12, 13, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 13, 12, 12, 12, 13, 12, 0, 0, 12, 13, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 13, 12, 12, 12, 0, 0, 12, 12, 12, 13, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 13, 12, 12, 13, 12, 0, 0, 12, 13, 12, 12, 13, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 13, 12, 12, 12, 0, 0, 12, 12, 13, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 11], [11, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11]];
-        const polar = [[15, 15, 15, 15, 15, 15, 15, 5, 5, 15, 15, 15, 15, 15, 15, 15], [15, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15], [15, 16, 16, 14, 15, 14, 14, 14, 14, 14, 14, 15, 14, 16, 16, 15], [15, 14, 14, 14, 14, 14, 17, 17, 17, 17, 14, 14, 14, 14, 14, 15], [15, 14, 15, 14, 14, 17, 17, 17, 17, 17, 17, 14, 14, 15, 14, 15], [15, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 14, 15], [15, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 14, 15], [15, 14, 15, 14, 17, 17, 17, 17, 17, 17, 17, 17, 14, 15, 14, 15], [15, 14, 14, 14, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 14, 15], [15, 14, 14, 14, 14, 17, 17, 17, 17, 17, 17, 14, 14, 14, 14, 15], [15, 14, 15, 14, 14, 14, 17, 17, 17, 17, 14, 14, 14, 15, 14, 15], [15, 16, 16, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 16, 16, 15], [15, 14, 14, 14, 15, 14, 14, 14, 14, 14, 14, 15, 14, 14, 14, 15], [15, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15], [15, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15], [15, 15, 15, 15, 15, 15, 15, 10, 10, 15, 15, 15, 15, 15, 15, 15]];
-        const sea = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3], [27, 27, 27, 27, 27, 27, 27, 0, 0, 27, 27, 27, 27, 27, 27, 27], [27, 28, 28, 27, 27, 28, 27, 0, 0, 27, 28, 28, 27, 27, 28, 27], [27, 27, 27, 27, 27, 27, 27, 0, 0, 27, 27, 27, 27, 27, 27, 27], [29, 29, 29, 29, 29, 29, 29, 8, 8, 29, 29, 29, 29, 29, 29, 29], [29, 29, 29, 29, 29, 29, 29, 8, 8, 29, 29, 29, 29, 29, 29, 29], [29, 28, 28, 29, 29, 28, 29, 8, 8, 29, 28, 28, 29, 29, 28, 29], [29, 29, 29, 29, 29, 29, 29, 8, 8, 29, 29, 29, 29, 29, 29, 29], [29, 29, 29, 29, 29, 29, 29, 8, 8, 29, 29, 29, 29, 29, 29, 29], [29, 29, 29, 29, 29, 29, 29, 8, 8, 29, 29, 29, 29, 29, 29, 29], [29, 28, 28, 29, 29, 28, 29, 8, 8, 29, 28, 28, 29, 29, 28, 29], [29, 29, 29, 29, 29, 29, 29, 0, 0, 29, 29, 29, 29, 29, 29, 29], [27, 27, 27, 27, 27, 27, 27, 0, 0, 27, 27, 27, 27, 27, 27, 27], [27, 28, 28, 27, 27, 28, 27, 0, 0, 27, 28, 28, 27, 27, 28, 27], [3, 3, 3, 3, 3, 3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3]];
+        const pond = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [3, 9, 9, 9, 9, 9, 9, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 6, 6, 6, 7, 6, 9, 8, 8, 9, 6, 6, 7, 6, 6, 6, 9, 9, 9, 9, 9, 9, 9, 3], [3, 9, 9, 9, 9, 9, 9, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]];
+        const desert = [[11, 11, 11, 11, 11, 11, 11, 5, 5, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11], [11, 12, 12, 12, 12, 13, 12, 0, 0, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 11], [11, 12, 12, 12, 13, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 11], [11, 12, 12, 13, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 11], [11, 12, 13, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 11], [11, 13, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 13, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 11], [11, 12, 12, 12, 12, 13, 12, 0, 0, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 11], [11, 12, 12, 12, 13, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 11], [11, 12, 12, 13, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 11], [11, 12, 12, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 12, 12, 12, 11], [11, 12, 13, 12, 12, 12, 12, 0, 0, 12, 12, 12, 12, 13, 12, 12, 12, 12, 12, 12, 12, 12, 12, 11], [11, 11, 11, 11, 11, 11, 11, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]];
+        const polar = [[15, 15, 15, 15, 15, 15, 15, 5, 5, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15], [15, 14, 16, 14, 14, 16, 14, 0, 0, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 14, 14, 0, 0, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 16, 14, 15], [15, 14, 16, 14, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 16, 14, 15], [15, 14, 16, 14, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 16, 14, 15], [15, 14, 16, 14, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 16, 14, 15], [15, 14, 16, 14, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 14, 16, 14, 15], [15, 14, 16, 14, 14, 17, 17, 0, 0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 14, 16, 14, 14, 15], [15, 16, 14, 14, 16, 14, 14, 0, 0, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 15], [15, 14, 14, 16, 14, 14, 16, 0, 0, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 14, 16, 14, 15], [15, 15, 15, 15, 15, 15, 15, 10, 10, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15]];
+        const sea = [[3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [3, 27, 27, 28, 27, 27, 27, 8, 8, 27, 28, 27, 27, 27, 27, 27, 27, 27, 28, 27, 27, 27, 27, 3], [3, 27, 27, 28, 27, 27, 27, 8, 8, 27, 28, 27, 27, 27, 27, 27, 27, 27, 28, 27, 27, 27, 27, 3], [3, 27, 27, 28, 27, 27, 27, 8, 8, 27, 28, 27, 27, 27, 27, 27, 27, 27, 28, 27, 27, 27, 27, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 29, 29, 28, 29, 29, 29, 8, 8, 29, 28, 29, 29, 29, 29, 29, 29, 29, 28, 29, 29, 29, 29, 3], [3, 27, 29, 28, 29, 27, 29, 8, 8, 27, 28, 27, 29, 27, 29, 27, 29, 27, 28, 27, 29, 27, 29, 3], [3, 29, 27, 28, 27, 29, 27, 8, 8, 29, 28, 29, 27, 29, 27, 29, 27, 29, 28, 29, 27, 29, 27, 3], [3, 3, 3, 3, 3, 3, 3, 10, 10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]];
         let curMap = lab;
 
         function updatePlayerUI() {
@@ -583,11 +640,18 @@
             const bgMap = { garden: '#d2b48c', pond: '#60a5fa', desert: '#fcd34d', polar: '#f0fdfa', lab: '#94a3b8', underground: '#3e2723', sea: '#1a237e' };
             document.getElementById('map-bg').style.backgroundColor = bgMap[mapName];
             const cls = ['tile-dirt', 'tile-grass', 'tile-flower', 'tile-tree', 'tile-school', 'tile-door', 'tile-water', 'tile-lilypad', 'tile-bridge', 'tile-wetgrass', 'tile-portal', 'tile-rock', 'tile-sand', 'tile-cactus', 'tile-snow', 'tile-snowtree', 'tile-igloo', 'tile-ice', 'tile-lab-floor', 'tile-wall', 'tile-desk', 'tile-npc', 'tile-board', 'tile-hole', 'tile-deepdirt', 'tile-root', 'tile-ladder', 'tile-mud', 'tile-seaweed', 'tile-deepsea'];
+            // 전경 레이어(플레이어 앞에 그려야 할 타일) 인덱스
+            const FG_TILES = new Set([3, 11, 13, 15, 16, 21]); // tree, rock, cactus, snowtree, igloo, npc
+            _fgTiles = [];
             for (let y = 0; y < MAP_H; y++) {
                 for (let x = 0; x < MAP_W; x++) {
+                    const t = curMap[y][x];
+                    const tileCls = cls[t] || 'tile-dirt';
                     const d = document.createElement('div');
-                    d.className = 'tile ' + (cls[curMap[y][x]] || 'tile-dirt');
-                    if (curMap[y][x] === 10) d.innerText = '🌀'; else if (curMap[y][x] === 21) d.innerText = '👨‍🔬';
+                    d.className = 'tile ' + tileCls;
+                    const emoji = t === 10 ? '🌀' : t === 21 ? '👨‍🔬' : null;
+                    if (emoji) d.innerText = emoji;
+                    if (FG_TILES.has(t)) _fgTiles.push({cls: tileCls, x, y, emoji});
                     grid.appendChild(d);
                 }
             }
@@ -756,8 +820,12 @@
             playerSprite.innerText = "";
 
             enemySprite.style.backgroundImage = `url('static/${fullFileMap[a] || "ant.png"}')`;
-            enemySprite.style.animation = 'enemyEntrance 0.75s cubic-bezier(0.15, 0.85, 0.3, 1.1) forwards';
-            setTimeout(() => { enemySprite.style.animation = 'float 2s infinite ease-in-out'; }, 820);
+            enemySprite.style.animation = '';   // 인라인 스타일 초기화
+            enemySprite.style.opacity = '1';
+            enemySprite.classList.remove('enemy-entrance', 'enemy-floating', 'monster-hit', 'monster-caught');
+            void enemySprite.offsetWidth;       // reflow → 애니메이션 재시작
+            enemySprite.classList.add('enemy-entrance');
+            setTimeout(() => { enemySprite.classList.remove('enemy-entrance'); enemySprite.classList.add('enemy-floating'); }, 820);
             document.getElementById('enemy-name').innerText = `야생의 ${a}`;
 
             const weatherLayer = document.getElementById('weather-layer');
@@ -853,8 +921,10 @@
 
                 const enemySprite = document.getElementById('enemy-sprite');
                 if (enemySprite) {
+                    enemySprite.classList.remove('enemy-floating', 'monster-hit', 'monster-caught');
+                    void enemySprite.offsetWidth;   // reflow
                     enemySprite.classList.add('monster-hit');
-                    setTimeout(() => enemySprite.classList.remove('monster-hit'), 400);
+                    setTimeout(() => { enemySprite.classList.remove('monster-hit'); enemySprite.classList.add('enemy-floating'); }, 560);
                 }
 
                 const totalQuizzes = currentBattleQuizzes.length; 
@@ -918,10 +988,24 @@
 
             document.getElementById('battle-text').innerText = `${itemName} 던졌다!`;
 
+            // 볼 던지기 애니메이션
+            const field = document.querySelector('.battle-field');
+            const ball = document.createElement('div');
+            ball.className = 'ball-throw';
+            const ballEmoji = itemName === '마스터 포충망' ? '⭐' : itemName === '물고기 떡밥' ? '🐟' : itemName === '특제 영양식' ? '🥩' : '🔵';
+            ball.innerText = ballEmoji;
+            if (field) field.appendChild(ball);
+            setTimeout(() => { if (ball.parentNode) ball.parentNode.removeChild(ball); }, 500);
+
+            // 볼 도착 타이밍에 피격 효과
             const enemySprite = document.getElementById('enemy-sprite');
             if (enemySprite) {
-                enemySprite.classList.add('monster-caught');
-                setTimeout(() => enemySprite.classList.remove('monster-caught'), 600);
+                setTimeout(() => {
+                    enemySprite.classList.remove('enemy-floating', 'monster-hit', 'monster-caught');
+                    void enemySprite.offsetWidth;
+                    enemySprite.classList.add('monster-caught');
+                    setTimeout(() => { enemySprite.classList.remove('monster-caught'); enemySprite.classList.add('enemy-floating'); }, 760);
+                }, 400);
             }
 
             setTimeout(() => {
