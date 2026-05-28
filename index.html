@@ -966,6 +966,16 @@
         document.getElementById('ui-panel').addEventListener('touchstart', (e) => { e.preventDefault(); advanceBattle(); }, { passive: false });
         document.getElementById('ui-panel').onclick = advanceBattle;
 
+        // quiz-box 위임 처리 (삼성 브라우저 동적 요소 touchstart 버그 대응)
+        document.getElementById('quiz-box').addEventListener('touchstart', (e) => {
+            if (document.getElementById('quiz-box').style.pointerEvents === 'none') return;
+            const item = e.target.closest('.menu-item');
+            if (!item || !item._touchFn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            item._touchFn();
+        }, { passive: false });
+
         function startQuiz(e) {
             e.stopPropagation();
             if (stg >= currentBattleQuizzes.length) { 
@@ -1001,7 +1011,7 @@
                     d.style.color = "#ccc"; 
                     d.style.pointerEvents = "none"; 
                 } else {
-                    d.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); ans(i); }, { passive: false });
+                    d._touchFn = () => ans(i);
                     d.onclick = (e) => { e.stopPropagation(); ans(i); };
                     d.innerText = o;
                 }
@@ -1058,21 +1068,21 @@
             e.stopPropagation();
             document.getElementById('action-menu').style.display = 'none';
             const box = document.getElementById('quiz-box');
-            box.style.display = 'grid'; box.innerHTML = '';
+            box.style.display = 'grid'; box.style.pointerEvents = 'auto'; box.innerHTML = '';
             Object.keys(inventory).forEach(item => {
                 const d = document.createElement('div');
                 d.className = 'menu-item';
-                d.innerText = `${item} (${inventory[item]})`; 
+                d.innerText = `${item} (${inventory[item]})`;
                 if (inventory[item] > 0) {
-                    d.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); useItem(item); }, { passive: false });
+                    d._touchFn = () => useItem(item);
                     d.onclick = (event) => { event.stopPropagation(); useItem(item); };
                 } else d.style.color = '#ccc';
                 box.appendChild(d);
             });
             const backBtn = document.createElement('div');
             backBtn.className = 'menu-item';
-            backBtn.innerText = `돌아가기`; 
-            backBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); resetBattleMenu(); }, { passive: false });
+            backBtn.innerText = `돌아가기`;
+            backBtn._touchFn = () => resetBattleMenu();
             backBtn.onclick = (event) => { event.stopPropagation(); resetBattleMenu(); };
             box.appendChild(backBtn);
         }
