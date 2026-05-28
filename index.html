@@ -667,7 +667,11 @@
             if (!isMoving) { charFrame = 0; setPlayerFrame(0, charDir); }
         }
 
+        let _hybridInited = false;
         function initHybridControls() {
+            if (_hybridInited) return;
+            _hybridInited = true;
+
             // ================= 1. D-PAD =================
             document.querySelectorAll('.dpad-btn').forEach(btn => {
                 const startBtnMove = (e) => { e.preventDefault(); e.stopPropagation(); dpadMove(btn.dataset.dir); };
@@ -693,8 +697,9 @@
             screen.addEventListener('touchmove', (e) => { e.preventDefault(); startScreenMove(e); }, {passive: false});
 
             // ================= 3. 정지 센서 =================
-            window.addEventListener('touchend',    () => { currentDir = null; stopAllMovement(); });
-            window.addEventListener('touchcancel', () => { currentDir = null; stopAllMovement(); });
+            // 손가락이 완전히 다 떼어졌을 때만 멈춤 (멀티터치 오작동 방지)
+            window.addEventListener('touchend',    (e) => { if (e.touches.length === 0) { currentDir = null; stopAllMovement(); } });
+            window.addEventListener('touchcancel', (e) => { currentDir = null; stopAllMovement(); });
             window.addEventListener('mouseup',     () => { currentDir = null; stopAllMovement(); });
             window.addEventListener('blur',        () => { currentDir = null; stopAllMovement(); });
         }
