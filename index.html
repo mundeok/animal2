@@ -473,7 +473,7 @@
         let earnedBadges = [];
         let inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 }; 
         let pLevel = 1, pExp = 0, maxExp = 100;
-        let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp; 
+        let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp, inQuizMode = false; 
         let charFrame = 0, charDir = 0;
         let visualX = 7, visualY = 12;   // ★ 시각적 위치 (소수점 허용, 부드러운 이동용)
         let isMoving = false;            // 이동 애니메이션 진행 중 여부
@@ -1015,6 +1015,22 @@
         if (actionItems[2]) actionItems[2]._touchFn = () => observeAnimal(battleEvent());
         if (actionItems[3]) actionItems[3]._touchFn = () => runAway(battleEvent());
 
+        // 퀴즈 중 배틀 필드(몬스터 그림) 탭 → 도망치다
+        const battleField = document.querySelector('.battle-field');
+        if (battleField) {
+            ['touchstart', 'pointerdown', 'click'].forEach(type => {
+                battleField.addEventListener(type, (e) => {
+                    if (!inQuizMode) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    inQuizMode = false;
+                    _lockQuiz();
+                    document.getElementById('battle-text').innerText = "도망쳤다!";
+                    setTimeout(() => { exitB(); }, 800);
+                }, { passive: false });
+            });
+        }
+
         window.addEventListener('keydown', (e) => {
             const battleView = document.getElementById('battle-view');
             if (!battleView || battleView.style.display !== 'flex') return;
@@ -1051,6 +1067,7 @@
         }
 
         function loadQ() {
+            inQuizMode = true;
             const q = currentBattleQuizzes[stg];
             document.getElementById('battle-text').innerText = q.q;
             const box = document.getElementById('quiz-box');
@@ -1139,6 +1156,7 @@
         }
 
         function openBag(e) {
+            inQuizMode = false;
             e.stopPropagation();
             document.getElementById('action-menu').style.display = 'none';
             const box = document.getElementById('quiz-box');
@@ -1262,6 +1280,7 @@
         }
 
         function resetBattleMenu() {
+            inQuizMode = false;
             document.getElementById('quiz-box').style.display = 'none';
             document.getElementById('action-menu').style.display = 'grid';
             document.getElementById('battle-text').innerText = "무엇을 할까?";
@@ -1269,6 +1288,7 @@
         }
 
         function exitB() {
+            inQuizMode = false;
             document.getElementById('battle-view').style.display = 'none';
             document.getElementById('map-view').style.display = 'flex';
             locked = false; draw();
