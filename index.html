@@ -890,6 +890,8 @@
         function msg(t) { const b = document.getElementById('msg-box'); b.innerHTML = t; b.scrollTop = 0; }
 
         function battle(a) {
+            clearBattleRuntimeState();
+            const thisBattleSession = battleSessionId;
             locked = true; curA = a; stg = 0; hp = 100;
             const fl = document.getElementById('encounter-flash');
             if (fl) { fl.style.transition = 'none'; fl.style.opacity = '1'; fl.style.display = 'block'; setTimeout(() => { fl.style.transition = 'opacity 0.5s'; fl.style.opacity = '0'; setTimeout(() => fl.style.display = 'none', 500); }, 200); }
@@ -942,10 +944,12 @@
             document.getElementById('enemy-hp-panel').style.display = 'none';
             document.getElementById('player-hp-panel').style.display = 'none';
             document.getElementById('quiz-box').style.display = 'none';
+            _unlockQuiz();
             document.getElementById('msg-box-battle').classList.remove('split');
 
             const j = (a.charCodeAt(a.length - 1) - 44032) % 28 > 0 ? '이' : '가';
             type(`앗! 야생의\n${a}${j}\n나타났다!`, () => {
+                if (thisBattleSession !== battleSessionId || document.getElementById('battle-view').style.display !== 'flex') return;
                 document.getElementById('battle-text').innerHTML += '<br><span class="blink-cursor">▼</span><span style="display:block;text-align:center;font-size:14px;color:#888;margin-top:6px;">화면을 탭하세요</span>';
                 wait = true;
                 document.getElementById('ui-panel').classList.add('waiting');
@@ -1009,6 +1013,37 @@
         bindBattleChoiceBox('quiz-box');
 
         const battleEvent = () => ({ preventDefault() {}, stopPropagation() {} });
+        let battleSessionId = 0;
+        let activeTypeTimer = null;
+
+        function clearBattleRuntimeState() {
+            battleSessionId++;
+            if (activeTypeTimer) {
+                clearInterval(activeTypeTimer);
+                activeTypeTimer = null;
+            }
+            wait = false;
+            inQuizMode = false;
+            lastBattleSelectAt = 0;
+
+            const uiPanel = document.getElementById('ui-panel');
+            const quizBox = document.getElementById('quiz-box');
+            const actionMenu = document.getElementById('action-menu');
+            const msgBox = document.getElementById('msg-box-battle');
+            const resultOverlay = document.getElementById('result-overlay');
+
+            if (uiPanel) uiPanel.classList.remove('waiting');
+            if (quizBox) {
+                quizBox.style.display = 'none';
+                quizBox.style.pointerEvents = 'auto';
+                quizBox.style.opacity = '1';
+                quizBox.innerHTML = '';
+            }
+            if (actionMenu) actionMenu.style.display = 'none';
+            if (msgBox) msgBox.classList.remove('split');
+            if (resultOverlay) resultOverlay.style.display = 'none';
+        }
+
         const actionItems = document.querySelectorAll('#action-menu .menu-item');
         if (actionItems[0]) actionItems[0]._touchFn = () => startQuiz(battleEvent());
         if (actionItems[1]) actionItems[1]._touchFn = () => openBag(battleEvent());
@@ -1284,11 +1319,11 @@
             document.getElementById('quiz-box').style.display = 'none';
             document.getElementById('action-menu').style.display = 'grid';
             document.getElementById('battle-text').innerText = "무엇을 할까?";
-            document.getElementById('quiz-box').style.pointerEvents = 'auto';
+            _unlockQuiz();
         }
 
         function exitB() {
-            inQuizMode = false;
+            clearBattleRuntimeState();
             document.getElementById('battle-view').style.display = 'none';
             document.getElementById('map-view').style.display = 'flex';
             locked = false; draw();
@@ -1299,15 +1334,17 @@
             const el = document.getElementById('battle-text');
             const msgBox = document.getElementById('msg-box-battle'); 
             el.innerHTML = "";
+            if (activeTypeTimer) clearInterval(activeTypeTimer);
 
-            const iv = setInterval(() => {
+            activeTypeTimer = setInterval(() => {
                 if (i < t.length) {
                     el.innerHTML += (t[i] === '\n' ? '<br>' : t[i]);
                     i++;
                     if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
                 }
                 else {
-                    clearInterval(iv);
+                    clearInterval(activeTypeTimer);
+                    activeTypeTimer = null;
                     if (cb) cb();
                 }
             }, 40);
