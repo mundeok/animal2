@@ -1082,20 +1082,31 @@
             });
         }
 
+        function _lockQuiz() {
+            const box = document.getElementById('quiz-box');
+            box.style.pointerEvents = 'none';
+            box.style.opacity = '0.4';
+        }
+        function _unlockQuiz() {
+            const box = document.getElementById('quiz-box');
+            box.style.pointerEvents = 'auto';
+            box.style.opacity = '1';
+        }
+
         function ans(i) {
-            document.getElementById('quiz-box').style.pointerEvents = 'none';
-            if (i === currentBattleQuizzes[stg].a) { 
+            _lockQuiz();
+            if (i === currentBattleQuizzes[stg].a) {
                 document.getElementById('battle-text').innerText = "정답이다! 동물의 체력이 깎였다!";
 
                 const enemySprite = document.getElementById('enemy-sprite');
                 if (enemySprite) {
                     enemySprite.classList.remove('enemy-floating', 'monster-hit', 'monster-caught');
-                    void enemySprite.offsetWidth;   // reflow
+                    void enemySprite.offsetWidth;
                     enemySprite.classList.add('monster-hit');
                     setTimeout(() => { enemySprite.classList.remove('monster-hit'); enemySprite.classList.add('enemy-floating'); }, 560);
                 }
 
-                const totalQuizzes = currentBattleQuizzes.length; 
+                const totalQuizzes = currentBattleQuizzes.length;
                 const dmg = Math.floor(70 / totalQuizzes);
                 hp -= dmg;
 
@@ -1104,16 +1115,16 @@
 
                 stg++;
                 setTimeout(() => {
-                    if (stg >= currentBattleQuizzes.length) { 
+                    if (stg >= currentBattleQuizzes.length) {
                         document.getElementById('battle-text').innerText = "지쳤다! 가방을 열자!";
                         hp = 30;
                         updateHpBar(enemyHpBar, hp);
                         resetBattleMenu();
                     } else {
                         loadQ();
-                        document.getElementById('quiz-box').style.pointerEvents = 'auto';
+                        _unlockQuiz();
                     }
-                }, 1500);
+                }, 800);
             } else {
                 document.getElementById('battle-text').innerText = "틀렸어!";
                 setTimeout(() => {
@@ -1121,9 +1132,9 @@
                     if (Math.random() < runAwayRate) res(false);
                     else {
                         document.getElementById('battle-text').innerText = "다시 해봐!";
-                        setTimeout(() => { loadQ(); document.getElementById('quiz-box').style.pointerEvents = 'auto'; }, 1000);
+                        setTimeout(() => { loadQ(); _unlockQuiz(); }, 700);
                     }
-                }, 1000);
+                }, 700);
             }
         }
 
