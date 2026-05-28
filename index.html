@@ -965,6 +965,13 @@
         }
         document.getElementById('ui-panel').addEventListener('touchstart', (e) => { e.preventDefault(); advanceBattle(); }, { passive: false });
         document.getElementById('ui-panel').onclick = advanceBattle;
+        // 배틀 화면 어디 탭해도 텍스트 넘어가기 (ui-panel 외 영역 백업)
+        document.getElementById('battle-view').addEventListener('touchstart', (e) => {
+            if (!wait) return;
+            if (e.target.closest('#ui-panel')) return;
+            e.preventDefault();
+            advanceBattle();
+        }, { passive: false });
 
         // quiz-box 위임 처리 (삼성 브라우저 동적 요소 touchstart 버그 대응)
         document.getElementById('quiz-box').addEventListener('touchstart', (e) => {
