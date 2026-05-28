@@ -1195,7 +1195,7 @@
             e.stopPropagation();
             document.getElementById('action-menu').style.display = 'none';
             const box = document.getElementById('quiz-box');
-            box.style.display = 'grid'; box.style.pointerEvents = 'auto'; box.innerHTML = '';
+            box.style.display = 'grid'; box.style.pointerEvents = 'auto'; box.style.opacity = '1'; box.innerHTML = '';
             Object.keys(inventory).forEach((item, idx) => {
                 const d = document.createElement('div');
                 d.className = 'menu-item';
