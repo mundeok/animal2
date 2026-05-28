@@ -257,11 +257,11 @@
     <div id="title-view">
         <div id="title-particles"></div>
         <div id="title-content">
-            <div id="title-logo">
+            <div id="title-logo" style="display:none">
                 <div id="title-main">🌿 동물의 세계</div>
                 <div id="title-sub">문 덕 초 등 학 교</div>
             </div>
-            <div id="title-animals">
+            <div id="title-animals" style="display:none">
                 <span class="t-animal">🦋</span>
                 <span class="t-animal">🐸</span>
                 <span class="t-animal">🐧</span>
@@ -344,10 +344,10 @@
                     </div>
                     <div class="quiz-box" id="quiz-box"></div>
                     <div class="action-menu" id="action-menu">
-                        <div class="menu-item" onclick="startQuiz(event)">싸우다</div>
-                        <div class="menu-item" onclick="openBag(event)">가방</div>
-                        <div class="menu-item" onclick="observeAnimal(event)">관찰하기</div>
-                        <div class="menu-item" onclick="runAway(event)">도망치다</div>
+                        <div class="menu-item" ontouchstart="event.preventDefault();startQuiz(event)" onclick="startQuiz(event)">싸우다</div>
+                        <div class="menu-item" ontouchstart="event.preventDefault();openBag(event)" onclick="openBag(event)">가방</div>
+                        <div class="menu-item" ontouchstart="event.preventDefault();observeAnimal(event)" onclick="observeAnimal(event)">관찰하기</div>
+                        <div class="menu-item" ontouchstart="event.preventDefault();runAway(event)" onclick="runAway(event)">도망치다</div>
                     </div>
                 </div>
                 <div class="result-overlay" id="result-overlay">
@@ -952,7 +952,7 @@
             });
         }
 
-        document.getElementById('ui-panel').onclick = () => {
+        function advanceBattle() {
             if (wait) {
                 wait = false;
                 document.getElementById('ui-panel').classList.remove('waiting');
@@ -962,7 +962,9 @@
                 document.getElementById('action-menu').style.display = 'grid';
                 document.getElementById('battle-text').innerText = "무엇을 할까?";
             }
-        };
+        }
+        document.getElementById('ui-panel').addEventListener('touchstart', (e) => { e.preventDefault(); advanceBattle(); }, { passive: false });
+        document.getElementById('ui-panel').onclick = advanceBattle;
 
         function startQuiz(e) {
             e.stopPropagation();
@@ -999,6 +1001,7 @@
                     d.style.color = "#ccc"; 
                     d.style.pointerEvents = "none"; 
                 } else {
+                    d.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); ans(i); }, { passive: false });
                     d.onclick = (e) => { e.stopPropagation(); ans(i); };
                     d.innerText = o;
                 }
@@ -1060,13 +1063,16 @@
                 const d = document.createElement('div');
                 d.className = 'menu-item';
                 d.innerText = `${item} (${inventory[item]})`; 
-                if (inventory[item] > 0) d.onclick = (event) => { event.stopPropagation(); useItem(item); };
-                else d.style.color = '#ccc';
+                if (inventory[item] > 0) {
+                    d.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); useItem(item); }, { passive: false });
+                    d.onclick = (event) => { event.stopPropagation(); useItem(item); };
+                } else d.style.color = '#ccc';
                 box.appendChild(d);
             });
             const backBtn = document.createElement('div');
             backBtn.className = 'menu-item';
             backBtn.innerText = `돌아가기`; 
+            backBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); resetBattleMenu(); }, { passive: false });
             backBtn.onclick = (event) => { event.stopPropagation(); resetBattleMenu(); };
             box.appendChild(backBtn);
         }
