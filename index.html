@@ -57,6 +57,9 @@
         .tile-mud { background-color: transparent; background-image: url('static/mud.png'); background-size: cover; image-rendering: pixelated; border: none !important; }
         .tile-seaweed { background-color: transparent; background-image: url('static/seaweed.png'); background-size: cover; image-rendering: pixelated; border: none !important; }
         .tile-deepsea { background-color: transparent; background-image: url('static/deepsea.png'); background-size: cover; image-rendering: pixelated; border: none !important; }
+        /* ★ tile-board: 과학실 게시판 타일 (CSS 누락 버그 수정) */
+        .tile-board { background-color: #78350f; border: 2px solid #92400e !important; position: relative; }
+        .tile-board::after { content: '📋'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70%; }
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
@@ -117,11 +120,14 @@
         .hp-fill, .exp-fill { height: 100%; transition: width 0.5s; border-radius: 3px; }
         .hp-fill { background: #22c55e; width: 100%; } .exp-fill { background: #3b82f6; width: 0%; }
 
-        .ui-panel { height: min(200px, 35vh); width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0; }
+        .ui-panel { height: min(200px, 35vh); width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0;
+            touch-action: manipulation; /* ★ Samsung Galaxy Tab 터치 즉시 응답 */ }
         .message-box-battle { flex: 1; padding: clamp(8px, 2vmin, 15px) clamp(10px, 2.5vmin, 25px) clamp(10px, 2.5vmin, 25px); font-size: clamp(13px, 2.6vmin, 26px); line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: min(190px, 33vh); }
         .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: clamp(13px, 2.6vmin, 26px); }
         .action-menu, .quiz-box { flex: 1; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
-        .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(13px, 2vw, 22px); font-weight: bold; cursor: pointer; white-space: nowrap; background: #f0f9ff; border: 3px solid #1a1a1a; border-radius: 10px; box-shadow: 0 3px 0 #1a1a1a; color: #1a1a1a; padding: 6px 12px; transition: transform 0.1s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent; }
+        .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(13px, 2vw, 22px); font-weight: bold; cursor: pointer; white-space: nowrap; background: #f0f9ff; border: 3px solid #1a1a1a; border-radius: 10px; box-shadow: 0 3px 0 #1a1a1a; color: #1a1a1a; padding: 6px 12px; transition: transform 0.1s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent;
+            /* ★ Samsung Galaxy Tab: 300ms 딜레이 제거 + 터치 즉시 응답 */
+            touch-action: manipulation; }
         .menu-item:active { transform: translateY(3px); box-shadow: 0 0 0 #1a1a1a; }
         .menu-item::before { content: '▶'; margin-right: 8px; color: #3b82f6; }
         .menu-item:hover::before { opacity: 1; }
@@ -827,11 +833,16 @@
             const hasFrog = animalDB["개구리"].isCaught;
 
             if (mapName === 'lab' && py === 2 && px === 7) {
+                // ★ NPC 대화 중 이동 방향 유지해도 통과하는 버그 수정
+                stopAllMovement();
+                locked = true;
+                setTimeout(() => { locked = false; }, 800);
+
                 let caught = Object.values(animalDB).filter(d => d.isCaught).length;
 
                 if (!isTutorialDone) {
                     isTutorialDone = true;
-                    inventory["포충망"] = 10; 
+                    inventory["포충망"] = 10;
                     saveGame();
                     msg(`👨‍🔬 박사: 오오, 자네가 바로 <b>[${playerName}]</b> 탐험가로군! 과학실까지 조작을 아주 잘 익혀서 찾아왔어.<br>바깥 세상엔 신기한 동물들이 많다네! 자, 여기 <b>[포충망 10개]</b>를 주겠네. 이제 아래쪽 🌀포탈로 나가서 화단부터 조사를 시작해보게!`);
                     return;
@@ -965,21 +976,31 @@
                 document.getElementById('msg-box-battle').classList.add('split');
                 document.getElementById('action-menu').style.display = 'grid';
                 document.getElementById('battle-text').innerText = "무엇을 할까?";
+                // ★ Ghost-tap 방지: 탭→메뉴 등장 순간 같은 손가락의 click/pointerup이
+                //   "1. 싸우다"를 즉시 눌러버리는 현상 차단 (350ms 동안 포인터 비활성화)
+                const menu = document.getElementById('action-menu');
+                menu.style.pointerEvents = 'none';
+                setTimeout(() => { menu.style.pointerEvents = ''; }, 350);
             }
         }
-        ['touchstart', 'pointerdown', 'mousedown', 'click'].forEach(type => {
-            document.getElementById('ui-panel').addEventListener(type, (e) => {
+        // ★ touchstart + click만 사용 (pointerdown 제거)
+        //   Samsung Galaxy Tab: pointerdown은 touchstart와 별개로 발사되어
+        //   advanceBattle()이 이중 실행될 수 있음. touchstart의 preventDefault()로
+        //   click은 억제되므로 touch기기에서는 touchstart만, PC에서는 click만 실질 동작
+        ['touchstart', 'click'].forEach(evType => {
+            document.getElementById('ui-panel').addEventListener(evType, (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 advanceBattle();
             }, { passive: false });
         });
         // 배틀 화면 어디 탭해도 텍스트 넘어가기 (ui-panel 외 영역 백업)
-        ['touchstart', 'pointerdown', 'mousedown', 'click'].forEach(type => {
-            document.getElementById('battle-view').addEventListener(type, (e) => {
-            if (!wait) return;
-            if (e.target.closest('#ui-panel')) return;
-            e.preventDefault();
-            advanceBattle();
+        ['touchstart', 'click'].forEach(evType => {
+            document.getElementById('battle-view').addEventListener(evType, (e) => {
+                if (!wait) return;
+                if (e.target.closest('#ui-panel')) return;
+                e.preventDefault();
+                advanceBattle();
             }, { passive: false });
         });
 
@@ -988,7 +1009,9 @@
         function runBattleSelect(item) {
             if (!item || !item._touchFn) return;
             const now = Date.now();
-            if (now - lastBattleSelectAt < 500) return;
+            // ★ 500ms → 250ms: 빠른 학생 터치가 씹히는 현상 완화
+            //   Samsung Galaxy Tab에서 touchstart+pointerdown 이중 발사 방지는 유지
+            if (now - lastBattleSelectAt < 250) return;
             lastBattleSelectAt = now;
             item._touchFn();
         }
@@ -1005,8 +1028,9 @@
                 e.stopPropagation();
                 runBattleSelect(item);
             };
-            ['touchstart', 'pointerdown', 'mousedown', 'click'].forEach(type => {
-                box.addEventListener(type, handler, { passive: false });
+            // ★ touchstart + click만 사용 (pointerdown 제거) - Samsung Galaxy Tab 이중 발사 방지
+            ['touchstart', 'click'].forEach(evType => {
+                box.addEventListener(evType, handler, { passive: false });
             });
         }
         bindBattleChoiceBox('action-menu');
@@ -1050,11 +1074,13 @@
         if (actionItems[2]) actionItems[2]._touchFn = () => observeAnimal(battleEvent());
         if (actionItems[3]) actionItems[3]._touchFn = () => runAway(battleEvent());
 
-        // 퀴즈 중 배틀 필드(몬스터 그림) 탭 → 도망치다
-        const battleField = document.querySelector('.battle-field');
-        if (battleField) {
+        // 퀴즈 중 적 스프라이트(몬스터 그림)만 탭 → 도망치다
+        // ★ 수정: battle-field 전체 → enemy-sprite 영역만으로 범위 축소
+        //   (battle-field 전체 탭 시 quiz-box 위 경계 실수 터치가 도망으로 처리되던 버그 수정)
+        const enemySpriteEscape = document.getElementById('enemy-sprite');
+        if (enemySpriteEscape) {
             ['touchstart', 'pointerdown', 'click'].forEach(type => {
-                battleField.addEventListener(type, (e) => {
+                enemySpriteEscape.addEventListener(type, (e) => {
                     if (!inQuizMode) return;
                     e.preventDefault();
                     e.stopPropagation();
@@ -1103,8 +1129,12 @@
 
         function loadQ() {
             inQuizMode = true;
+            // ★ 새 문제 시작마다 디바운스 리셋 (이전 답 터치와 겹쳐 첫 터치가 씹히는 현상 방지)
+            lastBattleSelectAt = 0;
             const q = currentBattleQuizzes[stg];
-            document.getElementById('battle-text').innerText = q.q;
+            // ★ 퀴즈 중 도망 힌트: 적 그림 탭하면 도망 (좁혀진 탈출존 안내)
+            document.getElementById('battle-text').innerHTML =
+                q.q + '<br><span style="font-size:0.65em;color:#9ca3af;">(동물 그림 터치 → 도망)</span>';
             const box = document.getElementById('quiz-box');
             box.innerHTML = '';
 
@@ -1316,6 +1346,7 @@
 
         function resetBattleMenu() {
             inQuizMode = false;
+            lastBattleSelectAt = 0;  // ★ 메뉴 복귀 시 디바운스 리셋
             document.getElementById('quiz-box').style.display = 'none';
             document.getElementById('action-menu').style.display = 'grid';
             document.getElementById('battle-text').innerText = "무엇을 할까?";
@@ -1463,7 +1494,10 @@
             contBtn.onclick  = () => _startFromTitle(false);
             startBtn.onclick = () => _startFromTitle(true);
             newBtn.onclick   = () => {
-                if (confirm('저장된 데이터가 삭제됩니다.\n새로 시작하시겠습니까?')) _startFromTitle(true);
+                // ★ confirm() → 커스텀 모달: 풀스크린+Samsung 브라우저에서 confirm 미작동 방지
+                showConfirm('저장된 데이터가 삭제됩니다.\n새로 시작하시겠습니까?', (ok) => {
+                    if (ok) _startFromTitle(true);
+                });
             };
         }
 
