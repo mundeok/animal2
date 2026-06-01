@@ -1067,7 +1067,7 @@
 
             // 보스(멸종위기종) 조우: 맵당 3% 확률
             const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이'};
-            if (bossEncMap[mapName] && Math.random() < 0.03) { battle(bossEncMap[mapName]); return; }
+            if (bossEncMap[mapName] && Math.random() < 0.01) { battle(bossEncMap[mapName]); return; }
 
             if (mapName === 'garden') { if (t === 1) a = ran < 0.3 ? "달팽이" : (ran < 0.6 ? "메뚜기" : (ran < 0.9 ? "무당벌레" : "사마귀")); else if (t === 2) a = ran < 0.5 ? "배추흰나비" : "벌"; }
             else if (mapName === 'underground' && (t === 24 || t === 25)) { a = ran < 0.3 ? "개미" : (ran < 0.6 ? "지렁이" : (ran < 0.8 ? "매미 애벌레" : (ran < 0.95 ? "땅강아지" : "두더지"))); }
@@ -1081,7 +1081,7 @@
             else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
 
-            if (a && Math.random() < 0.15) battle(a);
+            if (a && Math.random() < 0.08) battle(a);
         }
 
         function msg(t) { const b = document.getElementById('msg-box'); b.innerHTML = t; b.scrollTop = 0; }
