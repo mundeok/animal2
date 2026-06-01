@@ -106,6 +106,25 @@
         #boss-indicator { position:absolute; top:8px; left:50%; transform:translateX(-50%); background:#dc2626; color:#fff; font-size:clamp(10px,2vmin,13px); font-weight:bold; padding:4px 14px; border-radius:20px; z-index:20; display:none; white-space:nowrap; letter-spacing:0.5px; }
         .dex-item.boss-dex { background:#fef2f2 !important; border-left:3px solid #dc2626; }
 
+        /* ===== 포획 진행률 바 ===== */
+        #map-progress { position:absolute; top:52px; left:20px; background:rgba(0,0,0,0.75); color:#fff; padding:5px 12px; border-radius:8px; font-size:clamp(11px,1.8vmin,15px); z-index:50; border:2px solid rgba(255,255,255,0.3); min-width:120px; }
+        #map-progress .prog-label { font-weight:bold; margin-bottom:3px; }
+        #map-progress .prog-bar-bg { background:rgba(255,255,255,0.2); border-radius:6px; height:7px; overflow:hidden; }
+        #map-progress .prog-bar-fill { background:#4ade80; height:100%; border-radius:6px; transition:width 0.4s; }
+        #map-progress .prog-bar-fill.full { background:#fbbf24; }
+
+        /* ===== 보스 강화 연출 ===== */
+        @keyframes screenShake { 0%,100%{transform:translate(0,0);} 20%{transform:translate(-6px,3px);} 40%{transform:translate(6px,-3px);} 60%{transform:translate(-4px,4px);} 80%{transform:translate(4px,-2px);} }
+        .boss-shake { animation: screenShake 0.45s ease-in-out; }
+        @keyframes warnFloat { 0%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;transform:translateY(-60px) scale(1.6);} }
+        .warn-particle { position:fixed; font-size:28px; pointer-events:none; z-index:6000; animation:warnFloat 1s ease-out forwards; }
+
+        /* ===== 도감 필터 ===== */
+        #dex-filter-bar { display:flex; flex-wrap:wrap; gap:4px; padding:6px 10px; background:rgba(0,0,0,0.15); border-radius:8px; margin-bottom:6px; }
+        .dex-filter-btn { font-size:clamp(10px,1.6vmin,13px); padding:3px 8px; border:2px solid rgba(255,255,255,0.4); background:transparent; color:#fff; border-radius:12px; cursor:pointer; white-space:nowrap; }
+        .dex-filter-btn.active { background:#fff; color:#c23e3e; border-color:#fff; font-weight:bold; }
+        #dex-search { width:100%; padding:5px 10px; border-radius:8px; border:2px solid #ccc; font-size:14px; margin-bottom:4px; font-family:'NeoDunggeunmo',monospace; }
+
         #weather-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 12; overflow: hidden; }
         .snow-particle { position: absolute; background: white; border-radius: 50%; opacity: 0.8; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-10px) translateX(0); } 100% { transform: translateY(420px) translateX(20px); } }
@@ -316,6 +335,10 @@
     <div class="game-container">
         <div id="map-view" class="view-section">
             <div class="status-bar" id="ride-status">👟 도보 탐사 중 | 🏅 <span id="badge-count-text">0</span>개</div>
+            <div id="map-progress">
+                <div class="prog-label" id="prog-label">화단 0/6</div>
+                <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-bar-fill" style="width:0%"></div></div>
+            </div>
             
             <div class="map-wrapper">
                 <div class="map-screen" id="map-bg">
@@ -393,6 +416,19 @@
                 <div class="dex-header">
                     <span id="dex-count">발견: 0/33</span>
                     <button onclick="closePokedex()" style="padding:5px 15px; background:#1a1a1a; color:white; border:none; border-radius:5px; cursor:pointer;">X 닫기</button>
+                </div>
+                <div id="dex-filter-bar">
+                    <input id="dex-search" type="text" placeholder="🔍 동물 이름 검색..." oninput="filterDex()" />
+                    <button class="dex-filter-btn active" data-filter="all"    onclick="setDexFilter('all',this)">전체</button>
+                    <button class="dex-filter-btn"        data-filter="화단"   onclick="setDexFilter('화단',this)">🌸화단</button>
+                    <button class="dex-filter-btn"        data-filter="땅속"   onclick="setDexFilter('땅속',this)">⛏️땅속</button>
+                    <button class="dex-filter-btn"        data-filter="연못"   onclick="setDexFilter('연못',this)">💧연못</button>
+                    <button class="dex-filter-btn"        data-filter="사막"   onclick="setDexFilter('사막',this)">🏜️사막</button>
+                    <button class="dex-filter-btn"        data-filter="극지"   onclick="setDexFilter('극지',this)">❄️극지</button>
+                    <button class="dex-filter-btn"        data-filter="바다"   onclick="setDexFilter('바다',this)">🌊바다</button>
+                    <button class="dex-filter-btn"        data-filter="열대우림" onclick="setDexFilter('열대우림',this)">🌴열대</button>
+                    <button class="dex-filter-btn"        data-filter="caught" onclick="setDexFilter('caught',this)">✅잡음</button>
+                    <button class="dex-filter-btn"        data-filter="missing" onclick="setDexFilter('missing',this)">❓미발견</button>
                 </div>
                 <div class="dex-main">
                     <div class="dex-list" id="dex-list"></div>
@@ -490,7 +526,8 @@
             "설표범": { id: 41, icon: "🐆", isCaught: false, isBoss: true, habitat: "사막", look: "흰 바탕에 검은 점무늬, 긴 꼬리", move: "도약·달리기", trait: "중앙아시아 고산지대에 사는 멸종위기 대형 고양이과 동물로, 몸만큼 긴 꼬리로 균형을 잡습니다.", q: [{ q: "설표범이 사는 곳은?", o: ["아프리카 초원", "중앙아시아 고산지대", "남극"], a: 1 }, { q: "설표범의 꼬리 길이는?", o: ["매우 짧다", "몸 길이만큼 아주 길다", "꼬리가 없다"], a: 1 }, { q: "설표범이 멸종위기인 이유는?", o: ["먹이가 없어서", "밀렵과 서식지 파괴 때문", "너무 추워서"], a: 1 }, { q: "설표범이 험한 산에서 균형 잡는 데 도움을 주는 것은?", o: ["굵은 앞발", "매우 긴 꼬리", "큰 귀"], a: 1 }, { q: "설표범은 야생에 몇 마리나 남아있을까?", o: ["약 40만 마리", "약 4000마리 이하", "수백만 마리"], a: 1 }] },
             "일각고래": { id: 42, icon: "🐳", isCaught: false, isBoss: true, habitat: "극지", look: "긴 나선형 엄니, 흰 몸통", move: "수영", trait: "수컷의 긴 엄니(이빨)가 뿔처럼 보이는 북극 고래로, 기후변화로 위협받고 있습니다.", q: [{ q: "일각고래의 '뿔'은 사실 무엇일까?", o: ["진짜 뿔", "앞니가 길게 자란 엄니(이빨)", "쇠처럼 단단한 더듬이"], a: 1 }, { q: "일각고래는 어디서 살까?", o: ["남극 바다", "북극 바다", "따뜻한 열대 바다"], a: 1 }, { q: "일각고래 엄니를 노리는 이유로 멸종 위협을 받는다?", o: ["아니다, 안전하다", "맞다, 밀렵 위협 있다", "엄니가 없다"], a: 1 }, { q: "일각고래가 사라지는 가장 큰 환경 요인은?", o: ["기후변화로 인한 바다 얼음 감소", "천적이 너무 많아서", "먹이가 없어서"], a: 0 }, { q: "일각고래 엄니의 최대 길이는?", o: ["약 30cm", "최대 약 3m", "약 10m"], a: 1 }] },
             "흰수염고래": { id: 43, icon: "🐋", isCaught: false, isBoss: true, habitat: "바다", look: "거대한 몸, 흰 배, 분수 구멍", move: "바다 헤엄", trait: "지구상 가장 큰 동물로 길이 약 30m에 달하며 크릴새우를 먹고 살지만 포경으로 멸종위기에 처했습니다.", q: [{ q: "흰수염고래(대왕고래)는 지구에서 가장 무엇일까?", o: ["가장 빠른 동물", "가장 큰 동물", "가장 시끄러운 동물"], a: 1 }, { q: "흰수염고래의 주식(주로 먹는 것)은?", o: ["물고기", "크릴(작은 새우 같은 생물)", "플랑크톤"], a: 1 }, { q: "흰수염고래가 줄어든 가장 큰 이유는?", o: ["먹이가 없어서", "포경(고래 사냥) 때문", "천적이 많아서"], a: 1 }, { q: "흰수염고래의 대략적인 몸 길이는?", o: ["약 3m", "약 10m", "약 30m"], a: 2 }, { q: "흰수염고래가 숨쉬기 위해 내뿜는 분수의 높이는?", o: ["약 1m", "약 9m", "약 30m"], a: 1 }] },
-            "수마트라 호랑이": { id: 44, icon: "🐯", isCaught: false, isBoss: true, habitat: "열대우림", look: "촘촘한 줄무늬, 귀 뒤 흰 점", move: "달리기·도약", trait: "인도네시아 수마트라 섬에만 사는 가장 작은 호랑이 아종으로 야생에 약 400마리만 남은 심각한 멸종위기종입니다.", q: [{ q: "수마트라 호랑이는 어느 섬에 살까?", o: ["보르네오 섬", "수마트라 섬", "제주도"], a: 1 }, { q: "수마트라 호랑이의 줄무늬는 다른 호랑이와 비교하면?", o: ["줄무늬가 없다", "더 넓고 뚜렷하다", "더 촘촘하고 많다"], a: 2 }, { q: "야생에 수마트라 호랑이는 몇 마리 정도 남았을까?", o: ["약 400마리", "약 4만 마리", "약 40만 마리"], a: 0 }, { q: "수마트라 호랑이가 멸종위기인 이유는?", o: ["먹이가 너무 많아서", "밀렵과 열대우림 파괴 때문", "바다가 오염되어서"], a: 1 }, { q: "수마트라 호랑이는 어떤 동물에 속할까?", o: ["파충류", "곤충류", "포유류(고양이과)"], a: 2 }] }
+            "수마트라 호랑이": { id: 44, icon: "🐯", isCaught: false, isBoss: true, habitat: "열대우림", look: "촘촘한 줄무늬, 귀 뒤 흰 점", move: "달리기·도약", trait: "인도네시아 수마트라 섬에만 사는 가장 작은 호랑이 아종으로 야생에 약 400마리만 남은 심각한 멸종위기종입니다.", q: [{ q: "수마트라 호랑이는 어느 섬에 살까?", o: ["보르네오 섬", "수마트라 섬", "제주도"], a: 1 }, { q: "수마트라 호랑이의 줄무늬는 다른 호랑이와 비교하면?", o: ["줄무늬가 없다", "더 넓고 뚜렷하다", "더 촘촘하고 많다"], a: 2 }, { q: "야생에 수마트라 호랑이는 몇 마리 정도 남았을까?", o: ["약 400마리", "약 4만 마리", "약 40만 마리"], a: 0 }, { q: "수마트라 호랑이가 멸종위기인 이유는?", o: ["먹이가 너무 많아서", "밀렵과 열대우림 파괴 때문", "바다가 오염되어서"], a: 1 }, { q: "수마트라 호랑이는 어떤 동물에 속할까?", o: ["파충류", "곤충류", "포유류(고양이과)"], a: 2 }] },
+            "맹꽁이": { id: 45, icon: "🐸", isCaught: false, isBoss: true, habitat: "땅속", look: "동그란 몸, 짧은 다리", move: "짧게 뜀·땅 파기", trait: "한국 멸종위기 2급 양서류로 비가 오는 밤에만 울고, 짧은 다리로 땅을 파서 숨습니다.", q: [{ q: "맹꽁이는 멸종위기 몇 급일까?", o: ["1급", "2급", "3급"], a: 1 }, { q: "맹꽁이가 주로 우는 때는?", o: ["맑은 낮", "비 오는 밤", "겨울 아침"], a: 1 }, { q: "맹꽁이 몸의 특징은?", o: ["길쭉하고 날씬함", "동그랗고 뚱뚱함", "납작하고 넓음"], a: 1 }, { q: "맹꽁이가 위험할 때 하는 행동은?", o: ["빠르게 헤엄침", "땅속에 파고 들어감", "높이 점프함"], a: 1 }, { q: "맹꽁이가 줄어드는 이유는?", o: ["먹이가 너무 많아서", "논과 습지 개발로 서식지 파괴 때문", "천적이 없어서"], a: 1 }] }
         };
 
         const fullFileMap = {
@@ -501,7 +538,8 @@
             "펭귄": "penguin.png", "북극곰": "polar_bear.png", "순록": "reindeer.png", "북극여우": "arcticfox.png", "바다표범": "seal.png",
             "게": "crab.png", "짱뚱어": "mudskipper.png", "조개": "clam.png", "상어": "shark.png",
             "고릴라": "gorilla.png", "앵무새": "parrot.png", "카멜레온": "chameleon.png", "나무늘보": "sloth.png", "피라냐": "piranha.png",
-            "장수하늘소": "jangsu.png", "황쏘가리": "hwangsogari.png", "설표범": "snowleopard.png", "일각고래": "narwhal.png", "흰수염고래": "bluewhale.png", "수마트라 호랑이": "sumatra_tiger.png"
+            "장수하늘소": "jangsu.png", "황쏘가리": "hwangsogari.png", "설표범": "snowleopard.png", "일각고래": "narwhal.png", "흰수염고래": "bluewhale.png", "수마트라 호랑이": "sumatra_tiger.png",
+            "맹꽁이": "maengkkong.png"
         };
 
         const badgeDB = {
@@ -518,7 +556,11 @@
             "hardcatch": { icon: "🔬", name: "박사 모드 첫 포획", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 1 },
             "hardmaster": { icon: "💎", name: "박사 모드 마스터", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 10 },
             "bosscatch": { icon: "⚠️", name: "멸종위기종 첫 포획", check: () => parseInt(localStorage.getItem('bossCatch')||'0') >= 1 },
-            "bossmaster": { icon: "🦁", name: "멸종위기 수호자", check: () => ["장수하늘소","황쏘가리","설표범","일각고래","흰수염고래","수마트라 호랑이"].every(n => animalDB[n].isCaught) }
+            "bossmaster": { icon: "🦁", name: "멸종위기 수호자", check: () => ["장수하늘소","황쏘가리","설표범","일각고래","흰수염고래","수마트라 호랑이","맹꽁이"].every(n => animalDB[n].isCaught) },
+            "explorer":   { icon: "🗺️", name: "세계 탐험가",    check: () => ['garden','pond','desert','polar','sea','jungle'].every(m => localStorage.getItem('visited_'+m)) },
+            "perfectbattle": { icon: "💯", name: "완벽한 배틀",  check: () => parseInt(localStorage.getItem('perfectBattle')||'0') >= 1 },
+            "quiz50":     { icon: "📚", name: "퀴즈 박사",       check: () => parseInt(localStorage.getItem('quizCorrect')||'0') >= 50 },
+            "lv5":        { icon: "⭐", name: "Lv.5 탐험가",     check: () => pLevel >= 5 }
         };
 
         let earnedBadges = [];
@@ -527,6 +569,7 @@
         let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp, inQuizMode = false;
         let hardMode = false, quizTimer = null, currentHardModeCorrectQ = -1;
         let isBossEncounter = false;
+        let battleCorrectCount = 0; // 현재 배틀에서 맞힌 퀴즈 수 (완벽한 배틀 배지용)
         let charFrame = 0, charDir = 0;
         let visualX = 7, visualY = 12;   // ★ 시각적 위치 (소수점 허용, 부드러운 이동용)
         let isMoving = false;            // 이동 애니메이션 진행 중 여부
@@ -853,6 +896,8 @@
                         if (t === 10) { idx = (idx + 1) % 6; px = 7; py = 1; }
                         else if (t === 5) { idx = (idx - 1 + 6) % 6; px = 7; py = (idx === 0 ? 18 : 12); }
                         mapName = seq[idx]; curMap = maps[idx];
+                        try { localStorage.setItem('visited_' + mapName, '1'); } catch(e) {}
+                        updateMapProgress();
                         msg(mapName === 'jungle' ? "🌴 열대우림에 왔다!" : "새로운 지역이다!");
                     }
                     draw(); document.getElementById('fade-overlay').style.opacity = 0;
@@ -956,7 +1001,7 @@
             }
 
             // 보스(멸종위기종) 조우: 맵당 3% 확률
-            const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이'};
+            const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이'};
             if (bossEncMap[mapName] && Math.random() < 0.03) { battle(bossEncMap[mapName]); return; }
 
             if (mapName === 'garden') { if (t === 1) a = ran < 0.3 ? "달팽이" : (ran < 0.6 ? "메뚜기" : (ran < 0.9 ? "무당벌레" : "사마귀")); else if (t === 2) a = ran < 0.5 ? "배추흰나비" : "벌"; }
@@ -981,7 +1026,27 @@
             const thisBattleSession = battleSessionId;
             locked = true; curA = a; stg = 0; hp = 100;
             const fl = document.getElementById('encounter-flash');
-            if (fl) { fl.style.transition = 'none'; fl.style.opacity = '1'; fl.style.display = 'block'; setTimeout(() => { fl.style.transition = 'opacity 0.5s'; fl.style.opacity = '0'; setTimeout(() => fl.style.display = 'none', 500); }, 200); }
+            if (fl) {
+                fl.style.background = isBossEncounter ? '#dc2626' : '#fff';
+                fl.style.transition = 'none'; fl.style.opacity = '1'; fl.style.display = 'block';
+                setTimeout(() => { fl.style.transition = 'opacity 0.5s'; fl.style.opacity = '0'; setTimeout(() => { fl.style.display = 'none'; fl.style.background = '#fff'; }, 500); }, 200);
+            }
+            if (isBossEncounter) {
+                const gc = document.querySelector('.game-container');
+                gc.classList.remove('boss-shake'); void gc.offsetWidth; gc.classList.add('boss-shake');
+                setTimeout(() => gc.classList.remove('boss-shake'), 500);
+                for (let pi = 0; pi < 6; pi++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.className = 'warn-particle';
+                        p.innerText = '⚠️';
+                        p.style.left = (15 + Math.random() * 70) + 'vw';
+                        p.style.top  = (15 + Math.random() * 50) + 'vh';
+                        document.body.appendChild(p);
+                        setTimeout(() => p.remove(), 1100);
+                    }, pi * 100);
+                }
+            }
             observeUsedInBattle = false;
             isObserveBuffActive = false;
             
@@ -1134,6 +1199,7 @@
             inQuizMode = false;
             lastBattleSelectAt = 0;
             isBossEncounter = false;
+            battleCorrectCount = 0;
             const bossIndC = document.getElementById('boss-indicator');
             if (bossIndC) bossIndC.style.display = 'none';
             const containerC = document.querySelector('.battle-container');
@@ -1304,6 +1370,8 @@
             _lockQuiz();
             if (i === currentBattleQuizzes[stg].a) {
                 document.getElementById('battle-text').innerText = hardMode ? "🔬 정답! 박사 실력이네!" : "정답이다! 동물의 체력이 깎였다!";
+                battleCorrectCount++;
+                try { const qc = parseInt(localStorage.getItem('quizCorrect')||'0')+1; localStorage.setItem('quizCorrect', String(qc)); } catch(e) {}
 
                 const enemySprite = document.getElementById('enemy-sprite');
                 if (enemySprite) {
@@ -1466,7 +1534,9 @@
                     localStorage.setItem('bossCatch', String(bcnt));
                 }
                 const expGain = isBossEncounter ? 150 : (hardMode ? 80 : 50);
+                if (battleCorrectCount >= 3) { try { const pc = parseInt(localStorage.getItem('perfectBattle')||'0')+1; localStorage.setItem('perfectBattle',String(pc)); } catch(e) {} }
                 saveGame(); gainExp(expGain);
+                updateMapProgress();
                 setTimeout(() => { checkBadges(); }, 1000);
             } else {
                 m.innerHTML = `앗!<br>${curA} 도망갔어...`;
@@ -1499,7 +1569,7 @@
             clearBattleRuntimeState();
             document.getElementById('battle-view').style.display = 'none';
             document.getElementById('map-view').style.display = 'flex';
-            locked = false; draw();
+            locked = false; draw(); updateMapProgress();
         }
 
         function type(t, cb) {
@@ -1532,16 +1602,53 @@
             }
         }
 
+        function updateMapProgress() {
+            const mapAnimals = {
+                'garden':     ["배추흰나비","달팽이","벌","메뚜기","무당벌레","사마귀"],
+                'underground':["개미","지렁이","땅강아지","매미 애벌레","두더지"],
+                'pond':       ["개구리","소금쟁이","붕어","수달","미꾸라지","다슬기","잠자리","물방개"],
+                'desert':     ["낙타","사막여우","이집트 땅거북","전갈","도마뱀"],
+                'polar':      ["펭귄","북극곰","순록","북극여우","바다표범"],
+                'sea':        ["게","짱뚱어","조개","상어"],
+                'jungle':     ["고릴라","앵무새","카멜레온","나무늘보","피라냐"]
+            };
+            const mapKo = {'garden':'화단','underground':'땅속','pond':'연못','desert':'사막','polar':'극지','sea':'바다','jungle':'열대우림'};
+            const list = mapAnimals[mapName];
+            const prog = document.getElementById('map-progress');
+            if (!list || !prog) { if (prog) prog.style.display = 'none'; return; }
+            prog.style.display = 'block';
+            const caught = list.filter(n => animalDB[n]?.isCaught).length;
+            const pct = Math.round((caught / list.length) * 100);
+            document.getElementById('prog-label').innerText = `${mapKo[mapName]} ${caught}/${list.length}마리`;
+            const fill = document.getElementById('prog-bar-fill');
+            fill.style.width = pct + '%';
+            fill.className = 'prog-bar-fill' + (caught === list.length ? ' full' : '');
+        }
+
         function openPokedex() { document.getElementById('map-view').style.display = 'none'; document.getElementById('pokedex-view').style.display = 'flex'; updateDex(); }
         function closePokedex() { document.getElementById('pokedex-view').style.display = 'none'; document.getElementById('map-view').style.display = 'flex'; }
-        function updateDex() {
+        let dexFilter = 'all';
+
+        function setDexFilter(f, btn) {
+            dexFilter = f;
+            document.querySelectorAll('.dex-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderDexList();
+        }
+        function filterDex() { renderDexList(); }
+
+        function renderDexList() {
             const l = document.getElementById('dex-list');
             l.innerHTML = '';
-            let caughtCount = 0;
+            const searchVal = (document.getElementById('dex-search')?.value || '').trim().toLowerCase();
             const animals = Object.keys(animalDB);
+            let firstVisible = null;
             animals.forEach(k => {
                 const d = animalDB[k];
-                if (d.isCaught) caughtCount++;
+                if (dexFilter === 'caught'  && !d.isCaught) return;
+                if (dexFilter === 'missing' &&  d.isCaught) return;
+                if (!['all','caught','missing'].includes(dexFilter) && d.habitat !== dexFilter) return;
+                if (searchVal && !k.toLowerCase().includes(searchVal)) return;
                 const i = document.createElement('div');
                 i.className = 'dex-item' + (d.isBoss ? ' boss-dex' : '');
                 i.onclick = () => {
@@ -1552,13 +1659,23 @@
                 const dispName = d.isBoss ? `⚠️ ${k}` : k;
                 i.innerHTML = `<span>${d.isCaught ? d.icon : '❓'}</span> ${d.isCaught ? dispName : '----------'}`;
                 l.appendChild(i);
+                if (!firstVisible) firstVisible = k;
             });
+            if (firstVisible) showDex(firstVisible);
+        }
+
+        function updateDex() {
+            dexFilter = 'all';
+            document.querySelectorAll('.dex-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+            const searchEl = document.getElementById('dex-search');
+            if (searchEl) searchEl.value = '';
             const normalCount = Object.values(animalDB).filter(d => !d.isBoss && d.isCaught).length;
-            const bossCount = Object.values(animalDB).filter(d => d.isBoss && d.isCaught).length;
-            const normalTot = Object.values(animalDB).filter(d => !d.isBoss).length;
-            document.getElementById('dex-count').innerText = `발견: ${normalCount}/${normalTot} · ⚠️${bossCount}/6`;
+            const bossCount  = Object.values(animalDB).filter(d =>  d.isBoss && d.isCaught).length;
+            const normalTot  = Object.values(animalDB).filter(d => !d.isBoss).length;
+            const bossTot    = Object.values(animalDB).filter(d =>  d.isBoss).length;
+            document.getElementById('dex-count').innerText = `발견: ${normalCount}/${normalTot} · ⚠️${bossCount}/${bossTot}`;
+            renderDexList();
             renderBadges();
-            showDex(animals[0]);
         }
 
         function showDex(k) {
@@ -1717,6 +1834,8 @@
             }
             // 맵 먼저 그려두고 타이틀 페이드아웃
             draw(); updatePlayerUI(); initHybridControls();
+            try { localStorage.setItem('visited_lab', '1'); localStorage.setItem('visited_garden', '1'); } catch(e) {}
+            updateMapProgress();
             titleEl.style.opacity = '0';
             setTimeout(() => {
                 titleEl.style.display = 'none';
