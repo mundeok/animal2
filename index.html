@@ -173,21 +173,21 @@
         .pokedex-container { width: 850px; height: 600px; background: #c23e3e; border: 10px solid #1a1a1a; border-radius: 20px; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); max-width: 95vw; max-height: 95vh; }
         .dex-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; color: white; font-size: 24px; font-weight: bold; }
         .dex-main { display: flex; flex: 1; gap: 15px; margin-top: 10px; overflow: hidden; }
-        .dex-list { flex: 0.7; background: #fff; border: 5px solid #1a1a1a; overflow-y: auto; padding: 5px; border-radius: 10px; }
-        .dex-item { padding: 12px; font-size: 20px; cursor: pointer; border-bottom: 2px solid #eee; display: flex; align-items: center; gap: 10px; color: #333; }
+        .dex-list { flex: 0.55; background: #fff; border: 5px solid #1a1a1a; overflow-y: auto; padding: 5px; border-radius: 10px; }
+        .dex-item { padding: 10px; font-size: 18px; cursor: pointer; border-bottom: 2px solid #eee; display: flex; align-items: center; gap: 8px; color: #333; }
         .dex-item.active { background: #ffeb3b; border: 3px solid #1a1a1a; font-weight: bold; }
-        .dex-detail-view { flex: 1.3; background: #fff; border: 5px solid #1a1a1a; display: flex; flex-direction: column; padding: 20px; border-radius: 10px; overflow-y: auto; }
-        .dex-top-row { display: flex; gap: 20px; border-bottom: 4px solid #1a1a1a; padding-bottom: 15px; }
-        .dex-sprite-box { width: 160px; height: 160px; background: #f3f4f6; border: 4px solid #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; }
-        .dex-pixel-art { width: 120px; height: 120px; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }
-        .dex-stats { flex: 1; color: #1a1a1a; }
-        #dex-name { font-size: 32px; margin-bottom: 5px; border-bottom: 3px solid #1a1a1a; }
-        .dex-physique p { font-size: 18px; margin-bottom: 5px; line-height: 1.4; }
-        .dex-description-box { margin-top: 15px; padding: 15px; background: #f9fafb; border: 3px solid #1a1a1a; font-size: 22px; line-height: 1.6; border-radius: 8px; color: #1a1a1a; overflow-y: auto; }
-        .badge-section { margin-top: 15px; border-top: 2px dashed #ccc; padding-top: 10px; }
+        .dex-detail-view { flex: 1.45; background: #fff; border: 5px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; border-radius: 10px; overflow-y: auto; }
+        .dex-top-row { display: flex; gap: 14px; border-bottom: 4px solid #1a1a1a; padding-bottom: 12px; flex-shrink: 0; }
+        .dex-sprite-box { width: 120px; height: 120px; flex-shrink: 0; background: #f3f4f6; border: 4px solid #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; }
+        .dex-pixel-art { width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }
+        .dex-stats { flex: 1; color: #1a1a1a; min-width: 0; }
+        #dex-name { font-size: 26px; margin-bottom: 4px; border-bottom: 3px solid #1a1a1a; }
+        .dex-physique p { font-size: 15px; margin-bottom: 3px; line-height: 1.4; }
+        .dex-description-box { flex: 1; min-height: 80px; margin-top: 12px; padding: 14px 16px; background: #f9fafb; border: 3px solid #1a1a1a; font-size: 20px; line-height: 1.75; border-radius: 8px; color: #1a1a1a; overflow-y: auto; }
+        .badge-section { margin-top: 10px; border-top: 2px dashed #ccc; padding-top: 8px; flex-shrink: 0; }
         .badge-list { display: flex; flex-wrap: wrap; gap: 5px; }
         /* ===== 도감 퀴즈 섹션 ===== */
-        .dex-quiz-section { margin-top: 12px; border-top: 2px dashed #ccc; padding-top: 8px; }
+        .dex-quiz-section { margin-top: 8px; border-top: 2px dashed #ccc; padding-top: 6px; flex-shrink: 0; }
         .dex-quiz-title { font-weight: bold; color: #166534; margin-bottom: 6px; font-size: 15px; }
         .dex-quiz-item { padding: 5px 8px; margin: 3px 0; border-radius: 6px; font-size: 14px; line-height: 1.4; background: #f0fdf4; border: 2px solid #bbf7d0; }
         .dex-quiz-item.wrong { background: #fff1f2; border-color: #fecdd3; }
@@ -557,14 +557,14 @@
             "hardmaster": { icon: "💎", name: "박사 모드 마스터", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 10 },
             "bosscatch": { icon: "⚠️", name: "멸종위기종 첫 포획", check: () => parseInt(localStorage.getItem('bossCatch')||'0') >= 1 },
             "bossmaster": { icon: "🦁", name: "멸종위기 수호자", check: () => ["장수하늘소","황쏘가리","설표범","일각고래","흰수염고래","수마트라 호랑이","맹꽁이"].every(n => animalDB[n].isCaught) },
-            "explorer":   { icon: "🗺️", name: "세계 탐험가",    check: () => ['garden','pond','desert','polar','sea','jungle'].every(m => localStorage.getItem('visited_'+m)) },
+            "explorer":   { icon: "🗺️", name: "세계 탐험가",    check: () => ['garden','underground','pond','desert','polar','sea','jungle'].every(m => localStorage.getItem('visited_'+m)) },
             "perfectbattle": { icon: "💯", name: "완벽한 배틀",  check: () => parseInt(localStorage.getItem('perfectBattle')||'0') >= 1 },
             "quiz50":     { icon: "📚", name: "퀴즈 박사",       check: () => parseInt(localStorage.getItem('quizCorrect')||'0') >= 50 },
             "lv5":        { icon: "⭐", name: "Lv.5 탐험가",     check: () => pLevel >= 5 }
         };
 
         let earnedBadges = [];
-        let inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 }; 
+        let inventory = { "포충망": 0, "낚싯대": 3, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
         let pLevel = 1, pExp = 0, maxExp = 100;
         let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp, inQuizMode = false;
         let hardMode = false, quizTimer = null, currentHardModeCorrectQ = -1;
@@ -623,9 +623,18 @@
                 if (sAnimals) sAnimals.forEach(k => { if (animalDB[k]) animalDB[k].isCaught = true; });
                 if (sData) {
                     pLevel = sData.pLevel || 1; pExp = sData.pExp || 0; maxExp = sData.maxExp || 100;
-                    inventory = sData.inventory || inventory; earnedBadges = sData.earnedBadges || [];
-                    playerName = sData.playerName || "탐험가"; 
-                    isTutorialDone = sData.isTutorialDone || false; 
+                    // 인벤토리: 키 순서 보장 + 낚싯대 없는 구세이브 마이그레이션
+                    const sv = sData.inventory || {};
+                    inventory = {
+                        "포충망":      sv["포충망"]      ?? 0,
+                        "낚싯대":      sv["낚싯대"]      ?? 3,   // 구세이브에 없으면 3개 지급
+                        "물고기 떡밥": sv["물고기 떡밥"] ?? 10,
+                        "특제 영양식": sv["특제 영양식"] ?? 10,
+                        "마스터 포충망": sv["마스터 포충망"] ?? 0,
+                    };
+                    earnedBadges = sData.earnedBadges || [];
+                    playerName = sData.playerName || "탐험가";
+                    isTutorialDone = sData.isTutorialDone || false;
                 }
             } catch (e) { localStorage.clear(); }
         }
@@ -835,7 +844,32 @@
             document.getElementById('player-name-level').innerText = `${playerName} Lv.${pLevel}`; 
             document.getElementById('player-exp').style.width = `${(pExp / maxExp) * 100}%`;
         }
-        function gainExp(amt) { pExp += amt; if (pExp >= maxExp) { pLevel++; pExp -= maxExp; maxExp = Math.floor(maxExp * 1.5); const lvlMsg = document.getElementById('level-up-msg'); lvlMsg.innerText = `🎉 레벨 업! Lv.${pLevel} 🎉`; lvlMsg.style.display = 'block'; setTimeout(() => { lvlMsg.style.display = 'none'; }, 2000); } updatePlayerUI(); saveGame(); }
+        function giveLevelUpReward(lv) {
+            let rewards = [];
+            if      (lv === 2) { inventory["포충망"] += 5; rewards = ["포충망 ×5"]; }
+            else if (lv === 3) { inventory["낚싯대"] += 5; inventory["물고기 떡밥"] += 3; inventory["특제 영양식"] += 3; rewards = ["낚싯대 ×5", "물고기 떡밥 ×3", "특제 영양식 ×3"]; }
+            else if (lv === 4) { inventory["포충망"] += 5; inventory["낚싯대"] += 3; rewards = ["포충망 ×5", "낚싯대 ×3"]; }
+            else if (lv === 5) { inventory["마스터 포충망"] += 1; inventory["포충망"] += 5; inventory["낚싯대"] += 3; rewards = ["마스터 포충망 ×1", "포충망 ×5", "낚싯대 ×3"]; }
+            else if (lv % 3 === 0) { inventory["마스터 포충망"] += 1; inventory["포충망"] += 3; inventory["낚싯대"] += 2; rewards = ["마스터 포충망 ×1", "포충망 ×3", "낚싯대 ×2"]; }
+            else { inventory["포충망"] += 3; inventory["낚싯대"] += 2; rewards = ["포충망 ×3", "낚싯대 ×2"]; }
+            if (rewards.length) {
+                setTimeout(() => msg(`🎁 <b>레벨 ${lv} 달성 보상:</b> ${rewards.join(' · ')}`), 600);
+                saveGame();
+            }
+        }
+
+        function gainExp(amt) {
+            pExp += amt;
+            if (pExp >= maxExp) {
+                pLevel++; pExp -= maxExp; maxExp = Math.floor(maxExp * 1.5);
+                const lvlMsg = document.getElementById('level-up-msg');
+                lvlMsg.innerText = `🎉 레벨 업! Lv.${pLevel} 🎉`;
+                lvlMsg.style.display = 'block';
+                setTimeout(() => { lvlMsg.style.display = 'none'; }, 2000);
+                giveLevelUpReward(pLevel);
+            }
+            updatePlayerUI(); saveGame();
+        }
 
         // 타일 렌더링 + 시각 위치 스냅 (맵 전환/초기화용)
         function draw() {
@@ -856,10 +890,12 @@
             for (let y = 0; y < MAP_H; y++) {
                 for (let x = 0; x < MAP_W; x++) {
                     const t = curMap[y][x];
-                    const tileCls = cls[t] || 'tile-dirt';
+                    // t===5는 lab 이외 맵에서 "이전 맵으로" 포탈 → 포탈 이미지로 표시
+                    const isReturnPortal = (t === 5 && mapName !== 'lab');
+                    const tileCls = isReturnPortal ? 'tile-portal' : (cls[t] || 'tile-dirt');
                     const d = document.createElement('div');
                     d.className = 'tile ' + tileCls;
-                    const emoji = t === 10 ? '🌀' : t === 21 ? '👨‍🔬' : null;
+                    const emoji = (t === 10 || isReturnPortal) ? '🌀' : t === 21 ? '👨‍🔬' : null;
                     if (emoji) d.innerText = emoji;
                     if (FG_TILES.has(t)) _fgTiles.push({cls: tileCls, x, y, emoji});
                     grid.appendChild(d);
@@ -958,8 +994,9 @@
                 if (!isTutorialDone) {
                     isTutorialDone = true;
                     inventory["포충망"] = 10;
+                    inventory["낚싯대"] = 3;
                     saveGame();
-                    msg(`👨‍🔬 박사: 오오, 자네가 바로 <b>[${playerName}]</b> 탐험가로군! 과학실까지 조작을 아주 잘 익혀서 찾아왔어.<br>바깥 세상엔 신기한 동물들이 많다네! 자, 여기 <b>[포충망 10개]</b>를 주겠네. 이제 아래쪽 🌀포탈로 나가서 화단부터 조사를 시작해보게!`);
+                    msg(`👨‍🔬 박사: 오오, 자네가 바로 <b>[${playerName}]</b> 탐험가로군! 과학실까지 조작을 아주 잘 익혀서 찾아왔어.<br>바깥 세상엔 신기한 동물들이 많다네! 자, 여기 <b>[포충망 10개 · 낚싯대 3개]</b>를 주겠네.<br>💡 동물마다 포획 도구가 달라! 가방(✅=효과 있음, ❌=효과 없음)을 참고해보게. 이제 아래쪽 🌀포탈로 나가서 화단부터 조사를 시작해보게!`);
                     return;
                 }
 
@@ -968,17 +1005,38 @@
                     return;
                 }
 
-                if (caught >= 15 && inventory["마스터 포충망"] === 0 && !earnedBadges.includes("master_net_received")) {
-                    msg("👨‍🔬 박사: 오오! 벌써 15마리나 잡았군!<br>보상으로 <span style='color:#facc15;'>[마스터 포충망]</span>을 주겠네! 100% 확률이지!");
-                    inventory["마스터 포충망"] = 1;
-                    earnedBadges.push("master_net_received");
-                    saveGame();
-                    return;
+                if (caught >= 35 && !earnedBadges.includes("milestone_35")) {
+                    earnedBadges.push("milestone_35");
+                    inventory["마스터 포충망"] += 1;
+                    msg("👨‍🔬 박사: 35마리! 이 정도면 진짜 박사 수준이야!<br>특별히 <span style='color:#facc15;'>[마스터 포충망 ×1]</span>을 드리지!");
+                    saveGame(); return;
                 }
 
-                if (inventory["포충망"] < 2) {
-                    msg("👨‍🔬 박사: 포충망을 다 썼나? <br>자! 여기 10개 더 가져가게!");
-                    inventory["포충망"] = 10;
+                if (caught >= 28 && !earnedBadges.includes("milestone_28")) {
+                    earnedBadges.push("milestone_28");
+                    inventory["포충망"] += 10;
+                    msg("👨‍🔬 박사: 28마리! 진짜 대단한 탐험가로군!<br><b>포충망 ×10</b>을 보충해주겠네!");
+                    saveGame(); return;
+                }
+
+                if (caught >= 20 && !earnedBadges.includes("milestone_20")) {
+                    earnedBadges.push("milestone_20");
+                    inventory["낚싯대"] += 5; inventory["물고기 떡밥"] += 5; inventory["특제 영양식"] += 5;
+                    msg("👨‍🔬 박사: 20마리 돌파! 장하군!<br><b>낚싯대 ×5, 물고기 떡밥 ×5, 특제 영양식 ×5</b>를 주겠네!");
+                    saveGame(); return;
+                }
+
+                if (caught >= 15 && !earnedBadges.includes("master_net_received")) {
+                    earnedBadges.push("master_net_received");
+                    inventory["마스터 포충망"] += 1;
+                    msg("👨‍🔬 박사: 오오! 벌써 15마리나 잡았군!<br>보상으로 <span style='color:#facc15;'>[마스터 포충망 ×1]</span>을 주겠네! 100% 확률이지!");
+                    saveGame(); return;
+                }
+
+                if (inventory["포충망"] < 2 || inventory["낚싯대"] < 2) {
+                    msg("👨‍🔬 박사: 도구가 부족한가? <br>자! <b>포충망 10개 · 낚싯대 5개</b> 더 가져가게!");
+                    inventory["포충망"] = Math.max(inventory["포충망"], 10);
+                    inventory["낚싯대"] = Math.max(inventory["낚싯대"], 5);
                     saveGame();
                     return;
                 }
@@ -987,10 +1045,17 @@
             }
             
             if (mapName !== 'lab' && t !== 10 && t !== 5 && Math.random() < 0.04) {
+                // 맵별 바닥 아이템: 동물 종류에 맞는 도구 위주로 드롭
                 let foundItem = "포충망";
-                if (mapName === 'pond' || mapName === 'sea') foundItem = "물고기 떡밥";
-                else if (mapName === 'desert' || mapName === 'polar' || mapName === 'underground') foundItem = "특제 영양식";
-                else if (mapName === 'jungle') foundItem = "포충망";
+                if (mapName === 'pond' || mapName === 'sea') {
+                    foundItem = Math.random() < 0.5 ? "낚싯대" : "물고기 떡밥";
+                } else if (mapName === 'desert' || mapName === 'polar') {
+                    foundItem = "특제 영양식";
+                } else if (mapName === 'underground') {
+                    foundItem = Math.random() < 0.4 ? "특제 영양식" : "포충망";
+                } else if (mapName === 'jungle') {
+                    foundItem = Math.random() < 0.4 ? "특제 영양식" : "포충망";
+                }
 
                 locked = true; 
                 inventory[foundItem]++;
@@ -1016,13 +1081,14 @@
             else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
 
-            if (a && Math.random() < 0.3) battle(a);
+            if (a && Math.random() < 0.15) battle(a);
         }
 
         function msg(t) { const b = document.getElementById('msg-box'); b.innerHTML = t; b.scrollTop = 0; }
 
         function battle(a) {
             clearBattleRuntimeState();
+            isBossEncounter = !!(animalDB[a] && animalDB[a].isBoss); // ← 플래시/흔들림 전에 먼저 설정
             const thisBattleSession = battleSessionId;
             locked = true; curA = a; stg = 0; hp = 100;
             const fl = document.getElementById('encounter-flash');
@@ -1059,7 +1125,7 @@
 
             const field = document.querySelector('.battle-field');
             field.className = 'battle-field ' + mapName;
-            isBossEncounter = !!(animalDB[a] && animalDB[a].isBoss);
+            // isBossEncounter은 battle() 최상단에서 이미 설정됨
             if (isBossEncounter) field.classList.add('boss-battle');
             const container = document.querySelector('.battle-container');
             if (isBossEncounter) container.classList.add('is-boss'); else container.classList.remove('is-boss');
@@ -1259,7 +1325,7 @@
                 return;
             }
 
-            if (!/^[1-5]$/.test(e.key)) return;
+            if (!/^[1-6]$/.test(e.key)) return;
             const quizBox = document.getElementById('quiz-box');
             const actionMenu = document.getElementById('action-menu');
             const box = quizBox.style.display !== 'none' ? quizBox : actionMenu;
@@ -1343,7 +1409,7 @@
                     d.style.pointerEvents = "none";
                 } else {
                     const isCorrect = hardMode ? (i === currentHardModeCorrectQ) : (i === q.a);
-                    d._touchFn = () => ans(isCorrect ? q.a : -1);
+                    d._touchFn = () => ans(isCorrect ? q.a : -2); // -1=타이머, -2=오답클릭 (i 전달 시 q.a와 충돌 방지)
                     d.onclick = (e) => { e.stopPropagation(); runBattleSelect(d); };
                     d.innerText = `${i + 1}. ${o}`;
                 }
@@ -1419,6 +1485,48 @@
             }
         }
 
+        // ── 동물 분류 & 도구 적합성 ──────────────────────────────────
+        function getAnimalType(name) {
+            const typeMap = {
+                // 곤충 (포충망)
+                '배추흰나비':'곤충','벌':'곤충','메뚜기':'곤충','무당벌레':'곤충','사마귀':'곤충',
+                '개미':'곤충','땅강아지':'곤충','매미 애벌레':'곤충','잠자리':'곤충','물방개':'곤충',
+                '소금쟁이':'곤충','장수하늘소':'곤충',
+                // 무척추 — 연체·갑각·환형 (포충망)
+                '달팽이':'무척추','다슬기':'무척추','조개':'무척추','지렁이':'무척추',
+                '게':'무척추','전갈':'무척추',
+                // 양서류 (포충망)
+                '개구리':'양서류','맹꽁이':'양서류',
+                // 파충류 (포충망)
+                '이집트 땅거북':'파충류','도마뱀':'파충류','카멜레온':'파충류',
+                // 어류 (낚싯대)
+                '붕어':'어류','미꾸라지':'어류','황쏘가리':'어류',
+                '짱뚱어':'어류','상어':'어류','피라냐':'어류',
+                // 수중포유류 (물고기 떡밥)
+                '수달':'수중포유류','바다표범':'수중포유류',
+                '일각고래':'수중포유류','흰수염고래':'수중포유류',
+                // 조류: 펭귄=물고기떡밥, 앵무새=특제영양식
+                '펭귄':'조류(어식)','앵무새':'조류(초식)',
+                // 육상포유류 (특제 영양식)
+                '낙타':'육상포유류','사막여우':'육상포유류','두더지':'육상포유류',
+                '북극곰':'육상포유류','순록':'육상포유류','북극여우':'육상포유류',
+                '고릴라':'육상포유류','나무늘보':'육상포유류',
+                '설표범':'육상포유류','수마트라 호랑이':'육상포유류',
+            };
+            return typeMap[name] || '기타';
+        }
+
+        function checkItemEffective(itemName, animalName) {
+            if (itemName === '마스터 포충망') return true;
+            const t = getAnimalType(animalName);
+            if (itemName === '포충망')      return ['곤충','무척추','양서류','파충류'].includes(t);
+            if (itemName === '낚싯대')      return t === '어류';
+            if (itemName === '물고기 떡밥') return t === '수중포유류' || t === '조류(어식)';
+            if (itemName === '특제 영양식') return t === '육상포유류' || t === '조류(초식)';
+            return false;
+        }
+        // ─────────────────────────────────────────────────────────────
+
         function openBag(e) {
             inQuizMode = false;
             e.stopPropagation();
@@ -1428,7 +1536,9 @@
             Object.keys(inventory).forEach((item, idx) => {
                 const d = document.createElement('div');
                 d.className = 'menu-item';
-                d.innerText = `${idx + 1}. ${item} (${inventory[item]})`;
+                const effective = checkItemEffective(item, curA);
+                const hint = effective ? ' ✅' : ' ❌';
+                d.innerText = `${idx + 1}. ${item} (${inventory[item]})${hint}`;
                 if (inventory[item] > 0) {
                     d._touchFn = () => useItem(item);
                     d.onclick = (event) => { event.stopPropagation(); runBattleSelect(d); };
@@ -1437,26 +1547,48 @@
             });
             const backBtn = document.createElement('div');
             backBtn.className = 'menu-item';
-            backBtn.innerText = `5. 돌아가기`;
+            backBtn.innerText = `${Object.keys(inventory).length + 1}. 돌아가기`;
             backBtn._touchFn = () => resetBattleMenu();
             backBtn.onclick = (event) => { event.stopPropagation(); runBattleSelect(backBtn); };
             box.appendChild(backBtn);
         }
 
         function useItem(itemName) {
+            // ★ 효과 먼저 확인 — 효과 없으면 아이템 소모 안 함
+            const isEffective = checkItemEffective(itemName, curA);
+
+            if (!isEffective) {
+                document.getElementById('quiz-box').style.display = 'none';
+                document.getElementById('msg-box-battle').classList.remove('split');
+                const t = getAnimalType(curA);
+                let hint = '';
+                if (t === '어류')                                hint = '🎣 낚싯대로 낚아야 해!';
+                else if (t === '수중포유류' || t === '조류(어식)') hint = '🐟 물고기 떡밥으로 유인해!';
+                else if (t === '육상포유류' || t === '조류(초식)') hint = '🥩 특제 영양식으로 유인해!';
+                else                                             hint = '🔵 포충망으로 잡아야 해!';
+                document.getElementById('battle-text').innerText = `효과가 없다! (아이템 소모 안 됨)\n${hint}`;
+                setTimeout(() => {
+                    document.getElementById('msg-box-battle').classList.add('split');
+                    resetBattleMenu();
+                }, 1800);
+                return;
+            }
+
+            // 효과 있을 때만 아이템 차감
             inventory[itemName]--; saveGame();
 
             document.getElementById('quiz-box').style.display = 'none';
             const msgBox = document.getElementById('msg-box-battle');
             msgBox.classList.remove('split');
 
-            document.getElementById('battle-text').innerText = `${itemName} 던졌다!`;
+            const throwVerb = itemName === '낚싯대' ? '드리웠다!' : itemName === '물고기 떡밥' ? '던졌다!' : itemName === '특제 영양식' ? '내밀었다!' : '던졌다!';
+            document.getElementById('battle-text').innerText = `${itemName} ${throwVerb}`;
 
             // 볼 던지기 애니메이션
             const field = document.querySelector('.battle-field');
             const ball = document.createElement('div');
             ball.className = 'ball-throw';
-            const ballEmoji = itemName === '마스터 포충망' ? '⭐' : itemName === '물고기 떡밥' ? '🐟' : itemName === '특제 영양식' ? '🥩' : '🔵';
+            const ballEmoji = itemName === '마스터 포충망' ? '⭐' : itemName === '낚싯대' ? '🎣' : itemName === '물고기 떡밥' ? '🐟' : itemName === '특제 영양식' ? '🥩' : '🔵';
             ball.innerText = ballEmoji;
             if (field) field.appendChild(ball);
             setTimeout(() => { if (ball.parentNode) ball.parentNode.removeChild(ball); }, 500);
@@ -1473,28 +1605,15 @@
             }
 
             setTimeout(() => {
-                const targetHabitat = animalDB[curA].habitat;
-                let isEffective = false, catchRate = 0;
-                if (itemName === "포충망" && (targetHabitat === "화단" || targetHabitat === "땅속" || targetHabitat === "열대우림")) isEffective = true;
-                else if (itemName === "물고기 떡밥" && (targetHabitat === "연못" || targetHabitat === "바다")) isEffective = true;
-                else if (itemName === "특제 영양식" && (targetHabitat === "사막" || targetHabitat === "극지" || targetHabitat === "바다")) isEffective = true;
-
-                if (!isEffective && itemName !== "마스터 포충망") {
-                    document.getElementById('battle-text').innerText = "전혀 관심이 없다...";
-                    setTimeout(() => {
-                        msgBox.classList.add('split'); 
-                        resetBattleMenu();
-                    }, 1500);
-                    return;
-                }
-
+                let catchRate = 0;
                 let baseCatchRate = isBossEncounter ? (hp < 40 ? 0.6 : 0.1) : (hp < 40 ? 0.9 : 0.2);
                 let levelBonus = Math.min(0.2, pLevel * 0.02);
                 catchRate = baseCatchRate + levelBonus;
 
                 if (itemName === "마스터 포충망") { catchRate = isBossEncounter ? 0.8 : 1.0; }
 
-                document.getElementById('battle-text').innerText = "흔들... 흔들...";
+                const waitText = itemName === '낚싯대' ? '찌가 움직인다...' : '흔들... 흔들...';
+                document.getElementById('battle-text').innerText = waitText;
 
                 setTimeout(() => {
                     if (Math.random() < catchRate) {
@@ -1532,6 +1651,9 @@
                 if (isBossEncounter) {
                     const bcnt = parseInt(localStorage.getItem('bossCatch') || '0') + 1;
                     localStorage.setItem('bossCatch', String(bcnt));
+                    inventory["마스터 포충망"] += 1;
+                    setTimeout(() => msg(`🏆 멸종위기종 포획! <span style='color:#facc15;'>[마스터 포충망 ×1]</span> 획득!`), 1800);
+                    saveGame();
                 }
                 const expGain = isBossEncounter ? 150 : (hardMode ? 80 : 50);
                 if (battleCorrectCount >= 3) { try { const pc = parseInt(localStorage.getItem('perfectBattle')||'0')+1; localStorage.setItem('perfectBattle',String(pc)); } catch(e) {} }
@@ -1827,7 +1949,7 @@
             if (isNew) {
                 localStorage.clear();
                 Object.values(animalDB).forEach(d => d.isCaught = false);
-                inventory = { "포충망": 0, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
+                inventory = { "포충망": 0, "낚싯대": 3, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
                 pLevel = 1; pExp = 0; maxExp = 100; earnedBadges = [];
                 mapName = 'lab'; px = 7; py = 12; charDir = 0; curMap = lab;
                 isTutorialDone = false;
