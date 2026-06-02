@@ -351,6 +351,49 @@
         .rank-close-btn:active { background:#2d5180; }
         .rank-divider { border:none; border-top:1px solid #1e293b; margin:2px 0; }
     </style>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgPdzy4U3ForAWlc_zYrKn3PLXkFXwF9Q",
+            authDomain: "dongmul-world.firebaseapp.com",
+            projectId: "dongmul-world",
+            storageBucket: "dongmul-world.firebasestorage.app",
+            messagingSenderId: "47285501526",
+            appId: "1:47285501526:web:65487bb194f2f796b7c5f7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 익명 로그인 (앱 시작 시)
+        signInAnonymously(auth).catch(e => console.warn("익명 로그인 실패:", e));
+
+        // Firestore에 랭킹 저장
+        window._fbSaveRanking = async function(entry) {
+            const user = auth.currentUser;
+            if (!user) return;
+            try {
+                await setDoc(doc(db, "rankings", entry.name), entry);
+            } catch(e) { console.warn("랭킹 저장 실패:", e); }
+        };
+
+        // Firestore에서 랭킹 불러오기
+        window._fbLoadRanking = async function() {
+            try {
+                const q = query(collection(db, "rankings"), orderBy("score", "desc"), limit(20));
+                const snap = await getDocs(q);
+                return snap.docs.map(d => d.data());
+            } catch(e) {
+                console.warn("랭킹 로드 실패:", e);
+                return [];
+            }
+        };
+    </script>
 </head>
 
 <body>
@@ -802,51 +845,48 @@
             const score = calcTotalScore();
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-            let rankings = [];
-            try { rankings = JSON.parse(localStorage.getItem('beastGame_rankings') || '[]'); } catch(e) {}
-            const idx = rankings.findIndex(r => r.name === playerName);
             const entry = { name: playerName, score, caught, level: pLevel, quizScore: finalQuizBestScore, allCaught, date: dateStr };
-            if (idx >= 0) {
-                if (score >= rankings[idx].score) rankings[idx] = entry;
-            } else {
-                rankings.push(entry);
+            if (window._fbSaveRanking) window._fbSaveRanking(entry);
+        }
+
+        function renderRankingList(rankings) {
+            const list = document.getElementById('ranking-list');
+            if (rankings.length === 0) {
+                list.innerHTML = '<div class="rank-empty">아직 기록이 없습니다.<br>게임을 진행하면 여기에 순위가 나타납니다! 🌟</div>';
+                return;
             }
-            rankings.sort((a, b) => b.score - a.score);
-            if (rankings.length > 20) rankings = rankings.slice(0, 20);
-            try { localStorage.setItem('beastGame_rankings', JSON.stringify(rankings)); } catch(e) {}
+            const medals = ['👑','🥈','🥉'];
+            list.innerHTML = rankings.map((r, i) => {
+                const isMe = isTutorialDone && r.name === playerName;
+                const medalClass = i < 3 ? `rank-${i+1}` : '';
+                const meClass = isMe ? ' rank-me' : '';
+                const medal = i < 3 ? medals[i] : `${i+1}위`;
+                const tags = [];
+                if (r.allCaught) tags.push('🏅완주');
+                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/7`);
+                return `<div class="rank-row ${medalClass}${meClass}">
+                    <div class="rank-num">${medal}</div>
+                    <div>
+                        <div class="rank-name">${r.name}${isMe ? ' 👈나' : ''}</div>
+                        <div class="rank-detail">Lv.${r.level} · ${r.caught}/45마리${tags.length ? ' · ' + tags.join(' · ') : ''}<br>${r.date}</div>
+                    </div>
+                    <div>
+                        <div class="rank-score">${r.score.toLocaleString()}</div>
+                        <div class="rank-score-label">점</div>
+                    </div>
+                </div>`;
+            }).join('<hr class="rank-divider">');
         }
 
         function openRanking() {
             const list = document.getElementById('ranking-list');
-            let rankings = [];
-            try { rankings = JSON.parse(localStorage.getItem('beastGame_rankings') || '[]'); } catch(e) {}
-
-            if (rankings.length === 0) {
-                list.innerHTML = '<div class="rank-empty">아직 기록이 없습니다.<br>게임을 진행하면 여기에 순위가 나타납니다! 🌟</div>';
-            } else {
-                const medals = ['👑','🥈','🥉'];
-                list.innerHTML = rankings.map((r, i) => {
-                    const isMe = isTutorialDone && r.name === playerName;
-                    const medalClass = i < 3 ? `rank-${i+1}` : '';
-                    const meClass = isMe ? ' rank-me' : '';
-                    const medal = i < 3 ? medals[i] : `${i+1}위`;
-                    const tags = [];
-                    if (r.allCaught) tags.push('🏅완주');
-                    if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/7`);
-                    return `<div class="rank-row ${medalClass}${meClass}">
-                        <div class="rank-num">${medal}</div>
-                        <div>
-                            <div class="rank-name">${r.name}${isMe ? ' 👈나' : ''}</div>
-                            <div class="rank-detail">Lv.${r.level} · ${r.caught}/45마리${tags.length ? ' · ' + tags.join(' · ') : ''}<br>${r.date}</div>
-                        </div>
-                        <div>
-                            <div class="rank-score">${r.score.toLocaleString()}</div>
-                            <div class="rank-score-label">점</div>
-                        </div>
-                    </div>`;
-                }).join('<hr class="rank-divider">');
-            }
+            list.innerHTML = '<div class="rank-empty">⏳ 불러오는 중...</div>';
             document.getElementById('ranking-view').style.display = 'flex';
+            if (window._fbLoadRanking) {
+                window._fbLoadRanking().then(rankings => renderRankingList(rankings));
+            } else {
+                renderRankingList([]);
+            }
         }
 
         function closeRanking() {
