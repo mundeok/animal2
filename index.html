@@ -195,6 +195,8 @@
         /* ===== 박사 모드 ===== */
         #hard-mode-btn { background: #7c3aed !important; }
         #hard-mode-btn.active { background: #dc2626 !important; animation: hardPulse 1.5s ease-in-out infinite; }
+        #reenc-btn { background: #0369a1 !important; }
+        #reenc-btn.safe { background: #15803d !important; }
         @keyframes hardPulse { 0%,100% { box-shadow: 0 4px #000; } 50% { box-shadow: 0 4px #7c3aed, 0 0 12px rgba(124,58,237,0.6); } }
         #quiz-timer { position: absolute; top: 5px; right: 8px; font-size: clamp(16px,3.5vmin,26px); font-weight: bold; color: #dc2626; background: rgba(255,255,255,0.95); border: 3px solid #dc2626; border-radius: 8px; padding: 2px 8px; z-index: 50; display: none; pointer-events: none; }
         #quiz-timer.hurry { animation: timerFlash 0.5s ease-in-out infinite; }
@@ -296,6 +298,58 @@
         @keyframes titleSlideIn { from { opacity:0; transform:translateY(28px) scale(0.92); } to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes glowPulse { 0%,100% { text-shadow: 0 0 18px #ffe346, 0 0 35px #f59e0b, 3px 3px 0 #000; } 50% { text-shadow: 0 0 30px #fef08a, 0 0 60px #ffe346, 0 0 90px #f59e0b, 3px 3px 0 #000; } }
         @keyframes abounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-14px) scale(1.1); } }
+
+        /* ================= 파이널 퀴즈 & 엔딩 시스템 ================= */
+        #final-quiz-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.96); z-index:8000; display:none; justify-content:center; align-items:center; }
+        .fq-container { width:min(680px,95vw); background:#fff; border:8px solid #1a1a1a; border-radius:16px; padding:clamp(18px,4vmin,28px); display:flex; flex-direction:column; gap:14px; max-height:92vh; overflow-y:auto; }
+        .fq-header { text-align:center; font-size:clamp(17px,3.8vmin,26px); font-weight:bold; color:#1a1a1a; border-bottom:4px solid #1a1a1a; padding-bottom:10px; }
+        .fq-progress { font-size:clamp(12px,2.5vmin,18px); color:#64748b; text-align:center; }
+        .fq-habitat-badge { display:inline-block; padding:4px 16px; background:#fde68a; border:2px solid #d97706; border-radius:20px; font-size:clamp(12px,2.3vmin,17px); font-weight:bold; color:#92400e; }
+        .fq-question { font-size:clamp(16px,3.2vmin,24px); font-weight:bold; line-height:1.55; color:#1a1a1a; margin-top:4px; }
+        .fq-options { display:flex; flex-direction:column; gap:10px; }
+        .fq-option { padding:clamp(10px,2.2vmin,16px) clamp(14px,3vmin,22px); background:#f0f9ff; border:3px solid #1a1a1a; border-radius:10px; font-size:clamp(14px,2.8vmin,21px); cursor:pointer; font-family:'NeoDunggeunmo',monospace; text-align:left; transition:background 0.15s, transform 0.1s; box-shadow:0 3px 0 #1a1a1a; }
+        .fq-option:active { transform:translateY(3px); box-shadow:0 0 #1a1a1a; }
+        .fq-option.correct { background:#dcfce7 !important; border-color:#16a34a !important; color:#166534; }
+        .fq-option.wrong   { background:#fee2e2 !important; border-color:#dc2626 !important; color:#991b1b; }
+        .fq-feedback { font-size:clamp(15px,3vmin,22px); text-align:center; font-weight:bold; min-height:28px; }
+
+        #ending-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#050d1a 0%,#0f2a4a 50%,#050d1a 100%); z-index:9000; display:none; justify-content:center; align-items:center; overflow:auto; }
+        .ending-inner { display:flex; flex-direction:column; align-items:center; gap:clamp(14px,3vmin,22px); padding:clamp(20px,4vmin,36px) 20px; max-width:580px; width:95%; }
+        .ending-stars { font-size:clamp(34px,9vmin,66px); animation:endingFloat 2.2s ease-in-out infinite alternate; }
+        @keyframes endingFloat { from{transform:scale(1) rotate(-4deg);} to{transform:scale(1.18) rotate(4deg);} }
+        .ending-title { font-size:clamp(22px,5.5vmin,42px); color:#ffe346; text-align:center; text-shadow:0 0 22px #fbbf24,0 0 45px #f59e0b,2px 2px 0 #000; font-weight:bold; animation:glowPulse 2.5s ease-in-out infinite; }
+        .ending-cert { background:linear-gradient(135deg,#fffbeb,#fef3c7); border:6px double #d97706; border-radius:16px; padding:clamp(18px,4vmin,30px) clamp(20px,5vmin,38px); text-align:center; box-shadow:0 10px 35px rgba(0,0,0,0.5); width:100%; }
+        .ending-cert-title { font-size:clamp(15px,3.3vmin,24px); color:#92400e; font-weight:bold; margin-bottom:10px; letter-spacing:1px; }
+        .ending-cert-name { font-size:clamp(22px,5.5vmin,40px); color:#1a1a1a; font-weight:bold; margin:10px 0; border-bottom:3px solid #d97706; padding-bottom:8px; }
+        .ending-cert-body { font-size:clamp(13px,2.6vmin,19px); color:#374151; line-height:1.8; margin:10px 0; }
+        .ending-rank { font-size:clamp(18px,4vmin,30px); color:#1a1a1a; font-weight:bold; margin:10px 0; background:#fde68a; border:3px solid #d97706; border-radius:10px; padding:8px 22px; display:inline-block; }
+        .ending-score { font-size:clamp(15px,3.2vmin,24px); color:#374151; font-weight:bold; }
+        .ending-btn { padding:clamp(14px,3vmin,20px) clamp(32px,8vmin,60px); background:#22c55e; color:#fff; border:5px solid #000; border-radius:12px; font-size:clamp(16px,3.8vmin,26px); font-family:'NeoDunggeunmo',monospace; cursor:pointer; box-shadow:0 6px #000; font-weight:bold; letter-spacing:1px; transition:transform 0.1s, box-shadow 0.1s; }
+        .ending-btn:active { transform:translateY(6px); box-shadow:0 0 #000; }
+        .ending-retry-btn { background:#3b82f6; margin-top:-4px; }
+        .ending-date { font-size:clamp(11px,2.1vmin,16px); color:rgba(255,255,255,0.55); }
+        .ending-stamp { font-size:clamp(36px,9vmin,70px); filter:drop-shadow(0 0 12px rgba(255,255,255,0.4)); }
+
+        /* =================== 랭킹 화면 =================== */
+        #ranking-view { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,13,26,0.97); z-index:9500; display:none; justify-content:center; align-items:flex-start; overflow-y:auto; padding:20px 12px; }
+        .rank-container { width:min(620px,96vw); background:#0f172a; border:4px solid #fbbf24; border-radius:16px; padding:clamp(16px,4vmin,28px); margin:auto; display:flex; flex-direction:column; gap:10px; }
+        .rank-header { text-align:center; font-size:clamp(20px,5vmin,28px); color:#fbbf24; font-weight:900; letter-spacing:2px; }
+        .rank-sub { text-align:center; font-size:12px; color:#94a3b8; margin-top:-4px; }
+        .rank-formula { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:9px 14px; font-size:11px; color:#64748b; line-height:2; }
+        .rank-row { display:grid; grid-template-columns:44px 1fr auto; align-items:center; gap:10px; background:#1e293b; border-radius:10px; padding:11px 14px; border:2px solid transparent; }
+        .rank-row.rank-1 { border-color:#fbbf24; background:linear-gradient(135deg,#1c1500,#2a1f00); }
+        .rank-row.rank-2 { border-color:#94a3b8; background:linear-gradient(135deg,#151a20,#1e2530); }
+        .rank-row.rank-3 { border-color:#c97c2c; background:linear-gradient(135deg,#1a1208,#231908); }
+        .rank-row.rank-me { outline:3px solid #3b82f6; outline-offset:2px; }
+        .rank-num { font-size:clamp(18px,4.5vmin,26px); text-align:center; }
+        .rank-name { font-size:clamp(14px,3.5vmin,18px); color:#f8fafc; font-weight:700; }
+        .rank-detail { font-size:11px; color:#64748b; margin-top:3px; line-height:1.5; }
+        .rank-score { font-size:clamp(17px,4.2vmin,24px); color:#fbbf24; font-weight:900; text-align:right; }
+        .rank-score-label { font-size:10px; color:#64748b; text-align:right; }
+        .rank-empty { text-align:center; color:#475569; padding:32px 10px; font-size:14px; line-height:2; }
+        .rank-close-btn { width:100%; padding:14px; background:#1e3a5f; color:#7dd3fc; border:2px solid #3b82f6; border-radius:10px; font-size:16px; cursor:pointer; font-family:inherit; margin-top:4px; }
+        .rank-close-btn:active { background:#2d5180; }
+        .rank-divider { border:none; border-top:1px solid #1e293b; margin:2px 0; }
     </style>
 </head>
 
@@ -324,6 +378,7 @@
                 <!-- 저장 없을 때: 시작하기만 -->
                 <div id="t-start" class="t-btn t-btn-primary">▶ 시작하기</div>
                 <div id="t-newgame" class="t-btn t-btn-secondary" style="display:none">✦ 새 게임</div>
+                <div id="t-ranking" class="t-btn t-btn-secondary" onclick="openRanking()" style="display:none; border-color:#fbbf24; color:#fbbf24;">🏆 명예의 전당</div>
             </div>
             <div id="title-footer">2026 과학탐구 · 동물의 세계 탐험 프로젝트</div>
         </div>
@@ -354,6 +409,8 @@
                 <div class="ui-buttons-container">
                     <div class="btn-ui pokedex-btn" onclick="openPokedex()">📖 도감</div>
                     <div class="btn-ui" id="hard-mode-btn" onclick="toggleHardMode()">🔬 박사</div>
+                    <div class="btn-ui" id="reenc-btn" onclick="toggleReEncounter()">🔁 재조우</div>
+                    <div class="btn-ui" style="background:#92400e !important;" onclick="openRanking()">🏆 랭킹</div>
                     <div class="btn-ui reset-btn" onclick="resetGame()">🔄 리셋</div>
                     <div class="btn-ui fs-btn" id="fs-btn" onclick="toggleFullscreen()">⛶ 전체</div>
                 </div>
@@ -481,6 +538,55 @@
         </div>
     </div>
 
+    <!-- ===== 파이널 퀴즈 오버레이 ===== -->
+    <div id="final-quiz-overlay">
+        <div class="fq-container">
+            <div class="fq-header">🏆 최종 탐험 시험</div>
+            <div class="fq-progress" id="fq-progress">1 / 7</div>
+            <div>
+                <div class="fq-habitat-badge" id="fq-habitat-badge">🌸 화단</div>
+                <br>
+                <div class="fq-question" id="fq-question"></div>
+            </div>
+            <div class="fq-options" id="fq-options"></div>
+            <div class="fq-feedback" id="fq-feedback"></div>
+        </div>
+    </div>
+
+    <!-- ===== 랭킹 화면 ===== -->
+    <div id="ranking-view">
+        <div class="rank-container">
+            <div class="rank-header">🏆 명예의 전당</div>
+            <div class="rank-sub">탐험가 종합 점수 순위</div>
+            <div class="rank-formula">
+                📊 점수 공식<br>
+                포획 수 × 100 &nbsp;+&nbsp; 레벨 × 50 &nbsp;+&nbsp; 퀴즈 정답 × 200 &nbsp;+&nbsp; 완주 보너스 1,000점
+            </div>
+            <div id="ranking-list"></div>
+            <button class="rank-close-btn" onclick="closeRanking()">✕ 닫기</button>
+        </div>
+    </div>
+
+    <!-- ===== 엔딩 화면 ===== -->
+    <div id="ending-screen">
+        <div class="ending-inner">
+            <div class="ending-stars" id="ending-stars">🌟</div>
+            <div class="ending-title" id="ending-title">탐험 완료!</div>
+            <div class="ending-cert">
+                <div class="ending-cert-title">🏅 동물 탐험 수료증 🏅</div>
+                <div class="ending-cert-name" id="ending-cert-name"></div>
+                <div class="ending-cert-body" id="ending-cert-body"></div>
+                <div class="ending-rank" id="ending-rank"></div>
+                <div class="ending-score" id="ending-score"></div>
+            </div>
+            <div class="ending-stamp" id="ending-stamp">👨‍🔬</div>
+            <div class="ending-date" id="ending-date"></div>
+            <button class="ending-btn" onclick="closeEnding()">🏠 과학실로 돌아가기</button>
+            <button class="ending-btn ending-retry-btn" id="ending-retry-btn" onclick="startFinalQuiz()" style="display:none;">🔄 다시 도전하기</button>
+            <button class="ending-btn" style="background:#92400e;" onclick="closeEnding(); openRanking();">🏆 명예의 전당 보기</button>
+        </div>
+    </div>
+
     <script>
         const animalDB = {
             "배추흰나비": { id: 1, icon: "🦋", isCaught: false, habitat: "화단", look: "날개가 2쌍 있습니다.", move: "훨훨 납니다.", trait: "빨대 모양 입으로 꿀을 먹으며 애벌레와 어른(성충) 모습이 많이 달라집니다.", q: [{ q: "날개는 몇 쌍일까?", o: ["1쌍", "2쌍", "3쌍"], a: 1 }, { q: "꿀을 먹는 입의 모양은?", o: ["빨대", "바늘", "이빨"], a: 0 }, { q: "어릴 때(애벌레)의 이름은?", o: ["구더기", "배추벌레", "장구벌레"], a: 1 }, { q: "어른벌레가 되기 전 거치는 단계는?", o: ["알", "번데기", "허물"], a: 1 }, { q: "주로 먹는 것은 무엇일까?", o: ["나뭇잎", "다른 곤충", "꽃의 꿀"], a: 2 }] },
@@ -568,6 +674,7 @@
         let pLevel = 1, pExp = 0, maxExp = 100;
         let mapName = 'lab', px = 7, py = 12, locked = false, wait = false, curA, stg, hp, inQuizMode = false;
         let hardMode = false, quizTimer = null, currentHardModeCorrectQ = -1;
+        let reEncounterMode = true; // true=일반(재조우 허용), false=안전(잡은 동물 미출현)
         let isBossEncounter = false;
         let battleCorrectCount = 0; // 현재 배틀에서 맞힌 퀴즈 수 (완벽한 배틀 배지용)
         let charFrame = 0, charDir = 0;
@@ -578,8 +685,193 @@
         let playerName = "탐험가"; 
         let isTutorialDone = false;  
         let currentBattleQuizzes = []; 
-        let observeUsedInBattle = false; 
-        let isObserveBuffActive = false; 
+        let observeUsedInBattle = false;
+        let isObserveBuffActive = false;
+        let finalQuizQuestions = [], finalQuizIndex = 0, finalQuizScore = 0, finalQuizBestScore = 0;
+
+        /* ========== 파이널 퀴즈 & 엔딩 시스템 ========== */
+        function startFinalQuiz() {
+            const habitats     = ['화단','땅속','연못','사막','극지','바다','열대우림'];
+            const habitatEmoji = {'화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','열대우림':'🌴'};
+            finalQuizQuestions = [];
+            habitats.forEach(hab => {
+                const animals = Object.entries(animalDB).filter(([, v]) => v.habitat === hab);
+                const allQs = [];
+                animals.forEach(([name, data]) => {
+                    data.q.forEach(q => allQs.push({ ...q, animalName: name, habitat: hab, emoji: habitatEmoji[hab] }));
+                });
+                if (allQs.length > 0) finalQuizQuestions.push(allQs[Math.floor(Math.random() * allQs.length)]);
+            });
+            finalQuizIndex = 0;
+            finalQuizScore = 0;
+            // 엔딩 화면 닫기
+            document.getElementById('ending-screen').style.display = 'none';
+            document.getElementById('final-quiz-overlay').style.display = 'flex';
+            showFinalQuestion();
+        }
+
+        function showFinalQuestion() {
+            const q = finalQuizQuestions[finalQuizIndex];
+            document.getElementById('fq-progress').innerText = `문제 ${finalQuizIndex + 1} / ${finalQuizQuestions.length}`;
+            document.getElementById('fq-habitat-badge').innerText = `${q.emoji} ${q.habitat}   (${q.animalName})`;
+            document.getElementById('fq-question').innerText = q.q;
+            document.getElementById('fq-feedback').innerText = '';
+            const optEl = document.getElementById('fq-options');
+            optEl.innerHTML = '';
+            q.o.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'fq-option';
+                btn.innerText = `${i + 1}. ${opt}`;
+                btn.onclick = () => _answerFinalQuiz(i, q.a, btn);
+                optEl.appendChild(btn);
+            });
+        }
+
+        function _answerFinalQuiz(chosen, correct, btn) {
+            // 모든 보기 비활성화
+            document.querySelectorAll('.fq-option').forEach(b => { b.onclick = null; b.style.cursor = 'default'; });
+            const fb = document.getElementById('fq-feedback');
+            const allBtns = document.querySelectorAll('.fq-option');
+            if (chosen === correct) {
+                btn.classList.add('correct');
+                fb.innerText = '✅ 정답!'; fb.style.color = '#16a34a';
+                finalQuizScore++;
+            } else {
+                btn.classList.add('wrong');
+                allBtns[correct].classList.add('correct');
+                fb.innerText = `❌ 오답! 정답: ${finalQuizQuestions[finalQuizIndex].o[correct]}`;
+                fb.style.color = '#dc2626';
+            }
+            setTimeout(() => {
+                finalQuizIndex++;
+                if (finalQuizIndex < finalQuizQuestions.length) {
+                    showFinalQuestion();
+                } else {
+                    document.getElementById('final-quiz-overlay').style.display = 'none';
+                    showEnding(finalQuizScore, finalQuizQuestions.length);
+                }
+            }, 1600);
+        }
+
+        function showEnding(score, total) {
+            let stars, rankText, titleText;
+            if (score === total) {
+                stars = '🌟🌟🌟'; rankText = '🌟 전설의 동물 탐험가'; titleText = '완벽한 탐험가!';
+            } else if (score >= 5) {
+                stars = '⭐⭐⭐'; rankText = '⭐ 우수 동물 탐험가'; titleText = '훌륭한 탐험가!';
+            } else if (score >= 3) {
+                stars = '⭐⭐'; rankText = '🔰 동물 탐험가'; titleText = '탐험 수료!';
+            } else {
+                stars = '⭐'; rankText = '📗 동물 탐험가 견습'; titleText = '탐험 수료!';
+            }
+            if (score > finalQuizBestScore) finalQuizBestScore = score;
+            if (!earnedBadges.includes('final_exam_passed')) {
+                earnedBadges.push('final_exam_passed');
+            }
+            saveGame(); // finalQuizBestScore + 랭킹 반영
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
+            document.getElementById('ending-stars').innerText = stars;
+            document.getElementById('ending-title').innerText = titleText;
+            document.getElementById('ending-cert-name').innerText = playerName + ' 탐험가';
+            document.getElementById('ending-cert-body').innerHTML =
+                `위 탐험가는 <b>동물의 세계 탐험 프로젝트</b>에서<br>7개 서식지 <b>45종</b>의 동물을 모두 탐험하고<br>최종 탐험 시험을 완료하였기에<br>이 수료증을 수여합니다.`;
+            document.getElementById('ending-rank').innerText = rankText;
+            document.getElementById('ending-score').innerText = `최종 점수: ${score} / ${total}`;
+            document.getElementById('ending-date').innerText = dateStr + ' · 문덕초등학교 과학탐구';
+            // 재도전 버튼: 만점 아닐 때 표시
+            document.getElementById('ending-retry-btn').style.display = (score < total) ? 'block' : 'none';
+            document.getElementById('ending-screen').style.display = 'flex';
+        }
+
+        function closeEnding() {
+            document.getElementById('ending-screen').style.display = 'none';
+        }
+
+        /* ========== 랭킹 시스템 ========== */
+        function calcTotalScore() {
+            const caught = Object.values(animalDB).filter(d => d.isCaught).length;
+            const allCaught = caught === 45;
+            return (caught * 100) + (pLevel * 50) + (finalQuizBestScore * 200) + (allCaught ? 1000 : 0);
+        }
+
+        function updateRanking() {
+            if (!playerName || !isTutorialDone) return;
+            const caught = Object.values(animalDB).filter(d => d.isCaught).length;
+            const allCaught = caught === 45;
+            const score = calcTotalScore();
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+            let rankings = [];
+            try { rankings = JSON.parse(localStorage.getItem('beastGame_rankings') || '[]'); } catch(e) {}
+            const idx = rankings.findIndex(r => r.name === playerName);
+            const entry = { name: playerName, score, caught, level: pLevel, quizScore: finalQuizBestScore, allCaught, date: dateStr };
+            if (idx >= 0) {
+                if (score >= rankings[idx].score) rankings[idx] = entry;
+            } else {
+                rankings.push(entry);
+            }
+            rankings.sort((a, b) => b.score - a.score);
+            if (rankings.length > 20) rankings = rankings.slice(0, 20);
+            try { localStorage.setItem('beastGame_rankings', JSON.stringify(rankings)); } catch(e) {}
+        }
+
+        function openRanking() {
+            const list = document.getElementById('ranking-list');
+            let rankings = [];
+            try { rankings = JSON.parse(localStorage.getItem('beastGame_rankings') || '[]'); } catch(e) {}
+
+            if (rankings.length === 0) {
+                list.innerHTML = '<div class="rank-empty">아직 기록이 없습니다.<br>게임을 진행하면 여기에 순위가 나타납니다! 🌟</div>';
+            } else {
+                const medals = ['👑','🥈','🥉'];
+                list.innerHTML = rankings.map((r, i) => {
+                    const isMe = isTutorialDone && r.name === playerName;
+                    const medalClass = i < 3 ? `rank-${i+1}` : '';
+                    const meClass = isMe ? ' rank-me' : '';
+                    const medal = i < 3 ? medals[i] : `${i+1}위`;
+                    const tags = [];
+                    if (r.allCaught) tags.push('🏅완주');
+                    if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/7`);
+                    return `<div class="rank-row ${medalClass}${meClass}">
+                        <div class="rank-num">${medal}</div>
+                        <div>
+                            <div class="rank-name">${r.name}${isMe ? ' 👈나' : ''}</div>
+                            <div class="rank-detail">Lv.${r.level} · ${r.caught}/45마리${tags.length ? ' · ' + tags.join(' · ') : ''}<br>${r.date}</div>
+                        </div>
+                        <div>
+                            <div class="rank-score">${r.score.toLocaleString()}</div>
+                            <div class="rank-score-label">점</div>
+                        </div>
+                    </div>`;
+                }).join('<hr class="rank-divider">');
+            }
+            document.getElementById('ranking-view').style.display = 'flex';
+        }
+
+        function closeRanking() {
+            document.getElementById('ranking-view').style.display = 'none';
+        }
+
+        /* ===== 맵 완료 알림 ===== */
+        function checkMapComplete() {
+            const habitatMap = { garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', jungle:'열대우림' };
+            const hab = habitatMap[mapName];
+            if (!hab) return;
+            const key = 'mapDone_' + mapName;
+            if (localStorage.getItem(key)) return; // 이미 알림 표시함
+            const normals = Object.values(animalDB).filter(d => d.habitat === hab && !d.isBoss);
+            if (normals.length === 0 || !normals.every(d => d.isCaught)) return;
+            localStorage.setItem(key, '1');
+            const emoji = { '화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','열대우림':'🌴' };
+            const pop = document.getElementById('badge-popup');
+            if (pop) {
+                pop.innerHTML = `🎉 <b>${emoji[hab]} ${hab} 완료!</b><br>서식지 동물을 모두 포획했습니다!`;
+                pop.style.cssText += '; border-color: #4ade80; font-size: 22px;';
+                pop.style.display = 'block';
+                setTimeout(() => { pop.style.cssText = ''; pop.style.display = 'none'; }, 4000);
+            }
+        }
 
         function showNamePrompt(message, defaultVal, callback) {
             const modal = document.getElementById('modal-name');
@@ -612,9 +904,10 @@
 
         function saveGame() {
             const caught = Object.keys(animalDB).filter(k => animalDB[k].isCaught);
-            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone }; 
+            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone, hardMode, reEncounterMode, finalQuizBestScore };
             localStorage.setItem('beastGame_animals', JSON.stringify(caught));
             localStorage.setItem('beastGame_player', JSON.stringify(data));
+            updateRanking();
         }
         function loadGame() {
             try {
@@ -634,14 +927,29 @@
                     };
                     earnedBadges = sData.earnedBadges || [];
                     playerName = sData.playerName || "탐험가";
-                    isTutorialDone = sData.isTutorialDone || false;
+                    isTutorialDone    = sData.isTutorialDone    || false;
+                    hardMode          = sData.hardMode          || false;
+                    reEncounterMode   = sData.reEncounterMode   !== undefined ? sData.reEncounterMode : true;
+                    finalQuizBestScore = sData.finalQuizBestScore || 0;
                 }
             } catch (e) { localStorage.clear(); }
         }
 
         function resetGame() {
-            showConfirm("모든 데이터를 지우고\n처음부터 시작하겠습니까?", (confirmed) => {
-                if (confirmed) { localStorage.clear(); location.reload(); }
+            showNamePrompt("⚠️ 리셋하려면\n숫자 1234 를 입력하세요\n(취소: 빈칸으로 확인)", "", (input) => {
+                if (input === "1234") {
+                    const _rankBak = localStorage.getItem('beastGame_rankings');
+                    localStorage.clear();
+                    if (_rankBak) localStorage.setItem('beastGame_rankings', _rankBak);
+                    location.reload();
+                } else {
+                    const pop = document.getElementById('badge-popup');
+                    if (pop) {
+                        pop.innerHTML = "❌ 리셋 취소됨";
+                        pop.style.display = 'block';
+                        setTimeout(() => pop.style.display = 'none', 1800);
+                    }
+                }
             });
         }
 
@@ -755,6 +1063,7 @@
 
         function dpadMove(dir) {
             if (document.getElementById('battle-view') && document.getElementById('battle-view').style.display === 'flex') return;
+            if (document.getElementById('pokedex-view') && document.getElementById('pokedex-view').style.display === 'flex') return;
             const p = document.getElementById('player');
             let dx = 0, dy = 0;
             if (dir === 'down')  { dy =  1; charDir = 0; p.style.transform = "scaleX(1)"; }
@@ -990,6 +1299,7 @@
                 setTimeout(() => { locked = false; }, 800);
 
                 let caught = Object.values(animalDB).filter(d => d.isCaught).length;
+                let normalCaught = Object.values(animalDB).filter(d => d.isCaught && !d.isBoss).length;
 
                 if (!isTutorialDone) {
                     isTutorialDone = true;
@@ -1000,33 +1310,46 @@
                     return;
                 }
 
-                if (caught >= 38) {
+                // ★ 전체 45종 포획 → 최종 탐험 시험
+                const allCaught = Object.values(animalDB).every(d => d.isCaught);
+                if (allCaught) {
+                    if (!earnedBadges.includes('final_exam_passed')) {
+                        msg("👨‍🔬 박사: 세…세상에!! 45마리를 전부 포획했다고?! 믿기 힘들군…!<br>자네야말로 <span style='color:#f59e0b;font-weight:bold'>[완전한 동물 박사]</span>일세! 🌟<br>마지막으로 <b>최종 탐험 시험 (7문제)</b>에 도전해보게나!<br>각 서식지에서 한 문제씩 출제되지. 부디 좋은 결과를 바라네!");
+                        setTimeout(() => startFinalQuiz(), 3200);
+                    } else {
+                        msg("👨‍🔬 박사: 자네는 이미 수료증을 받은 탐험가일세! 🏅<br>다시 <b>최종 탐험 시험</b>에 도전하고 싶다면 언제든 환영하네!");
+                        setTimeout(() => startFinalQuiz(), 2200);
+                    }
+                    return;
+                }
+
+                if (normalCaught >= 38) {
                     msg("👨‍🔬 박사: 세상에! 일반 동물 38마리를 모두 잡았군!<br>자네야말로 진정한 <span style='color:#ef4444;'>[동물 마스터]</span>일세!!");
                     return;
                 }
 
-                if (caught >= 35 && !earnedBadges.includes("milestone_35")) {
+                if (normalCaught >= 35 && !earnedBadges.includes("milestone_35")) {
                     earnedBadges.push("milestone_35");
                     inventory["마스터 포충망"] += 1;
                     msg("👨‍🔬 박사: 35마리! 이 정도면 진짜 박사 수준이야!<br>특별히 <span style='color:#facc15;'>[마스터 포충망 ×1]</span>을 드리지!");
                     saveGame(); return;
                 }
 
-                if (caught >= 28 && !earnedBadges.includes("milestone_28")) {
+                if (normalCaught >= 28 && !earnedBadges.includes("milestone_28")) {
                     earnedBadges.push("milestone_28");
                     inventory["포충망"] += 10;
                     msg("👨‍🔬 박사: 28마리! 진짜 대단한 탐험가로군!<br><b>포충망 ×10</b>을 보충해주겠네!");
                     saveGame(); return;
                 }
 
-                if (caught >= 20 && !earnedBadges.includes("milestone_20")) {
+                if (normalCaught >= 20 && !earnedBadges.includes("milestone_20")) {
                     earnedBadges.push("milestone_20");
                     inventory["낚싯대"] += 5; inventory["물고기 떡밥"] += 5; inventory["특제 영양식"] += 5;
                     msg("👨‍🔬 박사: 20마리 돌파! 장하군!<br><b>낚싯대 ×5, 물고기 떡밥 ×5, 특제 영양식 ×5</b>를 주겠네!");
                     saveGame(); return;
                 }
 
-                if (caught >= 15 && !earnedBadges.includes("master_net_received")) {
+                if (normalCaught >= 15 && !earnedBadges.includes("master_net_received")) {
                     earnedBadges.push("master_net_received");
                     inventory["마스터 포충망"] += 1;
                     msg("👨‍🔬 박사: 오오! 벌써 15마리나 잡았군!<br>보상으로 <span style='color:#facc15;'>[마스터 포충망 ×1]</span>을 주겠네! 100% 확률이지!");
@@ -1040,7 +1363,7 @@
                     saveGame();
                     return;
                 }
-                msg(`👨‍🔬 박사: 훌륭해! 현재 도감을 ${caught}마리 채웠군!`);
+                msg(`👨‍🔬 박사: 훌륭해! 현재 도감을 일반 ${normalCaught}마리 (보스 포함 ${caught}마리) 채웠군!`);
                 return;
             }
             
@@ -1065,9 +1388,13 @@
                 return;
             }
 
-            // 보스(멸종위기종) 조우: 맵당 3% 확률
+            // 가운데 통로(열 7·8, 포탈 경로) — 몬스터 조우 없는 안전 구역
+            if (px === 7 || px === 8) return;
+
+            // 보스(멸종위기종) 조우: 맵당 0.1% 확률
             const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이'};
-            if (bossEncMap[mapName] && Math.random() < 0.01) { battle(bossEncMap[mapName]); return; }
+            const bossName = bossEncMap[mapName];
+            if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.001) { battle(bossName); return; }
 
             if (mapName === 'garden') { if (t === 1) a = ran < 0.3 ? "달팽이" : (ran < 0.6 ? "메뚜기" : (ran < 0.9 ? "무당벌레" : "사마귀")); else if (t === 2) a = ran < 0.5 ? "배추흰나비" : "벌"; }
             else if (mapName === 'underground' && (t === 24 || t === 25)) { a = ran < 0.3 ? "개미" : (ran < 0.6 ? "지렁이" : (ran < 0.8 ? "매미 애벌레" : (ran < 0.95 ? "땅강아지" : "두더지"))); }
@@ -1081,7 +1408,8 @@
             else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
 
-            if (a && Math.random() < 0.08) battle(a);
+            // 재조우 모드 OFF면 이미 잡은 동물 스킵
+            if (a && (reEncounterMode || !animalDB[a].isCaught) && Math.random() < 0.04) battle(a);
         }
 
         function msg(t) { const b = document.getElementById('msg-box'); b.innerHTML = t; b.scrollTop = 0; }
@@ -1659,7 +1987,7 @@
                 if (battleCorrectCount >= 3) { try { const pc = parseInt(localStorage.getItem('perfectBattle')||'0')+1; localStorage.setItem('perfectBattle',String(pc)); } catch(e) {} }
                 saveGame(); gainExp(expGain);
                 updateMapProgress();
-                setTimeout(() => { checkBadges(); }, 1000);
+                setTimeout(() => { checkBadges(); checkMapComplete(); }, 1000);
             } else {
                 m.innerHTML = `앗!<br>${curA} 도망갔어...`;
             }
@@ -1856,6 +2184,21 @@
                 msg("박사 모드 꺼짐.");
             }
         }
+
+        /* ========== 재조우 모드 ========== */
+        function toggleReEncounter() {
+            reEncounterMode = !reEncounterMode;
+            const btn = document.getElementById('reenc-btn');
+            if (reEncounterMode) {
+                btn.classList.remove('safe');
+                btn.innerText = '🔁 재조우';
+                msg("🔁 <b>일반 모드</b> — 이미 잡은 동물도 다시 나타납니다.");
+            } else {
+                btn.classList.add('safe');
+                btn.innerText = '🛡️ 안전';
+                msg("🛡️ <b>안전 모드</b> — 이미 잡은 동물은 더 이상 나타나지 않습니다.");
+            }
+        }
         function startQuizTimer() {
             clearQuizTimer();
             let timeLeft = 15;
@@ -1922,7 +2265,8 @@
             if (hasSave) {
                 const caught = Object.values(animalDB).filter(d => d.isCaught).length;
                 const normalTotal = Object.values(animalDB).filter(d => !d.isBoss).length;
-                saveInfo.textContent = `${playerName} · Lv.${pLevel} · ${caught}/${normalTotal + 6}마리`;
+                const bossTotal = Object.values(animalDB).filter(d => d.isBoss).length;
+                saveInfo.textContent = `${playerName} · Lv.${pLevel} · ${caught}/${normalTotal + bossTotal}마리`;
                 contBtn.style.display  = 'flex';
                 startBtn.style.display = 'none';
                 newBtn.style.display   = 'block';
@@ -1931,6 +2275,14 @@
                 startBtn.style.display = 'flex';
                 newBtn.style.display   = 'none';
             }
+            // 랭킹 버튼: 기록이 있을 때만 표시
+            const rankBtn = document.getElementById('t-ranking');
+            if (rankBtn) {
+                let _rankings = [];
+                try { _rankings = JSON.parse(localStorage.getItem('beastGame_rankings') || '[]'); } catch(e) {}
+                rankBtn.style.display = _rankings.length > 0 ? 'block' : 'none';
+            }
+
             titleEl.style.opacity = '1';
             titleEl.style.display = 'flex';
 
@@ -1947,12 +2299,21 @@
         function _startFromTitle(isNew) {
             const titleEl = document.getElementById('title-view');
             if (isNew) {
+                const _rankBak2 = localStorage.getItem('beastGame_rankings');
                 localStorage.clear();
+                if (_rankBak2) localStorage.setItem('beastGame_rankings', _rankBak2);
                 Object.values(animalDB).forEach(d => d.isCaught = false);
                 inventory = { "포충망": 0, "낚싯대": 3, "물고기 떡밥": 10, "특제 영양식": 10, "마스터 포충망": 0 };
                 pLevel = 1; pExp = 0; maxExp = 100; earnedBadges = [];
                 mapName = 'lab'; px = 7; py = 12; charDir = 0; curMap = lab;
                 isTutorialDone = false;
+                hardMode = false;
+                reEncounterMode = true;
+                finalQuizBestScore = 0;
+                const _hBtn = document.getElementById('hard-mode-btn');
+                if (_hBtn) { _hBtn.classList.remove('active'); _hBtn.innerText = '🔬 박사'; }
+                const _rBtn = document.getElementById('reenc-btn');
+                if (_rBtn) { _rBtn.classList.remove('safe'); _rBtn.innerText = '🔁 재조우'; }
             }
             // 맵 먼저 그려두고 타이틀 페이드아웃
             draw(); updatePlayerUI(); initHybridControls();
@@ -1974,6 +2335,16 @@
         }
 
         window.onkeydown = (e) => {
+            // 파이널 퀴즈 중 숫자키로 답 선택
+            const fqOverlay = document.getElementById('final-quiz-overlay');
+            if (fqOverlay && fqOverlay.style.display === 'flex') {
+                if (/^[1-3]$/.test(e.key)) {
+                    const btns = document.querySelectorAll('#fq-options .fq-option');
+                    const btn = btns[parseInt(e.key) - 1];
+                    if (btn && btn.onclick) btn.click();
+                }
+                return;
+            }
             const dirMap = { ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up' };
             const dir = dirMap[e.key];
             if (dir) { e.preventDefault(); dpadMove(dir); }
@@ -1992,6 +2363,11 @@
             });
             setPlayerFrame(charFrame, charDir);
             loadGame();
+            // 저장된 모드 설정 → 버튼 UI 반영
+            const _hBtn = document.getElementById('hard-mode-btn');
+            if (_hBtn && hardMode) { _hBtn.classList.add('active'); _hBtn.innerText = '🔬 ON'; }
+            const _rBtn = document.getElementById('reenc-btn');
+            if (_rBtn && !reEncounterMode) { _rBtn.classList.add('safe'); _rBtn.innerText = '🛡️ 안전'; }
             // 타이틀 파티클 생성 후 타이틀 화면 표시
             initTitleParticles();
             showTitleScreen();
