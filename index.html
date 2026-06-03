@@ -841,6 +841,7 @@
 
         function updateRanking() {
             if (!playerName || !isTutorialDone) return;
+            if (hasBadWord(playerName)) return; // 욕설 닉네임은 랭킹 저장 차단
             const caught = Object.values(animalDB).filter(d => d.isCaught).length;
             const allCaught = caught === 45;
             const score = calcTotalScore();
@@ -914,6 +915,57 @@
             }
         }
 
+        /* ===== 욕설 필터 ===== */
+        const BAD_WORDS = [
+            // ===== 기본 욕설 =====
+            '씨발','시발','ㅅㅂ','씨팔','시팔','씨빨','싸발','씨바','시바',
+            '쌍년','쌍놈','개새','개새끼','새끼','ㅅㄲ','새끼야',
+            '병신','ㅂㅅ','병쉰','빙신','ㅂㄱ',
+            '지랄','ㅈㄹ','지럴',
+            '미친','ㅁㅊ','미쳤','미친놈','미친년',
+            '개같','개년','개놈','개쓰레기','개차반','개판','개소리','개지랄',
+            '보지','자지','찐따','창녀','걸레','꼴통','꼴통',
+            '니기미','니애미','느금마','니미','니엄마','니어미',
+            '엿같','엿먹','꺼져','죽어','뒤져','뒤지','처죽','쳐죽',
+            '좆','존나','ㅈㄴ','좆같','좃같','좆밥','자슥','자식',
+            '개허접','허접','쓰레기','찌질','쭈구리','쭈글',
+            '멍청','등신','얼간','바보','멍텅',
+            // ===== 일베 용어 =====
+            '홍어','틀딱','맘충','한남','한녀','페미','워마드',
+            '일베','일베충','어장','보슬','보빨','보살','보징어','보슬아치',
+            '급식충','진지충','ㅇㅂ','ㅇㅈ충','레깅스충','페미충','좌파충','한녀충','개저씨',
+            '좌빨','빨갱','좌좀','꼴페미','한빨','헬조선','종북','반국가',
+            '김치녀','된장녀','메갈','메갈리아','씹선비','씹덕','씹치','지잡','지잡대',
+            '삼일한','노짱','문재앙','박그네',
+            '운지','운지하','노무현','노통','문죄인','이재명','윤석열',   // 정치인 비하 조합 차단
+            // ===== 혐오 표현 =====
+            '장애인','정신병','조현병','자폐','애자','정신지체',
+            '흑형','짱깨','쪽발','왜놈','되놈','양키','짱','뙤놈',
+            // ===== 영어 욕설 =====
+            'fuck','fuk','f*ck','fck','fuq',
+            'shit','sh1t','sht',
+            'bitch','b1tch','btch',
+            'ass','a$$','a55',
+            'dick','d1ck','dik',
+            'cunt','c*nt',
+            'bastard','bstrd',
+            'nigger','nigga','n1gger','n1gga',
+            'whore','wh0re',
+            'slut','sl*t',
+            'retard','retarded',
+            'faggot','fag',
+            'motherfucker','mofo','mf',
+            'asshole','a**hole',
+            'cock','c*ck',
+            'pussy','pu**y',
+            'damn','dammit',
+            'hell','wtf','stfu','kys',
+        ];
+        function hasBadWord(str) {
+            const s = str.toLowerCase().replace(/\s/g, '');
+            return BAD_WORDS.some(w => s.includes(w));
+        }
+
         function showNamePrompt(message, defaultVal, callback) {
             const modal = document.getElementById('modal-name');
             const input = document.getElementById('modal-name-input');
@@ -922,13 +974,24 @@
             modal.style.display = 'flex';
             setTimeout(() => input.focus(), 150);
             const onOk = () => {
+                const val = input.value.trim();
+                if (val && hasBadWord(val)) {
+                    input.style.borderColor = '#dc2626';
+                    input.value = '';
+                    input.placeholder = '⚠️ 부적절한 닉네임입니다!';
+                    setTimeout(() => {
+                        input.style.borderColor = '#1a1a1a';
+                        input.placeholder = '이름 입력 (최대 8글자)';
+                    }, 2000);
+                    return;
+                }
                 modal.style.display = 'none';
                 document.getElementById('modal-name-ok').removeEventListener('click', onOk);
-                callback(input.value.trim() || null);
+                callback(val || null);
             };
             document.getElementById('modal-name-ok').addEventListener('click', onOk);
             input.addEventListener('keydown', function onEnter(e) {
-                if (e.key === 'Enter') { input.removeEventListener('keydown', onEnter); onOk(); }
+                if (e.key === 'Enter') { onOk(); }
             });
         }
 
