@@ -63,6 +63,28 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
+        /* ===== 낮/밤 시스템 ===== */
+        #night-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at 50% 30%, rgba(10,20,70,0.35) 0%, rgba(3,8,35,0.65) 100%);
+            pointer-events: none; z-index: 28; opacity: 0;
+            transition: opacity 2s ease;
+        }
+        #night-overlay.dusk  { opacity: 0.35; }
+        #night-overlay.night { opacity: 1; }
+        #night-overlay.night::after {
+            content: '· · ✦ · · ✦ · ·';
+            position: absolute; top: 6px; right: 10px;
+            color: rgba(255,255,180,0.55); font-size: 7px; letter-spacing: 2px;
+            pointer-events: none;
+        }
+        #time-indicator {
+            position: absolute; top: 10px; right: 10px;
+            font-size: clamp(14px, 2.5vmin, 20px); z-index: 50;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+            pointer-events: none;
+        }
+
         #player { position: absolute; width: calc(100% / 9 * 1.0); height: calc(100% / 9 * 1.4); margin-top: calc(-100% / 9 * 0.4); margin-left: 0; z-index: 20; }
         #map-foreground { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; overflow: hidden; }
         #player-inner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: bottom center; image-rendering: pixelated; }
@@ -163,6 +185,26 @@
 
         @keyframes blink { 50% { opacity: 0; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* ===== 색다른 표본 (Shiny) ===== */
+        .shiny-enemy {
+            filter: sepia(1) saturate(6) hue-rotate(12deg) brightness(1.6) !important;
+            animation: shinyGlow 1.6s ease-in-out infinite !important;
+        }
+        @keyframes shinyGlow {
+            0%,100% { filter: sepia(1) saturate(6) hue-rotate(12deg) brightness(1.6); }
+            50%      { filter: sepia(1) saturate(9) hue-rotate(28deg) brightness(2.1); }
+        }
+        .shiny-star {
+            position: absolute; pointer-events: none; z-index: 20;
+            font-size: min(22px, 3.5vmin);
+            animation: starPop 0.7s ease-out forwards;
+        }
+        @keyframes starPop {
+            0%   { transform: scale(0) rotate(0deg);    opacity: 1; }
+            55%  { transform: scale(1.5) rotate(200deg); opacity: 1; }
+            100% { transform: scale(0.8) rotate(360deg); opacity: 0; }
+        }
 
         .result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
         .result-msg { color: white; font-size: clamp(20px, 5vw, 36px); text-align: center; border: 6px solid white; background: #1a1a1a; padding: clamp(14px, 4vw, 30px); border-radius: 12px; line-height: 1.5; margin-bottom: 20px; max-width: 88vw; }
@@ -450,6 +492,8 @@
                     <div class="grid-container" id="map-grid"></div>
                     <div id="player"><div id="player-inner"></div></div>
                     <div id="map-foreground"></div>
+                    <div id="night-overlay"></div>
+                    <div id="time-indicator">☀️</div>
                 </div>
             </div>
             
@@ -725,6 +769,8 @@
         let hardMode = false, quizTimer = null, currentHardModeCorrectQ = -1;
         let reEncounterMode = true; // true=일반(재조우 허용), false=안전(잡은 동물 미출현)
         let isBossEncounter = false;
+        let isShinyBattle   = false; // ★ 색다른 표본
+        let shinyDB = {};            // { "동물명": true } 색다른 표본 포획 기록
         let battleCorrectCount = 0; // 현재 배틀에서 맞힌 퀴즈 수 (완벽한 배틀 배지용)
         let charFrame = 0, charDir = 0;
         let visualX = 7, visualY = 12;   // ★ 시각적 위치 (소수점 허용, 부드러운 이동용)
@@ -1013,7 +1059,7 @@
 
         function saveGame() {
             const caught = Object.keys(animalDB).filter(k => animalDB[k].isCaught);
-            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone, hardMode, reEncounterMode, finalQuizBestScore };
+            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone, hardMode, reEncounterMode, finalQuizBestScore, shinyDB };
             localStorage.setItem('beastGame_animals', JSON.stringify(caught));
             localStorage.setItem('beastGame_player', JSON.stringify(data));
             updateRanking();
@@ -1040,6 +1086,7 @@
                     hardMode          = sData.hardMode          || false;
                     reEncounterMode   = sData.reEncounterMode   !== undefined ? sData.reEncounterMode : true;
                     finalQuizBestScore = sData.finalQuizBestScore || 0;
+                    shinyDB            = sData.shinyDB            || {};
                 }
             } catch (e) { localStorage.clear(); }
         }
@@ -1505,14 +1552,40 @@
             const bossName = bossEncMap[mapName];
             if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.001) { battle(bossName); return; }
 
-            if (mapName === 'garden') { if (t === 1) a = ran < 0.3 ? "달팽이" : (ran < 0.6 ? "메뚜기" : (ran < 0.9 ? "무당벌레" : "사마귀")); else if (t === 2) a = ran < 0.5 ? "배추흰나비" : "벌"; }
-            else if (mapName === 'underground' && (t === 24 || t === 25)) { a = ran < 0.3 ? "개미" : (ran < 0.6 ? "지렁이" : (ran < 0.8 ? "매미 애벌레" : (ran < 0.95 ? "땅강아지" : "두더지"))); }
+            const night = isNightTime();   // ★ 낮/밤 시스템
+            if (mapName === 'garden') {
+                if (t === 1) {
+                    // 야행성: 달팽이·사마귀 / 주행성: 메뚜기·무당벌레도 포함
+                    a = night
+                        ? (ran < 0.65 ? "달팽이" : "사마귀")
+                        : (ran < 0.3 ? "달팽이" : (ran < 0.6 ? "메뚜기" : (ran < 0.9 ? "무당벌레" : "사마귀")));
+                } else if (t === 2) {
+                    // 배추흰나비·벌 → 낮에만 꽃에 날아다님
+                    if (!night) a = ran < 0.5 ? "배추흰나비" : "벌";
+                }
+            }
+            else if (mapName === 'underground' && (t === 24 || t === 25)) {
+                // 지하는 낮/밤 영향 적음, 단 두더지 야간 소폭 증가
+                a = night
+                    ? (ran < 0.25 ? "개미" : (ran < 0.5 ? "지렁이" : (ran < 0.7 ? "매미 애벌레" : (ran < 0.85 ? "땅강아지" : "두더지"))))
+                    : (ran < 0.3  ? "개미" : (ran < 0.6 ? "지렁이" : (ran < 0.8 ? "매미 애벌레" : (ran < 0.95 ? "땅강아지" : "두더지"))));
+            }
             else if (mapName === 'pond') {
                 if (t === 9 && !hasFrog) a = "개구리";
-                else if (t === 7) a = ran < 0.4 ? "소금쟁이" : (ran < 0.7 ? "잠자리" : "물방개");
+                else if (t === 7) {
+                    // 잠자리·소금쟁이 → 주행성, 밤엔 물방개만
+                    a = night
+                        ? "물방개"
+                        : (ran < 0.4 ? "소금쟁이" : (ran < 0.7 ? "잠자리" : "물방개"));
+                }
                 else if (t === 6 && hasFrog) a = ran < 0.25 ? "붕어" : (ran < 0.5 ? "미꾸라지" : (ran < 0.75 ? "수달" : "다슬기"));
             }
-            else if (mapName === 'desert' && (t === 12 || t === 13)) { a = ran < 0.25 ? "낙타" : (ran < 0.5 ? "사막여우" : (ran < 0.7 ? "도마뱀" : (ran < 0.85 ? "전갈" : "이집트 땅거북"))); }
+            else if (mapName === 'desert' && (t === 12 || t === 13)) {
+                // 밤: 사막여우·전갈 증가 (야행성) / 낮: 낙타·도마뱀 더 흔함
+                a = night
+                    ? (ran < 0.15 ? "낙타" : (ran < 0.45 ? "사막여우" : (ran < 0.55 ? "도마뱀" : (ran < 0.82 ? "전갈" : "이집트 땅거북"))))
+                    : (ran < 0.25 ? "낙타" : (ran < 0.5  ? "사막여우" : (ran < 0.7  ? "도마뱀" : (ran < 0.85 ? "전갈" : "이집트 땅거북"))));
+            }
             else if (mapName === 'polar') { if (t === 14) a = ran < 0.5 ? "순록" : (ran < 0.8 ? "북극여우" : "펭귄"); else if (t === 15) a = ran < 0.3 ? "펭귄" : (ran < 0.6 ? "순록" : (ran < 0.8 ? "북극여우" : "북극곰")); else if (t === 17) a = ran < 0.7 ? "바다표범" : "펭귄"; }
             else if (mapName === 'sea') { if (t === 27) a = ran < 0.35 ? "게" : (ran < 0.7 ? "짱뚱어" : (ran < 0.85 ? "조개" : "상어")); else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어"; }
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
@@ -1608,8 +1681,33 @@
             _unlockQuiz();
             document.getElementById('msg-box-battle').classList.remove('split');
 
+            // ★ 색다른 표본 판정 (1/200 확률, 보스 제외)
+            isShinyBattle = !isBossEncounter && Math.random() < 0.005;
+            if (isShinyBattle) {
+                enemySprite.classList.add('shiny-enemy');
+                // ✨ 별 파티클 연출
+                const field = document.querySelector('.battle-field');
+                const starPositions = [
+                    {top:'10%',left:'58%'},{top:'5%',left:'72%'},{top:'18%',left:'82%'},
+                    {top:'8%',left:'88%'},{top:'22%',left:'65%'},{top:'3%',left:'78%'},
+                ];
+                starPositions.forEach((pos, i) => {
+                    setTimeout(() => {
+                        if (!field) return;
+                        const s = document.createElement('div');
+                        s.className = 'shiny-star';
+                        s.innerText = ['✨','⭐','✦','✧','★','✨'][i];
+                        s.style.top = pos.top; s.style.left = pos.left;
+                        field.appendChild(s);
+                        setTimeout(() => s.remove(), 800);
+                    }, i * 120);
+                });
+            }
+
             const j = (a.charCodeAt(a.length - 1) - 44032) % 28 > 0 ? '이' : '가';
-            const introMsg = isBossEncounter ? `🚨 멸종위기종\n${a}${j}\n나타났다!` : `앗! 야생의\n${a}${j}\n나타났다!`;
+            const introMsg = isBossEncounter ? `🚨 멸종위기종\n${a}${j}\n나타났다!`
+                           : isShinyBattle   ? `✨ 색이 다른\n${a}${j}\n나타났다!`
+                           :                   `앗! 야생의\n${a}${j}\n나타났다!`;
             type(introMsg, () => {
                 if (thisBattleSession !== battleSessionId || document.getElementById('battle-view').style.display !== 'flex') return;
                 document.getElementById('battle-text').innerHTML += '<br><span class="blink-cursor">▼</span><span style="display:block;text-align:center;font-size:14px;color:#888;margin-top:6px;">화면을 탭하세요</span>';
@@ -1693,6 +1791,7 @@
 
         function clearBattleRuntimeState() {
             battleSessionId++;
+            isShinyBattle = false; // ★ 색다른 표본 초기화
             clearQuizTimer();
             if (activeTypeTimer) {
                 clearInterval(activeTypeTimer);
@@ -2077,9 +2176,11 @@
 
             if (w) {
                 animalDB[curA].isCaught = true;
-                const hardBonus = hardMode ? '<br><span style="color:#a78bfa;font-size:16px">[🔬 박사 모드 포획!]</span>' : '';
-                const bossBonus = isBossEncounter ? '<br><span style="color:#dc2626;font-size:16px">[⚠️ 멸종위기종 포획!]</span>' : '';
-                m.innerHTML = `신난다!<br>${curA} 포획!<br><span style="color:#4ade80;font-size:20px">[도감 등록]</span>${hardBonus}${bossBonus}`;
+                const hardBonus  = hardMode        ? '<br><span style="color:#a78bfa;font-size:16px">[🔬 박사 모드 포획!]</span>' : '';
+                const bossBonus  = isBossEncounter ? '<br><span style="color:#dc2626;font-size:16px">[⚠️ 멸종위기종 포획!]</span>' : '';
+                const shinyBonus = isShinyBattle   ? '<br><span style="color:#ffd700;font-size:16px">✨ 색다른 표본 획득!</span>' : '';
+                if (isShinyBattle) shinyDB[curA] = true;
+                m.innerHTML = `${isShinyBattle ? '✨ 색다른 표본!' : '신난다!'}<br>${curA} 포획!<br><span style="color:#4ade80;font-size:20px">[도감 등록]</span>${hardBonus}${bossBonus}${shinyBonus}`;
                 if (enemySprite) enemySprite.style.opacity = "0";
                 if (hardMode) {
                     const cnt = parseInt(localStorage.getItem('hardModeCatch') || '0') + 1;
@@ -2092,7 +2193,8 @@
                     setTimeout(() => msg(`🏆 멸종위기종 포획! <span style='color:#facc15;'>[마스터 포충망 ×1]</span> 획득!`), 1800);
                     saveGame();
                 }
-                const expGain = isBossEncounter ? 150 : (hardMode ? 80 : 50);
+                const baseExp = isBossEncounter ? 150 : (hardMode ? 80 : 50);
+                const expGain = isShinyBattle ? Math.round(baseExp * 2.4) : baseExp; // ★ 색다른 표본 경험치 2.4배
                 if (battleCorrectCount >= 3) { try { const pc = parseInt(localStorage.getItem('perfectBattle')||'0')+1; localStorage.setItem('perfectBattle',String(pc)); } catch(e) {} }
                 saveGame(); gainExp(expGain);
                 updateMapProgress();
@@ -2215,8 +2317,9 @@
                     i.classList.add('active');
                     showDex(k);
                 };
-                const dispName = d.isBoss ? `⚠️ ${k}` : k;
-                i.innerHTML = `<span>${d.isCaught ? d.icon : '❓'}</span> ${d.isCaught ? dispName : '----------'}`;
+                const shinyMark = shinyDB[k] ? '✨' : '';
+                const dispName  = d.isBoss ? `⚠️ ${k}` : k;
+                i.innerHTML = `<span>${d.isCaught ? d.icon : '❓'}</span> ${d.isCaught ? dispName + shinyMark : '----------'}`;
                 l.appendChild(i);
                 if (!firstVisible) firstVisible = k;
             });
@@ -2465,6 +2568,41 @@
             }
         };
 
+        /* ===== 낮/밤 시스템 (게임 내 시간) ===== */
+        // 1초 = 1게임분 → 24분에 하루 한 바퀴 (수업 40분 = 낮/밤 약 1.7 사이클)
+        let gameTimeMin = 360; // 게임 시작: 오전 6시 (360분)
+
+        function getGameHour()  { return Math.floor(gameTimeMin / 60) % 24; }
+        function isNightTime()  { const h = getGameHour(); return h < 6 || h >= 19; }
+        function isDuskTime()   { const h = getGameHour(); return h >= 17 && h < 19; }
+        function isDawnTime()   { const h = getGameHour(); return h >= 5 && h < 7; }
+
+        function tickGameTime() {
+            gameTimeMin = (gameTimeMin + 1) % 1440;
+            updateTimeOfDay();
+        }
+
+        function updateTimeOfDay() {
+            const h       = getGameHour();
+            const m       = gameTimeMin % 60;
+            const overlay = document.getElementById('night-overlay');
+            const timeEl  = document.getElementById('time-indicator');
+            if (!overlay || !timeEl) return;
+
+            overlay.classList.remove('dusk', 'night');
+            if (h < 6 || h >= 19)       overlay.classList.add('night');
+            else if (h >= 17 || h < 7)  overlay.classList.add('dusk');
+
+            const icons = ['🌙','🌙','🌙','🌙','🌙','🌅',
+                           '🌅','☀️','☀️','☀️','☀️','☀️',
+                           '☀️','☀️','☀️','☀️','☀️','🌇',
+                           '🌇','🌙','🌙','🌙','🌙','🌙'];
+            const ampm = h < 12 ? '오전' : '오후';
+            const h12  = h % 12 || 12;
+            const mm   = String(m).padStart(2, '0');
+            timeEl.innerHTML = `${icons[h]}<span style="font-size:0.65em;opacity:0.85;margin-left:2px;">${ampm} ${h12}:${mm}</span>`;
+        }
+
         window.onload = () => {
             // 스프라이트 사전 로드
             [0, 1, 3].forEach(dir => {
@@ -2480,6 +2618,8 @@
             // 타이틀 파티클 생성 후 타이틀 화면 표시
             initTitleParticles();
             showTitleScreen();
+            updateTimeOfDay();
+            setInterval(tickGameTime, 1000); // 1초 = 1게임분
         };
 
         function updateHpBar(bar, hpPercent) {
