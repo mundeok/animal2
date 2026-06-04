@@ -85,14 +85,14 @@
         .dpad-right { grid-area: right; }
         .dpad-down { grid-area: down; }
 
-        .status-bar { position: absolute; top: 20px; left: 20px; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 15px; border-radius: 8px; font-size: 18px; z-index: 50; border: 2px solid #fff; }
+        .status-bar { position: absolute; top: 10px; left: 10px; background: rgba(0, 0, 0, 0.8); color: white; padding: clamp(5px, 1.5vmin, 10px) clamp(8px, 2vmin, 15px); border-radius: 8px; font-size: clamp(11px, 2vmin, 18px); z-index: 50; border: 2px solid #fff; }
 
         /* ================= BATTLE 시스템 ================= */
         #battle-view { background: rgba(0, 0, 0, 0.95); position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 200; display: none; justify-content: center; align-items: center; }
         .battle-container { width: min(800px, 95vw); height: min(600px, 92vh); background-color: #f8f8f8; border: 8px solid #1a1a1a; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
         .battle-field { flex: 1; min-height: 0; width: 100%; position: relative; background: #f8f8f8; border-bottom: 6px solid #1a1a1a; overflow: hidden; }
-        .battle-field::before { content: ''; position: absolute; bottom: 30px; left: 40px; width: 280px; height: 70px; background: #e2e8f0; border-radius: 50%; }
-        .battle-field::after { content: ''; position: absolute; top: 170px; right: 40px; width: 220px; height: 60px; background: #e2e8f0; border-radius: 50%; }
+        .battle-field::before { content: ''; position: absolute; bottom: 5%; left: 8%; width: min(280px, 72%); height: min(70px, 15%); background: #e2e8f0; border-radius: 50%; }
+        .battle-field::after { content: ''; position: absolute; top: 35%; right: 8%; width: min(220px, 58%); height: min(60px, 13%); background: #e2e8f0; border-radius: 50%; }
         .battle-field.garden { background: linear-gradient(to bottom, #d9f99d 0%, #ffffff 100%); }
         .battle-field.pond { background: linear-gradient(to bottom, #bae6fd 0%, #ffffff 100%); }
         .battle-field.desert { background: linear-gradient(to bottom, #fef08a 0%, #ffffff 100%); }
@@ -145,8 +145,8 @@
         .hp-fill, .exp-fill { height: 100%; transition: width 0.5s; border-radius: 3px; }
         .hp-fill { background: #22c55e; width: 100%; } .exp-fill { background: #3b82f6; width: 0%; }
 
-        .ui-panel { height: min(200px, 35vh); width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0;
-            touch-action: manipulation; /* ★ Samsung Galaxy Tab 터치 즉시 응답 */ }
+        .ui-panel { height: clamp(140px, 35vh, 200px); width: 100%; display: flex; background: #fff; cursor: pointer; flex-shrink: 0;
+            touch-action: manipulation; }
         .message-box-battle { flex: 1; padding: clamp(8px, 2vmin, 15px) clamp(10px, 2.5vmin, 25px) clamp(10px, 2.5vmin, 25px); font-size: clamp(13px, 2.6vmin, 26px); line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: min(190px, 33vh); }
         .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: clamp(13px, 2.6vmin, 26px); }
         .action-menu { flex: 1; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
@@ -165,26 +165,31 @@
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         .result-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; }
-        .result-msg { color: white; font-size: 36px; text-align: center; border: 6px solid white; background: #1a1a1a; padding: 30px; border-radius: 12px; line-height: 1.5; margin-bottom: 20px; }
-        .level-up-msg { color: #fbbf24; font-size: 44px; font-weight: bold; text-shadow: 2px 2px #ef4444; display: none; animation: pop 0.5s ease-out; }
+        .result-msg { color: white; font-size: clamp(20px, 5vw, 36px); text-align: center; border: 6px solid white; background: #1a1a1a; padding: clamp(14px, 4vw, 30px); border-radius: 12px; line-height: 1.5; margin-bottom: 20px; max-width: 88vw; }
+        .level-up-msg { color: #fbbf24; font-size: clamp(26px, 6vw, 44px); font-weight: bold; text-shadow: 2px 2px #ef4444; display: none; animation: pop 0.5s ease-out; }
         @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         /* ================= POKEDEX 시스템 ================= */
         #pokedex-view { background: rgba(0, 0, 0, 0.9); position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 700; display: none; justify-content: center; align-items: center; }
         .pokedex-container { width: 850px; height: 600px; background: #c23e3e; border: 10px solid #1a1a1a; border-radius: 20px; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); max-width: 95vw; max-height: 95vh; }
-        .dex-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; color: white; font-size: 24px; font-weight: bold; }
-        .dex-main { display: flex; flex: 1; gap: 15px; margin-top: 10px; overflow: hidden; }
-        .dex-list { flex: 0.55; background: #fff; border: 5px solid #1a1a1a; overflow-y: auto; padding: 5px; border-radius: 10px; }
-        .dex-item { padding: 10px; font-size: 18px; cursor: pointer; border-bottom: 2px solid #eee; display: flex; align-items: center; gap: 8px; color: #333; }
+        .dex-header { display: flex; justify-content: space-between; align-items: center; padding: clamp(6px, 1.5vmin, 10px) clamp(10px, 2.5vmin, 20px); color: white; font-size: clamp(14px, 2.8vmin, 24px); font-weight: bold; }
+        .dex-main { display: flex; flex: 1; gap: 10px; margin-top: 8px; overflow: hidden; }
+        .dex-list { flex: 0.55; background: #fff; border: 5px solid #1a1a1a; overflow-y: auto; padding: 5px; border-radius: 10px; min-width: 0; }
+        .dex-item { padding: clamp(6px, 1.5vmin, 10px); font-size: clamp(12px, 2vmin, 18px); cursor: pointer; border-bottom: 2px solid #eee; display: flex; align-items: center; gap: 8px; color: #333; }
         .dex-item.active { background: #ffeb3b; border: 3px solid #1a1a1a; font-weight: bold; }
-        .dex-detail-view { flex: 1.45; background: #fff; border: 5px solid #1a1a1a; display: flex; flex-direction: column; padding: 15px; border-radius: 10px; overflow-y: auto; }
-        .dex-top-row { display: flex; gap: 14px; border-bottom: 4px solid #1a1a1a; padding-bottom: 12px; flex-shrink: 0; }
-        .dex-sprite-box { width: 120px; height: 120px; flex-shrink: 0; background: #f3f4f6; border: 4px solid #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; }
-        .dex-pixel-art { width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }
+        .dex-detail-view { flex: 1.45; background: #fff; border: 5px solid #1a1a1a; display: flex; flex-direction: column; padding: clamp(8px, 1.8vmin, 15px); border-radius: 10px; overflow-y: auto; min-width: 0; }
+        .dex-top-row { display: flex; gap: clamp(8px, 1.5vmin, 14px); border-bottom: 4px solid #1a1a1a; padding-bottom: 10px; flex-shrink: 0; flex-wrap: wrap; }
+        .dex-sprite-box { width: clamp(80px, 16vmin, 120px); height: clamp(80px, 16vmin, 120px); flex-shrink: 0; background: #f3f4f6; border: 4px solid #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; }
+        .dex-pixel-art { width: 75%; height: 75%; background-size: contain; background-repeat: no-repeat; background-position: center; image-rendering: pixelated; }
         .dex-stats { flex: 1; color: #1a1a1a; min-width: 0; }
-        #dex-name { font-size: 26px; margin-bottom: 4px; border-bottom: 3px solid #1a1a1a; }
+        #dex-name { font-size: clamp(16px, 3vmin, 26px); margin-bottom: 4px; border-bottom: 3px solid #1a1a1a; }
         .dex-physique p { font-size: 15px; margin-bottom: 3px; line-height: 1.4; }
-        .dex-description-box { flex: 1; min-height: 80px; margin-top: 12px; padding: 14px 16px; background: #f9fafb; border: 3px solid #1a1a1a; font-size: 20px; line-height: 1.75; border-radius: 8px; color: #1a1a1a; overflow-y: auto; }
+        .dex-description-box { flex: 1; min-height: 80px; margin-top: 10px; padding: clamp(8px, 1.5vmin, 14px) clamp(10px, 2vmin, 16px); background: #f9fafb; border: 3px solid #1a1a1a; font-size: clamp(12px, 2.2vmin, 20px); line-height: 1.75; border-radius: 8px; color: #1a1a1a; overflow-y: auto; }
+        /* 폰 세로 화면: 도감 리스트→상세 세로 배치 */
+        @media (max-width: 480px) {
+            .dex-main { flex-direction: column; }
+            .dex-list { flex: 0 0 38%; min-width: unset; }
+        }
         .badge-section { margin-top: 10px; border-top: 2px dashed #ccc; padding-top: 8px; flex-shrink: 0; }
         .badge-list { display: flex; flex-wrap: wrap; gap: 5px; }
         /* ===== 도감 퀴즈 섹션 ===== */
