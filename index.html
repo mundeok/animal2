@@ -63,6 +63,71 @@
 
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
+        /* ===== 오프닝 슬라이드쇼 ===== */
+        #opening-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 25000; background: #000; overflow: hidden;
+            cursor: pointer; transition: opacity 0.9s ease;
+        }
+        #op-slides { position: absolute; inset: 0; }
+        .op-slide {
+            position: absolute; inset: 0;
+            background-size: cover; background-position: center;
+            opacity: 0; transition: opacity 0.7s ease;
+        }
+        .op-slide.active { opacity: 1; animation: opKenBurns 3.5s ease-out forwards; }
+        @keyframes opKenBurns { from { transform: scale(1.0); } to { transform: scale(1.09); } }
+        #op-overlay {
+            position: absolute; inset: 0; z-index: 2;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        #op-habitat-label {
+            font-size: clamp(22px, 5.5vmin, 46px); color: #fff;
+            text-shadow: 2px 2px 0 #000, 0 0 24px rgba(255,255,255,0.45);
+            opacity: 0; transform: translateY(18px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            text-align: center; padding: 0 20px;
+        }
+        #op-habitat-label.show { opacity: 1; transform: translateY(0); }
+        #op-title-wrap { display: none; text-align: center; padding: 0 20px; }
+        #op-main-title {
+            font-size: clamp(30px, 8vmin, 62px); color: #ffe346;
+            text-shadow: 0 0 20px #f59e0b, 3px 3px 0 #000;
+            animation: opPop 0.65s cubic-bezier(0.2,0.9,0.3,1.1) both;
+        }
+        #op-sub-title {
+            font-size: clamp(13px, 3.2vmin, 24px); color: #fbbf24;
+            letter-spacing: 5px; margin-top: 10px; text-shadow: 1px 1px 0 #000;
+            animation: opPop 0.65s 0.18s cubic-bezier(0.2,0.9,0.3,1.1) both;
+        }
+        #op-school {
+            font-size: clamp(10px, 1.8vmin, 15px); color: rgba(255,255,255,0.65);
+            margin-top: 22px;
+            animation: opPop 0.65s 0.35s cubic-bezier(0.2,0.9,0.3,1.1) both;
+        }
+        @keyframes opPop { from { opacity:0; transform:scale(0.82) translateY(14px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        #op-progress-wrap {
+            position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+            width: min(320px, 72vw); height: 3px;
+            background: rgba(255,255,255,0.2); border-radius: 2px; z-index: 3;
+        }
+        #op-progress-bar { height: 100%; background: #fff; border-radius: 2px; width: 0%; }
+        #op-skip {
+            position: absolute; bottom: 22px; right: 18px; z-index: 3;
+            font-size: clamp(10px, 1.8vmin, 13px); color: rgba(255,255,255,0.5);
+            pointer-events: none;
+        }
+
+        /* ===== 날씨 시스템 ===== */
+        #weather-map-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 27; }
+        .wlayer-rain   { background: repeating-linear-gradient(170deg, transparent 0, transparent 6px, rgba(140,190,255,.13) 6px, rgba(140,190,255,.13) 7px); animation: rainFall .35s linear infinite; }
+        .wlayer-cloudy { background: rgba(160,165,185,.22); }
+        .wlayer-windy  { background: repeating-linear-gradient(to right, transparent 0, transparent 35px, rgba(210,220,255,.09) 35px, rgba(210,220,255,.09) 36px); animation: windBlow 1s linear infinite; }
+        .wlayer-clear  { background: transparent; }
+        @keyframes rainFall { from { background-position: 0 0; } to { background-position: -4px 10px; } }
+        @keyframes windBlow { from { background-position: 0 0; } to { background-position: 70px 0; } }
+
         /* ===== 낮/밤 시스템 ===== */
         #night-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -172,8 +237,8 @@
             touch-action: manipulation; }
         .message-box-battle { flex: 1; padding: clamp(8px, 2vmin, 15px) clamp(10px, 2.5vmin, 25px) clamp(10px, 2.5vmin, 25px); font-size: clamp(13px, 2.6vmin, 26px); line-height: 1.5; display: flex; flex-direction: column; justify-content: flex-start; position: relative; height: 100%; overflow-y: auto; max-height: min(190px, 33vh); }
         .message-box-battle.split { flex: 1.3; border-right: 6px solid #1a1a1a; font-size: clamp(13px, 2.6vmin, 26px); }
-        .action-menu { flex: 1; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
-        .quiz-box { flex: 1; padding: 10px 15px; display: flex; flex-direction: column; gap: 8px; display: none; overflow-y: auto; }
+        .action-menu { flex: 1; padding: 15px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; display: none; }
+        .quiz-box { flex: 1; padding: 10px 15px; flex-direction: column; gap: 8px; display: none; overflow-y: auto; }
         .menu-item { display: flex; align-items: center; justify-content: flex-start; font-size: clamp(12px, 1.8vw, 20px); font-weight: bold; cursor: pointer; white-space: normal; word-break: keep-all; background: #f0f9ff; border: 3px solid #1a1a1a; border-radius: 10px; box-shadow: 0 3px 0 #1a1a1a; color: #1a1a1a; padding: 6px 12px; transition: transform 0.1s, box-shadow 0.1s; -webkit-tap-highlight-color: transparent;
             /* ★ Samsung Galaxy Tab: 300ms 딜레이 제거 + 터치 즉시 응답 */
             touch-action: manipulation; }
@@ -380,7 +445,7 @@
         .ending-stamp { font-size:clamp(36px,9vmin,70px); filter:drop-shadow(0 0 12px rgba(255,255,255,0.4)); }
 
         /* =================== 랭킹 화면 =================== */
-        #ranking-view { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,13,26,0.97); z-index:9500; display:none; justify-content:center; align-items:flex-start; overflow-y:auto; padding:20px 12px; }
+        #ranking-view { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(5,13,26,0.97); z-index:11000; /* ★ title-view(10000)보다 높게 */ display:none; justify-content:center; align-items:flex-start; overflow-y:auto; padding:20px 12px; }
         .rank-container { width:min(620px,96vw); background:#0f172a; border:4px solid #fbbf24; border-radius:16px; padding:clamp(16px,4vmin,28px); margin:auto; display:flex; flex-direction:column; gap:10px; }
         .rank-header { text-align:center; font-size:clamp(20px,5vmin,28px); color:#fbbf24; font-weight:900; letter-spacing:2px; }
         .rank-sub { text-align:center; font-size:12px; color:#94a3b8; margin-top:-4px; }
@@ -457,13 +522,30 @@
 </head>
 
 <body>
+    <!-- ★ 오프닝 슬라이드쇼 -->
+    <div id="opening-screen">
+        <div id="op-slides"></div>
+        <div id="op-overlay">
+            <div id="op-label-wrap">
+                <div id="op-habitat-label"></div>
+            </div>
+            <div id="op-title-wrap">
+                <div id="op-main-title">🌿 동물의 세계</div>
+                <div id="op-sub-title">동 물 의 생 활</div>
+                <div id="op-school">OO초등학교 · 2026 과학탐구</div>
+            </div>
+        </div>
+        <div id="op-progress-wrap"><div id="op-progress-bar"></div></div>
+        <div id="op-skip">탭하여 건너뛰기 ▶</div>
+    </div>
+
     <!-- ★ 타이틀 화면 -->
     <div id="title-view">
         <div id="title-particles"></div>
         <div id="title-content">
             <div id="title-logo" style="display:none">
                 <div id="title-main">🌿 동물의 세계</div>
-                <div id="title-sub">문 덕 초 등 학 교</div>
+                <div id="title-sub"> 동 물 의 생 활</div>
             </div>
             <div id="title-animals" style="display:none">
                 <span class="t-animal">🦋</span>
@@ -504,6 +586,7 @@
                     <div class="grid-container" id="map-grid"></div>
                     <div id="player"><div id="player-inner"></div></div>
                     <div id="map-foreground"></div>
+                    <div id="weather-map-layer" class="wlayer-clear"></div>
                     <div id="night-overlay"></div>
                     <div id="time-indicator">☀️</div>
                 </div>
@@ -809,7 +892,8 @@
         let hardMode = false, quizTimer = null, currentHardModeCorrectQ = -1;
         let reEncounterMode = true; // true=일반(재조우 허용), false=안전(잡은 동물 미출현)
         let isBossEncounter = false;
-        let isShinyBattle   = false; // ★ 색다른 표본
+        let isShinyBattle   = false;
+        let isReviewBattle  = false; // ★ 복습 배틀 (이미 잡은 동물)
         let shinyDB = {};            // { "동물명": true } 색다른 표본 포획 기록
         let battleCorrectCount = 0; // 현재 배틀에서 맞힌 퀴즈 수 (완벽한 배틀 배지용)
         let charFrame = 0, charDir = 0;
@@ -915,7 +999,7 @@
                 `위 탐험가는 <b>동물의 세계 탐험 프로젝트</b>에서<br>${new Set(Object.values(animalDB).map(d=>d.habitat)).size}개 서식지 <b>${Object.values(animalDB).length}종</b>의 동물을 모두 탐험하고<br>최종 탐험 시험을 완료하였기에<br>이 수료증을 수여합니다.`;
             document.getElementById('ending-rank').innerText = rankText;
             document.getElementById('ending-score').innerText = `최종 점수: ${score} / ${total}`;
-            document.getElementById('ending-date').innerText = dateStr + ' · 문덕초등학교 과학탐구';
+            document.getElementById('ending-date').innerText = dateStr + ' · OO초등학교 과학탐구';
             // 재도전 버튼: 만점 아닐 때 표시
             document.getElementById('ending-retry-btn').style.display = (score < total) ? 'block' : 'none';
             document.getElementById('ending-screen').style.display = 'flex';
@@ -969,7 +1053,7 @@
                     <div class="rank-num">${medal}</div>
                     <div>
                         <div class="rank-name">${r.name}${isMe ? ' 👈나' : ''}</div>
-                        <div class="rank-detail">Lv.${r.level} · ${r.caught}/45마리${tags.length ? ' · ' + tags.join(' · ') : ''}<br>${r.date}</div>
+                        <div class="rank-detail">Lv.${r.level} · ${r.caught}/${Object.keys(animalDB).length}마리${tags.length ? ' · ' + tags.join(' · ') : ''}<br>${r.date}</div>
                     </div>
                     <div>
                         <div class="rank-score">${r.score.toLocaleString()}</div>
@@ -1014,7 +1098,7 @@
             const normals = Object.values(animalDB).filter(d => d.habitat === hab && !d.isBoss);
             if (normals.length === 0 || !normals.every(d => d.isCaught)) return;
             localStorage.setItem(key, '1');
-            const emoji = { '화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','열대우림':'🌴' };
+            const emoji = { '화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','바닷속':'🐙','열대우림':'🌴' };
             const pop = document.getElementById('badge-popup');
             if (pop) {
                 pop.innerHTML = `🎉 <b>${emoji[hab]} ${hab} 완료!</b><br>서식지 동물을 모두 포획했습니다!`;
@@ -1082,6 +1166,7 @@
             input.value = defaultVal || '';
             modal.style.display = 'flex';
             setTimeout(() => input.focus(), 150);
+            let onEnter; // ★ onOk에서 참조할 수 있도록 먼저 선언
             const onOk = () => {
                 const val = input.value.trim();
                 if (val && hasBadWord(val)) {
@@ -1096,12 +1181,12 @@
                 }
                 modal.style.display = 'none';
                 document.getElementById('modal-name-ok').removeEventListener('click', onOk);
+                input.removeEventListener('keydown', onEnter); // ★ 클릭으로 OK 눌러도 keydown 제거
                 callback(val || null);
             };
+            onEnter = (e) => { if (e.key === 'Enter') onOk(); };
             document.getElementById('modal-name-ok').addEventListener('click', onOk);
-            input.addEventListener('keydown', function onEnter(e) {
-                if (e.key === 'Enter') { onOk(); }
-            });
+            input.addEventListener('keydown', onEnter);
         }
 
         function showConfirm(message, callback) {
@@ -1117,7 +1202,8 @@
 
         function saveGame() {
             const caught = Object.keys(animalDB).filter(k => animalDB[k].isCaught);
-            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone, hardMode, reEncounterMode, finalQuizBestScore, shinyDB };
+            const data = { pLevel, pExp, maxExp, inventory, earnedBadges, playerName, isTutorialDone, hardMode, reEncounterMode, finalQuizBestScore, shinyDB,
+                           mapName, px, py, charDir }; // ★ 맵 위치 저장
             localStorage.setItem('beastGame_animals', JSON.stringify(caught));
             localStorage.setItem('beastGame_player', JSON.stringify(data));
             updateRanking();
@@ -1145,6 +1231,17 @@
                     reEncounterMode   = sData.reEncounterMode   !== undefined ? sData.reEncounterMode : true;
                     finalQuizBestScore = sData.finalQuizBestScore || 0;
                     shinyDB            = sData.shinyDB            || {};
+                    // ★ 맵 위치 복원
+                    if (sData.mapName) {
+                        const mapLookup = { lab, garden, pond, desert, polar, sea, underground, jungle, deepsea };
+                        if (mapLookup[sData.mapName]) {
+                            mapName = sData.mapName;
+                            curMap  = mapLookup[sData.mapName];
+                            px = sData.px ?? 7;
+                            py = sData.py ?? 12;
+                            charDir = sData.charDir ?? 0;
+                        }
+                    }
                 }
             } catch (e) { localStorage.clear(); }
         }
@@ -1405,12 +1502,15 @@
 
         function gainExp(amt) {
             pExp += amt;
-            if (pExp >= maxExp) {
+            // ★ while로 변경: 한 번에 2레벨 이상 오를 경우도 처리
+            while (pExp >= maxExp) {
                 pLevel++; pExp -= maxExp; maxExp = Math.floor(maxExp * 1.5);
                 const lvlMsg = document.getElementById('level-up-msg');
-                lvlMsg.innerText = `🎉 레벨 업! Lv.${pLevel} 🎉`;
-                lvlMsg.style.display = 'block';
-                setTimeout(() => { lvlMsg.style.display = 'none'; }, 2000);
+                if (lvlMsg) {
+                    lvlMsg.innerText = `🎉 레벨 업! Lv.${pLevel} 🎉`;
+                    lvlMsg.style.display = 'block';
+                    setTimeout(() => { lvlMsg.style.display = 'none'; }, 2000);
+                }
                 giveLevelUpReward(pLevel);
             }
             updatePlayerUI(); saveGame();
@@ -1488,6 +1588,8 @@
                 return;
             }
             if ([3, 4, 11, 16, 19, 22, 31].includes(t)) return;
+            // ★ 바닷속 맵의 tile 6은 물벽(이동 불가) — 개구리 소지 여부 무관
+            if (t === 6 && mapName === 'deepsea') return;
             if (t === 6 && !animalDB["개구리"].isCaught) {
                 msg("물이 너무 깊어! '개구리'를 잡으면 헤엄쳐서 건널 수 있을 것 같아.");
                 return;
@@ -1635,16 +1737,19 @@
             const bossName = bossEncMap[mapName];
             if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.001) { battle(bossName); return; }
 
-            const night = isNightTime();   // ★ 낮/밤 시스템
+            const night = isNightTime();
+            const rain  = currentWeather === 'rain';
+            const windy = currentWeather === 'windy';
+            const clear = currentWeather === 'clear';
             if (mapName === 'garden') {
                 if (t === 1) {
-                    // 야행성: 달팽이·사마귀·거미 / 주행성: 메뚜기·무당벌레·참새·제비
-                    a = night
-                        ? (ran < 0.4 ? "달팽이" : (ran < 0.7 ? "사마귀" : "거미"))
-                        : (ran < 0.22 ? "달팽이" : (ran < 0.44 ? "메뚜기" : (ran < 0.66 ? "무당벌레" : (ran < 0.82 ? "사마귀" : (ran < 0.91 ? "참새" : "제비")))));
+                    if      (night) a = ran < 0.4 ? "달팽이" : (ran < 0.7 ? "사마귀" : "거미");
+                    else if (rain)  a = ran < 0.8 ? "달팽이" : "사마귀"; // 비: 달팽이 폭발, 나비류 없음
+                    else if (windy) a = ran < 0.2 ? "달팽이" : (ran < 0.7 ? "메뚜기" : (ran < 0.85 ? "무당벌레" : (ran < 0.93 ? "사마귀" : "제비"))); // 바람: 메뚜기↑
+                    else            a = ran < 0.22 ? "달팽이" : (ran < 0.44 ? "메뚜기" : (ran < 0.66 ? "무당벌레" : (ran < 0.82 ? "사마귀" : (ran < 0.91 ? "참새" : "제비"))));
                 } else if (t === 2) {
-                    // 배추흰나비·벌 → 낮에만 꽃에 날아다님
-                    if (!night) a = ran < 0.5 ? "배추흰나비" : "벌";
+                    // 비 오거나 밤이면 꽃에 나비·벌 없음 / 맑으면 더 자주
+                    if (!night && !rain) a = clear ? (ran < 0.6 ? "배추흰나비" : "벌") : (ran < 0.5 ? "배추흰나비" : "벌");
                 }
             }
             else if (mapName === 'underground' && (t === 24 || t === 25)) {
@@ -1724,7 +1829,8 @@
             
             const allQuizzes = [...animalDB[a].q]; 
             allQuizzes.sort(() => Math.random() - 0.5); 
-            currentBattleQuizzes = allQuizzes.slice(0, 3); 
+            isReviewBattle = !isBossEncounter && !!animalDB[a]?.isCaught;
+            currentBattleQuizzes = allQuizzes.slice(0, isReviewBattle ? 4 : 3);
 
             document.getElementById('map-view').style.display = 'none';
             document.getElementById('battle-view').style.display = 'flex';
@@ -1803,6 +1909,7 @@
             const j = (a.charCodeAt(a.length - 1) - 44032) % 28 > 0 ? '이' : '가';
             const introMsg = isBossEncounter ? `🚨 멸종위기종\n${a}${j}\n나타났다!`
                            : isShinyBattle   ? `✨ 색이 다른\n${a}${j}\n나타났다!`
+                           : isReviewBattle  ? `⚔️ ${a}${j}\n다가왔다!\n4문제 도전!`
                            :                   `앗! 야생의\n${a}${j}\n나타났다!`;
             type(introMsg, () => {
                 if (thisBattleSession !== battleSessionId || document.getElementById('battle-view').style.display !== 'flex') return;
@@ -1810,6 +1917,30 @@
                 wait = true;
                 document.getElementById('ui-panel').classList.add('waiting');
             });
+        }
+
+        function updateActionMenuMode() {
+            const items = document.querySelectorAll('#action-menu .menu-item');
+            if (isReviewBattle) {
+                if (items[0]) items[0].innerText = '1. ⚔️ 도전! (4문제)';
+                if (items[1]) { items[1].innerText = '—'; items[1].style.opacity = '0.25'; items[1].style.pointerEvents = 'none'; }
+                if (items[2]) items[2].innerText = '3. 관찰하기';
+                if (items[3]) items[3].innerText = '4. 도망치다';
+            } else {
+                if (items[0]) items[0].innerText = '1. 싸우다';
+                if (items[1]) { items[1].innerText = '2. 가방'; items[1].style.opacity = ''; items[1].style.pointerEvents = ''; }
+                if (items[2]) items[2].innerText = '3. 관찰하기';
+                if (items[3]) items[3].innerText = '4. 도망치다';
+            }
+        }
+
+        function reviewVictory() {
+            const o = document.getElementById('result-overlay');
+            const m = document.getElementById('result-msg');
+            o.style.display = 'flex';
+            m.innerHTML = `⚔️ 완벽 승리!<br><span style="color:#fbbf24;">${curA}</span> 쓰러뜨렸다!<br><span style="color:#4ade80;font-size:18px;">+35 EXP</span>`;
+            gainExp(35);
+            setTimeout(() => { o.style.display = 'none'; exitB(); }, 2000);
         }
 
         function advanceBattle() {
@@ -1820,7 +1951,8 @@
                 document.getElementById('player-hp-panel').style.display = 'block';
                 document.getElementById('msg-box-battle').classList.add('split');
                 document.getElementById('action-menu').style.display = 'grid';
-                document.getElementById('battle-text').innerText = "무엇을 할까?";
+                document.getElementById('battle-text').innerText = isReviewBattle ? "4문제 전부 맞추면 승리!" : "무엇을 할까?";
+                updateActionMenuMode();
                 // ★ Ghost-tap 방지: 탭→메뉴 등장 순간 같은 손가락의 click/pointerup이
                 //   "1. 싸우다"를 즉시 눌러버리는 현상 차단 (350ms 동안 포인터 비활성화)
                 const menu = document.getElementById('action-menu');
@@ -1887,7 +2019,11 @@
 
         function clearBattleRuntimeState() {
             battleSessionId++;
-            isShinyBattle = false; // ★ 색다른 표본 초기화
+            isShinyBattle  = false;
+            isReviewBattle = false;
+            // ★ shiny-enemy CSS 클래스 제거 (다음 배틀에 황금빛 잔류 방지)
+            const _es = document.getElementById('enemy-sprite');
+            if (_es) _es.classList.remove('shiny-enemy');
             clearQuizTimer();
             if (activeTypeTimer) {
                 clearInterval(activeTypeTimer);
@@ -1934,8 +2070,8 @@
         //   (battle-field 전체 탭 시 quiz-box 위 경계 실수 터치가 도망으로 처리되던 버그 수정)
         const enemySpriteEscape = document.getElementById('enemy-sprite');
         if (enemySpriteEscape) {
-            ['touchstart', 'pointerdown', 'click'].forEach(type => {
-                enemySpriteEscape.addEventListener(type, (e) => {
+            ['touchstart', 'pointerdown', 'click'].forEach(evType => {
+                enemySpriteEscape.addEventListener(evType, (e) => {
                     if (!inQuizMode) return;
                     e.preventDefault();
                     e.stopPropagation();
@@ -2089,6 +2225,12 @@
                 stg++;
                 setTimeout(() => {
                     if (stg >= currentBattleQuizzes.length) {
+                        if (isReviewBattle) {
+                            hp = 0; updateHpBar(enemyHpBar, hp);
+                            document.getElementById('battle-text').innerText = "완벽하다! 4문제 전부 맞혔다!";
+                            setTimeout(() => reviewVictory(), 800);
+                            return;
+                        }
                         document.getElementById('battle-text').innerText = "지쳤다! 가방을 열자!";
                         hp = 30;
                         updateHpBar(enemyHpBar, hp);
@@ -2106,8 +2248,13 @@
                 } catch(e) {}
                 document.getElementById('battle-text').innerText = i === -1 ? "⏱️ 시간 초과!" : "틀렸어!";
                 setTimeout(() => {
+                    if (isReviewBattle) {
+                        document.getElementById('battle-text').innerText = "아쉽다! 도망쳐 버렸다...";
+                        setTimeout(() => exitB(), 1000);
+                        return;
+                    }
                     let runAwayRate = Math.max(0.05, 0.30 - (pLevel * 0.02));
-                    if (hardMode) runAwayRate = Math.min(runAwayRate + 0.1, 0.4); // 박사 모드에서 도망 확률 약간 높임
+                    if (hardMode) runAwayRate = Math.min(runAwayRate + 0.1, 0.4);
                     if (Math.random() < runAwayRate) res(false);
                     else {
                         document.getElementById('battle-text').innerText = "다시 해봐!";
@@ -2318,10 +2465,11 @@
 
         function resetBattleMenu() {
             inQuizMode = false;
-            lastBattleSelectAt = 0;  // ★ 메뉴 복귀 시 디바운스 리셋
+            lastBattleSelectAt = 0;
             document.getElementById('quiz-box').style.display = 'none';
             document.getElementById('action-menu').style.display = 'grid';
-            document.getElementById('battle-text').innerText = "무엇을 할까?";
+            document.getElementById('battle-text').innerText = isReviewBattle ? "4문제 전부 맞추면 승리!" : "무엇을 할까?";
+            updateActionMenuMode(); // ★ 복습 모드에서 가방 버튼 비활성 상태 유지
             _unlockQuiz();
         }
 
@@ -2618,6 +2766,7 @@
                 hardMode = false;
                 reEncounterMode = true;
                 finalQuizBestScore = 0;
+                shinyDB = {}; // ★ 새 게임 시 색다른 표본 기록 초기화
                 const _hBtn = document.getElementById('hard-mode-btn');
                 if (_hBtn) { _hBtn.classList.remove('active'); _hBtn.innerText = '🔬 박사'; }
                 const _rBtn = document.getElementById('reenc-btn');
@@ -2637,7 +2786,8 @@
                         msg(`⚡ <b>오프닝 튜토리얼</b><br>화면 아무 곳이나 가고 싶은 방향으로 터치(클릭)해서 <b>[👨‍🔬 박사님]</b>께 말을 거세요!`);
                     });
                 } else {
-                    msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 아래쪽 🌀포탈을 통해 바깥세상을 탐험하세요!`);
+                    const _areas = { lab:'과학실', garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', jungle:'열대우림' };
+                    msg(`👦 <b>${playerName}</b> 탐험가님, 환영합니다! 현재 위치: <b>${_areas[mapName] || '과학실'}</b>`);
                 }
             }, 550);
         }
@@ -2673,8 +2823,31 @@
         function isDuskTime()   { const h = getGameHour(); return h >= 17 && h < 19; }
         function isDawnTime()   { const h = getGameHour(); return h >= 5 && h < 7; }
 
+        /* ===== 날씨 시스템 ===== */
+        const WEATHERS = ['clear','clear','clear','rain','cloudy','windy'];
+        const WEATHER_LABEL = { clear:'☀️ 맑음', rain:'🌧️ 비', cloudy:'⛅ 흐림', windy:'💨 바람' };
+        const WEATHER_ICON  = { clear:'', rain:'🌧️', cloudy:'⛅', windy:'💨' };
+        let currentWeather = 'clear';
+        let weatherTimer   = 200;
+
+        function applyWeatherVisual() {
+            const layer = document.getElementById('weather-map-layer');
+            if (layer) layer.className = 'wlayer-' + currentWeather;
+        }
+        function changeWeather() {
+            const prev = currentWeather;
+            do { currentWeather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)]; }
+            while (currentWeather === prev && Math.random() < 0.7);
+            weatherTimer = 180 + Math.floor(Math.random() * 180);
+            applyWeatherVisual();
+            if (mapName !== 'lab' && document.getElementById('map-view')?.style.display !== 'none')
+                msg(`🌤️ 날씨가 바뀌었다! <b>${WEATHER_LABEL[currentWeather]}</b>`);
+        }
+
         function tickGameTime() {
             gameTimeMin = (gameTimeMin + 1) % 1440;
+            weatherTimer--;
+            if (weatherTimer <= 0) changeWeather();
             updateTimeOfDay();
         }
 
@@ -2687,16 +2860,107 @@
 
             overlay.classList.remove('dusk', 'night');
             if (h < 6 || h >= 19)       overlay.classList.add('night');
-            else if (h >= 17 || h < 7)  overlay.classList.add('dusk');
+            else if (h >= 17 && h < 19)  overlay.classList.add('dusk'); // 황혼 17~18시
 
             const icons = ['🌙','🌙','🌙','🌙','🌙','🌅',
                            '🌅','☀️','☀️','☀️','☀️','☀️',
                            '☀️','☀️','☀️','☀️','☀️','🌇',
                            '🌇','🌙','🌙','🌙','🌙','🌙'];
-            const ampm = h < 12 ? '오전' : '오후';
-            const h12  = h % 12 || 12;
-            const mm   = String(m).padStart(2, '0');
-            timeEl.innerHTML = `${icons[h]}<span style="font-size:0.65em;opacity:0.85;margin-left:2px;">${ampm} ${h12}:${mm}</span>`;
+            const ampm  = h < 12 ? '오전' : '오후';
+            const h12   = h % 12 || 12;
+            const mm    = String(m).padStart(2, '0');
+            const wIcon = WEATHER_ICON?.[currentWeather] || '';
+            timeEl.innerHTML = `${icons[h]}${wIcon}<span style="font-size:0.65em;opacity:0.85;margin-left:2px;">${ampm} ${h12}:${mm}</span>`;
+        }
+
+        /* ===== 오프닝 슬라이드쇼 ===== */
+        const OP_SLIDES = [
+            { img: 'static/op_garden.png', label: '🌿 화단의 세계' },
+            { img: 'static/op_pond.png',   label: '💧 연못의 세계' },
+            { img: 'static/op_desert.png', label: '🏜️ 사막의 세계' },
+            { img: 'static/op_polar.png',  label: '❄️ 극지의 세계' },
+            { img: 'static/op_sea.png',    label: '🌊 바다의 세계' },
+        ];
+        const OP_SLIDE_MS = 2600; // 슬라이드당 표시 시간
+        const OP_TITLE_MS = 2800; // 타이틀 표시 시간
+        let opTimer = null, opDone = false;
+
+        function initOpeningScreen() {
+            const container = document.getElementById('op-slides');
+            // 슬라이드 DOM 생성 + 이미지 프리로드
+            OP_SLIDES.forEach((s, i) => {
+                const div = document.createElement('div');
+                div.className = 'op-slide';
+                div.id = `op-slide-${i}`;
+                div.style.backgroundImage = `url('${s.img}')`;
+                container.appendChild(div);
+                new Image().src = s.img; // 프리로드
+            });
+            // 탭/클릭 → 건너뛰기
+            const opEl = document.getElementById('opening-screen');
+            opEl.addEventListener('click',      () => finishOpening(), { once: true });
+            opEl.addEventListener('touchstart', () => finishOpening(), { once: true, passive: true });
+            showOpSlide(0);
+        }
+
+        function showOpSlide(idx) {
+            if (opDone) return;
+            // 슬라이드 전환
+            document.querySelectorAll('.op-slide').forEach(el => {
+                el.classList.remove('active');
+                void el.offsetWidth; // reflow
+            });
+            const slide = document.getElementById(`op-slide-${idx}`);
+            if (slide) slide.classList.add('active');
+            // 라벨 텍스트
+            const label = document.getElementById('op-habitat-label');
+            if (label) {
+                label.classList.remove('show');
+                label.innerText = OP_SLIDES[idx].label;
+                setTimeout(() => label.classList.add('show'), 120);
+            }
+            // 진행 바
+            const bar = document.getElementById('op-progress-bar');
+            const total = OP_SLIDES.length * OP_SLIDE_MS + OP_TITLE_MS;
+            const elapsed = idx * OP_SLIDE_MS;
+            if (bar) {
+                bar.style.transition = 'none';
+                bar.style.width = (elapsed / total * 100) + '%';
+                setTimeout(() => {
+                    bar.style.transition = `width ${OP_SLIDE_MS}ms linear`;
+                    bar.style.width = ((elapsed + OP_SLIDE_MS) / total * 100) + '%';
+                }, 50);
+            }
+            // 다음 단계
+            opTimer = setTimeout(() => {
+                if (idx + 1 < OP_SLIDES.length) showOpSlide(idx + 1);
+                else showOpMainTitle();
+            }, OP_SLIDE_MS);
+        }
+
+        function showOpMainTitle() {
+            if (opDone) return;
+            document.getElementById('op-label-wrap').style.display  = 'none';
+            document.getElementById('op-title-wrap').style.display  = 'block';
+            // 진행 바 완성
+            const bar = document.getElementById('op-progress-bar');
+            if (bar) {
+                bar.style.transition = `width ${OP_TITLE_MS}ms linear`;
+                bar.style.width = '100%';
+            }
+            opTimer = setTimeout(() => finishOpening(), OP_TITLE_MS);
+        }
+
+        function finishOpening() {
+            if (opDone) return;
+            opDone = true;
+            if (opTimer) clearTimeout(opTimer);
+            const op = document.getElementById('opening-screen');
+            if (op) {
+                op.style.opacity = '0';
+                op.style.pointerEvents = 'none';
+                setTimeout(() => op.remove(), 950);
+            }
         }
 
         window.onload = () => {
@@ -2713,9 +2977,11 @@
             if (_rBtn && !reEncounterMode) { _rBtn.classList.add('safe'); _rBtn.innerText = '🛡️ 안전'; }
             // 타이틀 파티클 생성 후 타이틀 화면 표시
             initTitleParticles();
-            showTitleScreen();
+            showTitleScreen();      // 타이틀 화면 준비 (오프닝 뒤에 보일 것)
             updateTimeOfDay();
-            setInterval(tickGameTime, 1000); // 1초 = 1게임분
+            applyWeatherVisual();
+            setInterval(tickGameTime, 1000);
+            initOpeningScreen();   // ★ 오프닝 슬라이드쇼 시작 (타이틀 위에 덮어씌움)
         };
 
         function updateHpBar(bar, hpPercent) {
