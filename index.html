@@ -497,7 +497,7 @@
                 if (!user) return;
             }
             // ② 점수 유효성 검사 (조작 방지)
-            if (!entry.name || entry.score > 30000 || entry.caught > 50 || entry.quizScore > 8 || entry.shinyCount > 50) return;
+            if (!entry.name || entry.score > 30000 || entry.caught > 56 || entry.quizScore > 8 || entry.shinyCount > 56) return;
             try {
                 const ref = doc(db, "rankings", entry.name);
                 const existing = await getDoc(ref);
@@ -1751,7 +1751,7 @@
                     else if (rain)  a = ran < 0.8 ? "달팽이" : "사마귀"; // 비: 달팽이 폭발, 나비류 없음
                     else if (windy) a = ran < 0.18 ? "달팽이" : (ran < 0.65 ? "메뚜기" : (ran < 0.8 ? "무당벌레" : (ran < 0.9 ? "사마귀" : (ran < 0.95 ? "참새" : "제비")))); // 바람: 메뚜기↑, 참새 추가
                     else {
-                        a = ran < 0.20 ? "달팽이" : (ran < 0.42 ? "메뚜기" : (ran < 0.63 ? "무당벌레" : (ran < 0.79 ? "사마귀" : (ran < 0.88 ? "참새" : (ran < 0.97 ? "제비" : "거미"))))));
+                        a = ran < 0.20 ? "달팽이" : (ran < 0.42 ? "메뚜기" : (ran < 0.63 ? "무당벌레" : (ran < 0.79 ? "사마귀" : (ran < 0.88 ? "참새" : (ran < 0.97 ? "제비" : "거미")))));
                         // 거미 미발견 시 힌트 (낮에 풀밭 밟을 때 3% 확률)
                         if (!animalDB["거미"].isCaught && Math.random() < 0.03)
                             msg("🌙 어딘가에서 거미줄 소리가 들린다… 밤에 더 자주 나타나는 것 같은데?");
