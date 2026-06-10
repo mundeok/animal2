@@ -872,7 +872,7 @@
             "polar": { icon: "❄️", name: "극지 마스터", check: () => ["펭귄", "북극곰", "순록", "북극여우", "바다표범"].every(name => animalDB[name].isCaught) },
             "sea": { icon: "🌊", name: "바다 마스터", check: () => ["게", "짱뚱어", "조개", "상어", "갈매기", "펠리컨"].every(name => animalDB[name].isCaught) },
             "deepsea": { icon: "🐙", name: "바닷속 마스터", check: () => ["불가사리", "해파리", "문어", "오징어"].every(n => animalDB[n].isCaught) },
-            "master": { icon: "👑", name: "동물 박사", check: () => Object.values(animalDB).filter(d => !d.isBoss && d.isCaught).length >= 38 },
+            "master": { icon: "👑", name: "동물 박사", check: () => Object.values(animalDB).filter(d => !d.isBoss && d.isCaught).length >= 48 },
             "jungle": { icon: "🌴", name: "열대우림 마스터", check: () => ["고릴라","앵무새","카멜레온","나무늘보","피라냐"].every(n => animalDB[n].isCaught) },
             "allmaster": { icon: "🌟", name: "완전한 동물 박사", check: () => Object.values(animalDB).every(d => d.isCaught) },
             "hardcatch": { icon: "🔬", name: "박사 모드 첫 포획", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 1 },
@@ -1047,7 +1047,7 @@
                 const medal = i < 3 ? medals[i] : `${i+1}위`;
                 const tags = [];
                 if (r.allCaught) tags.push('🏅완주');
-                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/7`);
+                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/8`);
                 if (r.shinyCount > 0) tags.push(`✨×${r.shinyCount}`);
                 return `<div class="rank-row ${medalClass}${meClass}">
                     <div class="rank-num">${medal}</div>
@@ -1099,12 +1099,14 @@
             if (normals.length === 0 || !normals.every(d => d.isCaught)) return;
             localStorage.setItem(key, '1');
             const emoji = { '화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','바닷속':'🐙','열대우림':'🌴' };
+            const boss = Object.values(animalDB).find(d => d.habitat === hab && d.isBoss);
+            const bossMsg = (boss && !boss.isCaught) ? `<br><span style="color:#dc2626;font-size:14px">⚠️ 멸종위기종은 아직 미발견!</span>` : '';
             const pop = document.getElementById('badge-popup');
             if (pop) {
-                pop.innerHTML = `🎉 <b>${emoji[hab]} ${hab} 완료!</b><br>서식지 동물을 모두 포획했습니다!`;
-                pop.style.cssText += '; border-color: #4ade80; font-size: 22px;';
+                pop.innerHTML = `🎉 <b>${emoji[hab]} ${hab} 일반 동물 완료!</b><br>서식지 일반 동물을 모두 포획했습니다!${bossMsg}`;
+                pop.style.cssText += '; border-color: #4ade80; font-size: 20px;';
                 pop.style.display = 'block';
-                setTimeout(() => { pop.style.cssText = ''; pop.style.display = 'none'; }, 4000);
+                setTimeout(() => { pop.style.cssText = ''; pop.style.display = 'none'; }, 5000);
             }
         }
 
@@ -1649,7 +1651,7 @@
                     return;
                 }
 
-                // ★ 전체 45종 포획 → 최종 탐험 시험
+                // ★ 전체 56종 포획 → 최종 탐험 시험
                 const allCaught = Object.values(animalDB).every(d => d.isCaught);
                 if (allCaught) {
                     if (!earnedBadges.includes('final_exam_passed')) {
@@ -1697,10 +1699,12 @@
                     saveGame(); return;
                 }
 
-                if (inventory["포충망"] < 2 || inventory["낚싯대"] < 2) {
-                    msg("👨‍🔬 박사: 도구가 부족한가? <br>자! <b>포충망 10개 · 낚싯대 5개</b> 더 가져가게!");
-                    inventory["포충망"] = Math.max(inventory["포충망"], 10);
-                    inventory["낚싯대"] = Math.max(inventory["낚싯대"], 5);
+                if (inventory["포충망"] < 2 || inventory["낚싯대"] < 2 || inventory["물고기 떡밥"] < 2 || inventory["특제 영양식"] < 2) {
+                    msg("👨‍🔬 박사: 도구가 부족한가? <br>자! <b>포충망 10개 · 낚싯대 5개 · 물고기 떡밥 5개 · 특제 영양식 5개</b> 더 가져가게!");
+                    inventory["포충망"]      = Math.max(inventory["포충망"], 10);
+                    inventory["낚싯대"]      = Math.max(inventory["낚싯대"], 5);
+                    inventory["물고기 떡밥"] = Math.max(inventory["물고기 떡밥"], 5);
+                    inventory["특제 영양식"] = Math.max(inventory["특제 영양식"], 5);
                     saveGame();
                     return;
                 }
@@ -1732,10 +1736,10 @@
             // 가운데 통로(열 7·8, 포탈 경로) — 몬스터 조우 없는 안전 구역
             if (px === 7 || px === 8) return;
 
-            // 보스(멸종위기종) 조우: 맵당 0.1% 확률
+            // 보스(멸종위기종) 조우: 맵당 0.5% 확률
             const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이','deepsea':'돌고래'};
             const bossName = bossEncMap[mapName];
-            if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.001) { battle(bossName); return; }
+            if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.005) { battle(bossName); return; }
 
             const night = isNightTime();
             const rain  = currentWeather === 'rain';
@@ -1745,11 +1749,19 @@
                 if (t === 1) {
                     if      (night) a = ran < 0.4 ? "달팽이" : (ran < 0.7 ? "사마귀" : "거미");
                     else if (rain)  a = ran < 0.8 ? "달팽이" : "사마귀"; // 비: 달팽이 폭발, 나비류 없음
-                    else if (windy) a = ran < 0.2 ? "달팽이" : (ran < 0.7 ? "메뚜기" : (ran < 0.85 ? "무당벌레" : (ran < 0.93 ? "사마귀" : "제비"))); // 바람: 메뚜기↑
-                    else            a = ran < 0.22 ? "달팽이" : (ran < 0.44 ? "메뚜기" : (ran < 0.66 ? "무당벌레" : (ran < 0.82 ? "사마귀" : (ran < 0.91 ? "참새" : "제비"))));
+                    else if (windy) a = ran < 0.18 ? "달팽이" : (ran < 0.65 ? "메뚜기" : (ran < 0.8 ? "무당벌레" : (ran < 0.9 ? "사마귀" : (ran < 0.95 ? "참새" : "제비")))); // 바람: 메뚜기↑, 참새 추가
+                    else {
+                        a = ran < 0.20 ? "달팽이" : (ran < 0.42 ? "메뚜기" : (ran < 0.63 ? "무당벌레" : (ran < 0.79 ? "사마귀" : (ran < 0.88 ? "참새" : (ran < 0.97 ? "제비" : "거미"))))));
+                        // 거미 미발견 시 힌트 (낮에 풀밭 밟을 때 3% 확률)
+                        if (!animalDB["거미"].isCaught && Math.random() < 0.03)
+                            msg("🌙 어딘가에서 거미줄 소리가 들린다… 밤에 더 자주 나타나는 것 같은데?");
+                    }
                 } else if (t === 2) {
                     // 비 오거나 밤이면 꽃에 나비·벌 없음 / 맑으면 더 자주
                     if (!night && !rain) a = clear ? (ran < 0.6 ? "배추흰나비" : "벌") : (ran < 0.5 ? "배추흰나비" : "벌");
+                    // 배추흰나비·벌 미발견 시 힌트 (밤/비에 꽃 밟을 때)
+                    else if (!animalDB["배추흰나비"].isCaught && Math.random() < 0.06)
+                        msg("🌸 꽃 위에 뭔가 앉아있었는데… 낮에 맑은 날 다시 와봐야겠다.");
                 }
             }
             else if (mapName === 'underground' && (t === 24 || t === 25)) {
@@ -1776,9 +1788,16 @@
             }
             else if (mapName === 'polar') { if (t === 14) a = ran < 0.5 ? "순록" : (ran < 0.8 ? "북극여우" : "펭귄"); else if (t === 15) a = ran < 0.3 ? "펭귄" : (ran < 0.6 ? "순록" : (ran < 0.8 ? "북극여우" : "북극곰")); else if (t === 17) a = ran < 0.7 ? "바다표범" : "펭귄"; }
             else if (mapName === 'sea') {
-                if (t === 27) a = night
-                    ? (ran < 0.35 ? "게" : (ran < 0.65 ? "짱뚱어" : (ran < 0.82 ? "조개" : "상어")))
-                    : (ran < 0.25 ? "게" : (ran < 0.48 ? "짱뚱어" : (ran < 0.63 ? "조개" : (ran < 0.78 ? "상어" : (ran < 0.89 ? "갈매기" : "펠리컨")))));
+                if (t === 27) {
+                    if (night) {
+                        a = ran < 0.35 ? "게" : (ran < 0.65 ? "짱뚱어" : (ran < 0.82 ? "조개" : "상어"));
+                        // 갈매기·펠리컨 미발견 시 밤에 힌트
+                        if ((!animalDB["갈매기"].isCaught || !animalDB["펠리컨"].isCaught) && Math.random() < 0.05)
+                            msg("🌅 날이 밝으면 갯벌에 새들이 날아올 것 같다…");
+                    } else {
+                        a = ran < 0.25 ? "게" : (ran < 0.48 ? "짱뚱어" : (ran < 0.63 ? "조개" : (ran < 0.78 ? "상어" : (ran < 0.89 ? "갈매기" : "펠리컨"))));
+                    }
+                }
                 else if (t === 28 || t === 29) a = ran < 0.5 ? "조개" : "상어";
             }
             else if (mapName === 'deepsea') {
@@ -2528,10 +2547,12 @@
             prog.style.display = 'block';
             const caught = list.filter(n => animalDB[n]?.isCaught).length;
             const pct = Math.round((caught / list.length) * 100);
-            document.getElementById('prog-label').innerText = `${mapKo[mapName]} ${caught}/${list.length}마리`;
+            const bossEntry = Object.values(animalDB).find(d => d.isBoss && d.habitat === mapKo[mapName]);
+            const bossTag = bossEntry ? (bossEntry.isCaught ? ' ⚠️✅' : ' ⚠️?') : '';
+            document.getElementById('prog-label').innerText = `${mapKo[mapName]} ${caught}/${list.length}마리${bossTag}`;
             const fill = document.getElementById('prog-bar-fill');
             fill.style.width = pct + '%';
-            fill.className = 'prog-bar-fill' + (caught === list.length ? ' full' : '');
+            fill.className = 'prog-bar-fill' + (caught === list.length && (!bossEntry || bossEntry.isCaught) ? ' full' : '');
         }
 
         function openPokedex() { document.getElementById('map-view').style.display = 'none'; document.getElementById('pokedex-view').style.display = 'flex'; updateDex(); }
@@ -2550,9 +2571,13 @@
             const l = document.getElementById('dex-list');
             l.innerHTML = '';
             const searchVal = (document.getElementById('dex-search')?.value || '').trim().toLowerCase();
-            const animals = Object.keys(animalDB);
+            const allKeys = Object.keys(animalDB);
+            // 일반 동물 먼저, 보스(멸종위기종) 나중
+            const normalKeys = allKeys.filter(k => !animalDB[k].isBoss);
+            const bossKeys   = allKeys.filter(k =>  animalDB[k].isBoss);
             let firstVisible = null;
-            animals.forEach(k => {
+
+            function appendItem(k) {
                 const d = animalDB[k];
                 if (dexFilter === 'caught'  && !d.isCaught) return;
                 if (dexFilter === 'missing' &&  d.isCaught) return;
@@ -2570,7 +2595,28 @@
                 i.innerHTML = `<span>${d.isCaught ? d.icon : '❓'}</span> ${d.isCaught ? dispName + shinyMark : '----------'}`;
                 l.appendChild(i);
                 if (!firstVisible) firstVisible = k;
+            }
+
+            normalKeys.forEach(appendItem);
+
+            // 보스 구분선 (보스가 필터에 걸릴 때만 표시)
+            const bossVisible = bossKeys.some(k => {
+                const d = animalDB[k];
+                if (dexFilter === 'caught'  && !d.isCaught) return false;
+                if (dexFilter === 'missing' &&  d.isCaught) return false;
+                if (!['all','caught','missing'].includes(dexFilter) && d.habitat !== dexFilter) return false;
+                if (searchVal && !k.toLowerCase().includes(searchVal)) return false;
+                return true;
             });
+            if (bossVisible) {
+                const sep = document.createElement('div');
+                sep.style.cssText = 'padding:6px 8px;font-size:11px;font-weight:bold;color:#dc2626;background:#fef2f2;border-top:2px solid #dc2626;border-bottom:1px solid #fecdd3;letter-spacing:1px;';
+                sep.textContent = '⚠️ 멸종위기종';
+                l.appendChild(sep);
+            }
+
+            bossKeys.forEach(appendItem);
+
             if (firstVisible) showDex(firstVisible);
         }
 
