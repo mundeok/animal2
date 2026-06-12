@@ -497,7 +497,7 @@
                 if (!user) return;
             }
             // ② 점수 유효성 검사 (조작 방지)
-            if (!entry.name || entry.score > 30000 || entry.caught > 56 || entry.quizScore > 8 || entry.shinyCount > 56) return;
+            if (!entry.name || entry.score > 35000 || entry.caught > 62 || entry.quizScore > 9 || entry.shinyCount > 62) return;
             try {
                 const ref = doc(db, "rankings", entry.name);
                 const existing = await getDoc(ref);
@@ -673,6 +673,7 @@
                     <button class="dex-filter-btn"        data-filter="바다"   onclick="setDexFilter('바다',this)">🌊바다</button>
                     <button class="dex-filter-btn"        data-filter="바닷속" onclick="setDexFilter('바닷속',this)">🐙바닷속</button>
                     <button class="dex-filter-btn"        data-filter="열대우림" onclick="setDexFilter('열대우림',this)">🌴열대</button>
+                    <button class="dex-filter-btn"        data-filter="숲"      onclick="setDexFilter('숲',this)">🌲숲</button>
                     <button class="dex-filter-btn"        data-filter="caught" onclick="setDexFilter('caught',this)">✅잡음</button>
                     <button class="dex-filter-btn"        data-filter="missing" onclick="setDexFilter('missing',this)">❓미발견</button>
                 </div>
@@ -842,7 +843,14 @@
             "갈매기": { id: 54, icon: "🐦", isCaught: false, habitat: "바다", look: "흰 몸, 회색 날개, 노란 부리", move: "비행·수면 착지", trait: "해안가에 사는 새로 발가락 사이 물갈퀴가 있고, 물고기와 조개를 먹습니다.", q: [{ q: "갈매기의 주요 먹이는?", o: ["씨앗", "물고기와 조개", "나뭇잎"], a: 1 }, { q: "갈매기 발에 있는 특별한 것은?", o: ["날카로운 발톱", "물갈퀴", "빨판"], a: 1 }, { q: "갈매기가 주로 사는 곳은?", o: ["깊은 산속", "바다와 해안가", "뜨거운 사막"], a: 1 }, { q: "갈매기 몸을 덮고 있는 것은?", o: ["비늘", "깃털", "털"], a: 1 }, { q: "갈매기가 새인 이유는?", o: ["물속에서 산다", "날개와 깃털이 있다", "다리가 6개다"], a: 1 }] },
             "펠리컨": { id: 55, icon: "🐦", isCaught: false, habitat: "바다", look: "큰 부리 주머니, 흰 몸", move: "비행·수면 착지", trait: "부리 아래 큰 주머니로 물고기를 퍼 올려 잡는 대형 새입니다.", q: [{ q: "펠리컨의 가장 큰 특징은?", o: ["긴 꼬리깃", "큰 부리 주머니", "두꺼운 발톱"], a: 1 }, { q: "부리 주머니를 무엇에 사용할까?", o: ["물 저장", "물고기 잡기", "새끼 보호"], a: 1 }, { q: "펠리컨은 주로 어디서 살까?", o: ["사막", "물가와 해안", "북극"], a: 1 }, { q: "펠리컨의 날개를 폈을 때 크기는?", o: ["약 30cm", "약 1m", "최대 3m 이상"], a: 2 }, { q: "펠리컨은 어떻게 날까?", o: ["날개짓을 아주 빠르게", "날개 펴고 바람 타며 활공", "점프로 이동"], a: 1 }] },
             // ===== 바닷속 추가 =====
-            "오징어": { id: 56, icon: "🦑", isCaught: false, habitat: "바닷속", look: "10개 팔, 긴 몸통", move: "물 뿜어 추진", trait: "팔이 10개로 문어보다 2개 더 많은 연체동물이며, 먹물을 뿜어 천적을 피하고 빠르게 도망칩니다.", q: [{ q: "오징어 팔은 몇 개일까?", o: ["6개", "8개", "10개"], a: 2 }, { q: "문어(8개)보다 팔이 몇 개 더 많을까?", o: ["없음, 같다", "2개 더 많음", "4개 더 많음"], a: 1 }, { q: "오징어가 먹물을 사용하는 이유는?", o: ["맛을 내기 위해", "천적을 피해 도망가려고", "집을 짓기 위해"], a: 1 }, { q: "오징어는 어디에 속할까?", o: ["어류(물고기)", "연체동물", "갑각류"], a: 1 }, { q: "오징어가 빠르게 이동하는 방법은?", o: ["지느러미로 헤엄", "물을 뿜어 추진(제트 이동)", "꼬리를 흔들어서"], a: 1 }] }
+            "오징어": { id: 56, icon: "🦑", isCaught: false, habitat: "바닷속", look: "10개 팔, 긴 몸통", move: "물 뿜어 추진", trait: "팔이 10개로 문어보다 2개 더 많은 연체동물이며, 먹물을 뿜어 천적을 피하고 빠르게 도망칩니다.", q: [{ q: "오징어 팔은 몇 개일까?", o: ["6개", "8개", "10개"], a: 2 }, { q: "문어(8개)보다 팔이 몇 개 더 많을까?", o: ["없음, 같다", "2개 더 많음", "4개 더 많음"], a: 1 }, { q: "오징어가 먹물을 사용하는 이유는?", o: ["맛을 내기 위해", "천적을 피해 도망가려고", "집을 짓기 위해"], a: 1 }, { q: "오징어는 어디에 속할까?", o: ["어류(물고기)", "연체동물", "갑각류"], a: 1 }, { q: "오징어가 빠르게 이동하는 방법은?", o: ["지느러미로 헤엄", "물을 뿜어 추진(제트 이동)", "꼬리를 흔들어서"], a: 1 }] },
+            // ===== 숲 =====
+            "다람쥐": { id: 57, icon: "🐿️", isCaught: false, habitat: "숲", look: "줄무늬 등, 긴 꼬리", move: "재빠르게 달리기·나무 타기", trait: "양 볼의 볼주머니에 도토리를 잔뜩 넣고 다니며, 겨울을 대비해 먹이를 땅속에 저장합니다.", q: [{ q: "다람쥐가 먹이를 임시로 넣어두는 곳은?", o: ["꼬리 속", "볼주머니", "발주머니"], a: 1 }, { q: "다람쥐가 겨울 준비로 주로 저장하는 먹이는?", o: ["벌레", "도토리와 씨앗", "물고기"], a: 1 }, { q: "나무를 잘 오르는 비결은?", o: ["날개가 있어서", "긴 꼬리와 날카로운 발톱", "빨판이 있어서"], a: 1 }, { q: "다람쥐는 어디에 속하는 동물일까?", o: ["파충류", "곤충", "포유류"], a: 2 }, { q: "다람쥐 등에 나 있는 특징은?", o: ["가시", "세로 줄무늬", "비늘"], a: 1 }] },
+            "토끼": { id: 58, icon: "🐰", isCaught: false, habitat: "숲", look: "긴 귀, 짧은 꼬리", move: "폴짝폴짝 뛰기", trait: "길고 커다란 귀로 소리를 잘 듣고 체온을 조절하며, 뒷다리가 강해 멀리 도약합니다.", q: [{ q: "토끼 귀가 긴 이유는?", o: ["보기에 예뻐서", "소리를 잘 듣고 체온 조절에 도움", "하늘을 날기 위해"], a: 1 }, { q: "토끼 이빨의 특징은?", o: ["이빨이 없다", "계속 자라는 앞니(앞니가 4개)", "독니가 있다"], a: 1 }, { q: "토끼가 빠르게 도망칠 때 쓰는 다리는?", o: ["앞다리", "뒷다리", "4개 다 같다"], a: 1 }, { q: "토끼가 주로 먹는 것은?", o: ["곤충", "다른 동물", "풀·나뭇잎·채소"], a: 2 }, { q: "토끼는 어느 동물 분류에 속할까?", o: ["조류", "포유류", "파충류"], a: 1 }] },
+            "고슴도치": { id: 59, icon: "🦔", isCaught: false, habitat: "숲", look: "등의 날카로운 가시, 작은 눈", move: "뒤뚱거리며 걷기", trait: "등에 5000개가 넘는 케라틴 가시가 있어 위험할 때 몸을 공처럼 웅크려 스스로를 보호합니다.", q: [{ q: "위험할 때 고슴도치가 하는 행동은?", o: ["빠르게 도망침", "몸을 공처럼 웅크려 가시를 세움", "독을 뿜음"], a: 1 }, { q: "고슴도치 가시는 무엇으로 이루어져 있을까?", o: ["나무 섬유", "케라틴(단단해진 털)", "뼈"], a: 1 }, { q: "고슴도치는 주로 언제 활동할까?", o: ["낮", "밤(야행성)", "비 오는 날"], a: 1 }, { q: "고슴도치가 겨울에 하는 것은?", o: ["먹이를 저장함", "따뜻한 곳으로 이동함", "겨울잠(동면)을 잠"], a: 2 }, { q: "가시는 몸의 어느 부분에 있을까?", o: ["배 쪽", "등 쪽", "다리에"], a: 1 }] },
+            "독수리": { id: 60, icon: "🦅", isCaught: false, habitat: "숲", look: "갈색 깃털, 굽은 부리, 강한 발톱", move: "날개 펼쳐 활공", trait: "사람보다 약 8배 좋은 시력으로 먹이를 찾고, 강한 발톱으로 사냥하는 대형 맹금류입니다.", q: [{ q: "독수리 시력은 사람보다 얼마나 좋을까?", o: ["거의 같다", "약 2배", "약 8배 이상"], a: 2 }, { q: "독수리가 먹이를 잡을 때 쓰는 무기는?", o: ["긴 혀", "강한 발톱(타론)", "독"], a: 1 }, { q: "독수리는 보통 어디에 둥지를 지을까?", o: ["물속", "높은 절벽이나 큰 나무 꼭대기", "땅속 굴"], a: 1 }, { q: "독수리가 오래 날 수 있는 비결은?", o: ["날개를 빠르게 움직여서", "날개 펼쳐 기류(바람)를 타며 활공", "크게 점프해서"], a: 1 }, { q: "독수리는 어떤 동물에 속할까?", o: ["포유류", "파충류", "조류(새)"], a: 2 }] },
+            "부엉이": { id: 61, icon: "🦉", isCaught: false, habitat: "숲", look: "커다란 눈, 납작한 얼굴", move: "소리 없는 비행", trait: "눈이 고정되어 있어 머리를 270° 돌리며, 특수한 깃털 덕분에 소리 없이 날아 야간 사냥을 합니다.", q: [{ q: "부엉이는 주로 언제 활동할까?", o: ["낮", "밤(야행성)", "새벽과 저녁만"], a: 1 }, { q: "부엉이 머리가 크게 돌아가는 이유는?", o: ["목이 아주 길어서", "눈이 고정되어 있어 돌려서 봐야 해서", "적을 겁주기 위해"], a: 1 }, { q: "부엉이가 소리 없이 날 수 있는 이유는?", o: ["몸이 아주 가벼워서", "특수한 깃털 구조 덕분에", "날개가 없어서"], a: 1 }, { q: "먹이를 삼킨 뒤 소화 못한 뼈·털을 뭉쳐 뱉는 것은?", o: ["펠릿(토사물)", "털뭉치", "알"], a: 0 }, { q: "부엉이 눈의 특징은?", o: ["눈이 없다", "커다랗고 어둠 속에서도 잘 본다", "눈이 뒤에 달려 있다"], a: 1 }] },
+            "반달가슴곰": { id: 62, icon: "🐻", isCaught: false, isBoss: true, habitat: "숲", look: "검은 몸, 가슴의 흰 반달 무늬", move: "걷기·나무 타기·수영", trait: "가슴에 흰 반달 모양 무늬가 있는 한국의 멸종위기 2급 포유류로, 현재 지리산 등에서 복원 사업이 진행 중입니다.", q: [{ q: "반달가슴곰 이름의 유래는?", o: ["달처럼 동그래서", "가슴에 반달 모양 흰 무늬가 있어서", "밤에만 활동해서"], a: 1 }, { q: "반달가슴곰은 멸종위기 몇 급일까?", o: ["1급", "2급", "3급"], a: 1 }, { q: "반달가슴곰이 겨울에 하는 것은?", o: ["따뜻한 나라로 이동", "겨울잠(동면)", "물속에서 생활"], a: 1 }, { q: "반달가슴곰이 줄어드는 이유는?", o: ["먹이가 너무 많아서", "서식지 파괴와 밀렵 때문에", "날씨가 더워서"], a: 1 }, { q: "한국에서 반달가슴곰 복원 사업이 진행 중인 곳은?", o: ["한라산", "지리산", "설악산"], a: 1 }] }
         };
 
         const fullFileMap = {
@@ -860,7 +868,10 @@
             "참새": "sparrow.png", "제비": "swallow.png",
             "도롱뇽": "salamander.png",
             "갈매기": "seagull.png", "펠리컨": "pelican.png",
-            "오징어": "squid.png"
+            "오징어": "squid.png",
+            "다람쥐": "squirrel.png", "토끼": "rabbit.png", "고슴도치": "hedgehog.png",
+            "독수리": "eagle.png", "부엉이": "owl.png",
+            "반달가슴곰": "asiatic_bear.png"
         };
 
         const badgeDB = {
@@ -874,12 +885,13 @@
             "deepsea": { icon: "🐙", name: "바닷속 마스터", check: () => ["불가사리", "해파리", "문어", "오징어"].every(n => animalDB[n].isCaught) },
             "master": { icon: "👑", name: "동물 박사", check: () => Object.values(animalDB).filter(d => !d.isBoss && d.isCaught).length >= 48 },
             "jungle": { icon: "🌴", name: "열대우림 마스터", check: () => ["고릴라","앵무새","카멜레온","나무늘보","피라냐"].every(n => animalDB[n].isCaught) },
+            "forest": { icon: "🌲", name: "숲 마스터", check: () => ["다람쥐","토끼","고슴도치","독수리","부엉이"].every(n => animalDB[n].isCaught) },
             "allmaster": { icon: "🌟", name: "완전한 동물 박사", check: () => Object.values(animalDB).every(d => d.isCaught) },
             "hardcatch": { icon: "🔬", name: "박사 모드 첫 포획", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 1 },
             "hardmaster": { icon: "💎", name: "박사 모드 마스터", check: () => (parseInt(localStorage.getItem('hardModeCatch')||'0')) >= 10 },
             "bosscatch": { icon: "⚠️", name: "멸종위기종 첫 포획", check: () => parseInt(localStorage.getItem('bossCatch')||'0') >= 1 },
-            "bossmaster": { icon: "🦁", name: "멸종위기 수호자", check: () => ["장수하늘소","황쏘가리","설표범","일각고래","흰수염고래","수마트라 호랑이","맹꽁이","돌고래"].every(n => animalDB[n].isCaught) },
-            "explorer":   { icon: "🗺️", name: "세계 탐험가",    check: () => ['garden','underground','pond','desert','polar','sea','deepsea','jungle'].every(m => localStorage.getItem('visited_'+m)) },
+            "bossmaster": { icon: "🦁", name: "멸종위기 수호자", check: () => ["장수하늘소","황쏘가리","설표범","일각고래","흰수염고래","수마트라 호랑이","맹꽁이","돌고래","반달가슴곰"].every(n => animalDB[n].isCaught) },
+            "explorer":   { icon: "🗺️", name: "세계 탐험가",    check: () => ['garden','underground','pond','desert','polar','sea','deepsea','jungle','forest'].every(m => localStorage.getItem('visited_'+m)) },
             "perfectbattle": { icon: "💯", name: "완벽한 배틀",  check: () => parseInt(localStorage.getItem('perfectBattle')||'0') >= 1 },
             "quiz50":     { icon: "📚", name: "퀴즈 박사",       check: () => parseInt(localStorage.getItem('quizCorrect')||'0') >= 50 },
             "lv5":        { icon: "⭐", name: "Lv.5 탐험가",     check: () => pLevel >= 5 }
@@ -910,8 +922,8 @@
 
         /* ========== 파이널 퀴즈 & 엔딩 시스템 ========== */
         function startFinalQuiz() {
-            const habitats     = ['화단','땅속','연못','사막','극지','바다','바닷속','열대우림'];
-            const habitatEmoji = {'화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','바닷속':'🐙','열대우림':'🌴'};
+            const habitats     = ['화단','땅속','연못','사막','극지','바다','바닷속','열대우림','숲'];
+            const habitatEmoji = {'화단':'🌸','땅속':'⛏️','연못':'💧','사막':'🏜️','극지':'❄️','바다':'🌊','바닷속':'🐙','열대우림':'🌴','숲':'🌲'};
             finalQuizQuestions = [];
             habitats.forEach(hab => {
                 const animals = Object.entries(animalDB).filter(([, v]) => v.habitat === hab);
@@ -1482,6 +1494,30 @@
             [ 6, 6, 6, 6, 6, 6, 6,10,10, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
         ];
 
+        // ===== 숲 맵 (1=풀밭, 2=나무그늘/풀숲, 3=나무 벽, 5=위포탈→정글, 10=아래포탈→화단) =====
+        const forest = [
+            [ 3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+            [ 3, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 2, 1, 1, 3, 1, 2, 1, 1, 3, 1, 2, 3],
+            [ 3, 2, 1, 1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 3],
+            [ 3, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 3, 1, 1, 1, 3, 1, 1, 3],
+            [ 3, 2, 3, 1, 1, 1, 1, 3, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 2, 3, 1, 1, 2, 3],
+            [ 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 2, 1, 3],
+            [ 3, 1, 2, 3, 1, 1, 3, 1, 1, 3, 1, 1, 2, 1, 1, 1, 3, 1, 1, 2, 1, 1, 1, 3],
+            [ 3, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 1, 3],
+            [ 3, 1, 1, 2, 1, 1, 1, 3, 1, 1, 2, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 2, 3],
+            [ 3, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 3],
+            [ 3, 2, 1, 1, 3, 1, 1, 1, 2, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 2, 1, 3],
+            [ 3, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 3, 1, 1, 2, 1, 1, 3],
+            [ 3, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 1, 3, 2, 3],
+            [ 3, 3, 1, 1, 3, 1, 1, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 1, 1, 3],
+            [ 3, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 2, 1, 1, 3, 1, 1, 2, 3],
+            [ 3, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 2, 1, 3],
+            [ 3, 1, 2, 3, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 2, 3, 1, 1, 1, 2, 1, 1, 3],
+            [ 3, 1, 1, 1, 2, 3, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 2, 1, 3, 1, 1, 2, 3],
+            [ 3, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 2, 1, 1, 3],
+            [ 3, 3, 3, 3, 3, 3, 3,10,10, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+        ];
+
         let curMap = lab;
 
         function updatePlayerUI() {
@@ -1573,15 +1609,15 @@
                     else if (mapName === 'garden' && t === 23) { mapName = 'underground'; curMap = underground; px = 7; py = 8; msg("땅속으로 들어왔다!"); }
                     else if (mapName === 'underground' && t === 26) { mapName = 'garden'; curMap = garden; px = 7; py = 8; msg("눈부신 햇살! 땅 위로 올라왔다."); }
                     else {
-                        const seq = ['garden', 'pond', 'desert', 'polar', 'sea', 'deepsea', 'jungle'];
-                        const maps = [garden, pond, desert, polar, sea, deepsea, jungle];
+                        const seq = ['garden', 'pond', 'desert', 'polar', 'sea', 'deepsea', 'jungle', 'forest'];
+                        const maps = [garden, pond, desert, polar, sea, deepsea, jungle, forest];
                         let idx = seq.indexOf(mapName);
-                        if (t === 10) { idx = (idx + 1) % 7; px = 7; py = 1; }
-                        else if (t === 5) { idx = (idx - 1 + 7) % 7; px = 7; py = (idx === 0 ? 18 : 12); }
+                        if (t === 10) { idx = (idx + 1) % 8; px = 7; py = 1; }
+                        else if (t === 5) { idx = (idx - 1 + 8) % 8; px = 7; py = (idx === 0 ? 18 : 12); }
                         mapName = seq[idx]; curMap = maps[idx];
                         try { localStorage.setItem('visited_' + mapName, '1'); } catch(e) {}
                         updateMapProgress();
-                        const mapMsgs = { deepsea: '🌊 바닷속 깊이 들어왔다!', jungle: '🌴 열대우림에 왔다!' };
+                        const mapMsgs = { deepsea: '🌊 바닷속 깊이 들어왔다!', jungle: '🌴 열대우림에 왔다!', forest: '🌲 울창한 숲에 들어왔다!' };
                         msg(mapMsgs[mapName] || '새로운 지역이다!');
                     }
                     draw(); document.getElementById('fade-overlay').style.opacity = 0;
@@ -1723,6 +1759,8 @@
                     foundItem = Math.random() < 0.4 ? "특제 영양식" : "포충망";
                 } else if (mapName === 'jungle') {
                     foundItem = Math.random() < 0.4 ? "특제 영양식" : "포충망";
+                } else if (mapName === 'forest') {
+                    foundItem = Math.random() < 0.5 ? "포충망" : "특제 영양식";
                 }
 
                 locked = true; 
@@ -1737,7 +1775,7 @@
             if (px === 7 || px === 8) return;
 
             // 보스(멸종위기종) 조우: 맵당 0.5% 확률
-            const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이','deepsea':'돌고래'};
+            const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이','deepsea':'돌고래','forest':'반달가슴곰'};
             const bossName = bossEncMap[mapName];
             if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.005) { battle(bossName); return; }
 
@@ -1809,6 +1847,21 @@
                 }
             }
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
+            else if (mapName === 'forest') {
+                if (t === 1) {
+                    // 숲 바닥 — 지상 동물 중심
+                    a = night
+                        ? (ran < 0.45 ? "고슴도치" : (ran < 0.75 ? "다람쥐" : "토끼"))
+                        : (ran < 0.35 ? "다람쥐" : (ran < 0.70 ? "토끼" : (ran < 0.88 ? "고슴도치" : "독수리")));
+                } else if (t === 2) {
+                    // 나무 그늘 — 야간엔 부엉이, 낮엔 독수리
+                    a = night
+                        ? (ran < 0.50 ? "부엉이" : (ran < 0.80 ? "고슴도치" : "다람쥐"))
+                        : (ran < 0.40 ? "독수리" : (ran < 0.70 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이")));
+                    if (!animalDB["부엉이"].isCaught && !night && Math.random() < 0.05)
+                        msg("🦉 나뭇가지 위에 무언가 앉아있다… 밤에 다시 와봐야겠다.");
+                }
+            }
 
             // 재조우 모드 OFF면 이미 잡은 동물 스킵
             if (a && (reEncounterMode || !animalDB[a].isCaught) && Math.random() < 0.08) battle(a);
@@ -2313,6 +2366,9 @@
                 '북극곰':'육상포유류','순록':'육상포유류','북극여우':'육상포유류',
                 '고릴라':'육상포유류','나무늘보':'육상포유류',
                 '설표범':'육상포유류','수마트라 호랑이':'육상포유류',
+                // 숲 동물
+                '다람쥐':'육상포유류','토끼':'육상포유류','고슴도치':'육상포유류','반달가슴곰':'육상포유류',
+                '독수리':'조류(초식)','부엉이':'조류(초식)',
             };
             return typeMap[name] || '기타';
         }
