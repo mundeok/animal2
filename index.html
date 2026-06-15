@@ -188,6 +188,7 @@
         .battle-field.underground { background: linear-gradient(to bottom, #8b5cf6 0%, #ffffff 100%); }
         .battle-field.jungle { background: linear-gradient(to bottom, #86efac 0%, #ffffff 100%); }
         .battle-field.deepsea { background: linear-gradient(to bottom, #1a237e 0%, #04072e 100%); }
+        .battle-field.forest  { background: linear-gradient(to bottom, #bbf7d0 0%, #ffffff 100%); }
         .battle-field.boss-battle { background: linear-gradient(to bottom, #fef9c3 0%, #fde047 30%, #ffffff 100%) !important; }
         .battle-container.is-boss { border-color: #dc2626 !important; animation: bossGlow 1.5s ease-in-out infinite; }
         @keyframes bossGlow { 0%,100%{box-shadow:0 0 0 4px rgba(220,38,38,0.25);} 50%{box-shadow:0 0 0 12px rgba(220,38,38,0.55);} }
@@ -1038,7 +1039,7 @@
             const allCaught = caught === totalAnimals;
             const shinyCount = Object.keys(shinyDB || {}).length;
             const score = calcTotalScore();
-            if (score > 30000) return; // 클라이언트 1차 유효성 방어
+            if (score > 35000) return; // 클라이언트 1차 유효성 방어
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
             const entry = { name: playerName, score, caught, level: pLevel, quizScore: finalQuizBestScore, allCaught, shinyCount, date: dateStr };
@@ -1052,6 +1053,8 @@
                 return;
             }
             const medals = ['👑','🥈','🥉'];
+            const maxHabitats = new Set(Object.values(animalDB).map(d => d.habitat)).size;
+            const totalAnimals = Object.keys(animalDB).length;
             list.innerHTML = rankings.map((r, i) => {
                 const isMe = isTutorialDone && r.name === playerName;
                 const medalClass = i < 3 ? `rank-${i+1}` : '';
@@ -1059,7 +1062,7 @@
                 const medal = i < 3 ? medals[i] : `${i+1}위`;
                 const tags = [];
                 if (r.allCaught) tags.push('🏅완주');
-                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/8`);
+                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/${maxHabitats}`);
                 if (r.shinyCount > 0) tags.push(`✨×${r.shinyCount}`);
                 return `<div class="rank-row ${medalClass}${meClass}">
                     <div class="rank-num">${medal}</div>
@@ -1102,7 +1105,7 @@
 
         /* ===== 맵 완료 알림 ===== */
         function checkMapComplete() {
-            const habitatMap = { garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', deepsea:'바닷속', jungle:'열대우림' };
+            const habitatMap = { garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', deepsea:'바닷속', jungle:'열대우림', forest:'숲' };
             const hab = habitatMap[mapName];
             if (!hab) return;
             const key = 'mapDone_' + mapName;
@@ -1247,7 +1250,7 @@
                     shinyDB            = sData.shinyDB            || {};
                     // ★ 맵 위치 복원
                     if (sData.mapName) {
-                        const mapLookup = { lab, garden, pond, desert, polar, sea, underground, jungle, deepsea };
+                        const mapLookup = { lab, garden, pond, desert, polar, sea, underground, jungle, deepsea, forest };
                         if (mapLookup[sData.mapName]) {
                             mapName = sData.mapName;
                             curMap  = mapLookup[sData.mapName];
@@ -1564,7 +1567,7 @@
             grid.style.gridTemplateRows    = `repeat(${MAP_H}, 1fr)`;
             grid.style.width  = (MAP_W / VIEW * 100) + '%';
             grid.style.height = (MAP_H / VIEW * 100) + '%';
-            const bgMap = { garden: '#d2b48c', pond: '#60a5fa', desert: '#fcd34d', polar: '#f0fdfa', lab: '#94a3b8', underground: '#3e2723', sea: '#1a237e', deepsea: '#04072e', jungle: '#14532d' };
+            const bgMap = { garden: '#d2b48c', pond: '#60a5fa', desert: '#fcd34d', polar: '#f0fdfa', lab: '#94a3b8', underground: '#3e2723', sea: '#1a237e', deepsea: '#04072e', jungle: '#14532d', forest: '#1a4728' };
             document.getElementById('map-bg').style.backgroundColor = bgMap[mapName];
             const cls = ['tile-dirt', 'tile-grass', 'tile-flower', 'tile-tree', 'tile-school', 'tile-door', 'tile-water', 'tile-lilypad', 'tile-bridge', 'tile-wetgrass', 'tile-portal', 'tile-rock', 'tile-sand', 'tile-cactus', 'tile-snow', 'tile-snowtree', 'tile-igloo', 'tile-ice', 'tile-lab-floor', 'tile-wall', 'tile-desk', 'tile-npc', 'tile-board', 'tile-hole', 'tile-deepdirt', 'tile-root', 'tile-ladder', 'tile-mud', 'tile-seaweed', 'tile-deepsea', 'tile-jfloor', 'tile-jtree'];
             // 전경 레이어(플레이어 앞에 그려야 할 타일) 인덱스
@@ -1687,7 +1690,7 @@
                     return;
                 }
 
-                // ★ 전체 56종 포획 → 최종 탐험 시험
+                // ★ 전체 62종 포획 → 최종 탐험 시험
                 const allCaught = Object.values(animalDB).every(d => d.isCaught);
                 if (allCaught) {
                     if (!earnedBadges.includes('final_exam_passed')) {
@@ -1706,6 +1709,13 @@
                     msg(`👨‍🔬 박사: 세상에! 일반 동물 ${_normalTot}마리를 모두 잡았군!<br>자네야말로 진정한 <span style='color:#ef4444;'>[동물 마스터]</span>일세!!`);
                     return;
                 } }
+
+                if (normalCaught >= 45 && !earnedBadges.includes("milestone_45")) {
+                    earnedBadges.push("milestone_45");
+                    inventory["마스터 포충망"] += 2;
+                    msg("👨‍🔬 박사: 45마리?! 놀라운 탐험가일세!<br>마지막 고비를 위해 <span style='color:#facc15;'>[마스터 포충망 ×2]</span>를 드리겠네! 남은 동물들을 모두 찾아보게!");
+                    saveGame(); return;
+                }
 
                 if (normalCaught >= 35 && !earnedBadges.includes("milestone_35")) {
                     earnedBadges.push("milestone_35");
@@ -1849,16 +1859,35 @@
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
             else if (mapName === 'forest') {
                 if (t === 1) {
-                    // 숲 바닥 — 지상 동물 중심
-                    a = night
-                        ? (ran < 0.45 ? "고슴도치" : (ran < 0.75 ? "다람쥐" : "토끼"))
-                        : (ran < 0.35 ? "다람쥐" : (ran < 0.70 ? "토끼" : (ran < 0.88 ? "고슴도치" : "독수리")));
+                    // 비: 고슴도치 활발, 새 없음 / 야간: 고슴도치·다람쥐 / 바람·맑음: 독수리↑
+                    if (rain) {
+                        a = ran < 0.60 ? "고슴도치" : (ran < 0.85 ? "토끼" : "다람쥐");
+                        if (!animalDB["고슴도치"].isCaught && Math.random() < 0.05)
+                            msg("🌧️ 빗속에서 무언가 꿈틀댄다… 고슴도치는 비 올 때 활발한 것 같다!");
+                    } else if (night) {
+                        a = ran < 0.45 ? "고슴도치" : (ran < 0.75 ? "다람쥐" : "토끼");
+                    } else if (windy) {
+                        // 바람: 독수리 상승기류 타기 좋음
+                        a = ran < 0.28 ? "다람쥐" : (ran < 0.54 ? "토끼" : (ran < 0.70 ? "고슴도치" : "독수리"));
+                    } else if (clear) {
+                        a = ran < 0.30 ? "다람쥐" : (ran < 0.62 ? "토끼" : (ran < 0.78 ? "고슴도치" : "독수리"));
+                    } else {
+                        a = ran < 0.35 ? "다람쥐" : (ran < 0.70 ? "토끼" : (ran < 0.88 ? "고슴도치" : "독수리"));
+                    }
                 } else if (t === 2) {
-                    // 나무 그늘 — 야간엔 부엉이, 낮엔 독수리
-                    a = night
-                        ? (ran < 0.50 ? "부엉이" : (ran < 0.80 ? "고슴도치" : "다람쥐"))
-                        : (ran < 0.40 ? "독수리" : (ran < 0.70 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이")));
-                    if (!animalDB["부엉이"].isCaught && !night && Math.random() < 0.05)
+                    // 비: 새 없음 고슴도치↑ / 야간: 부엉이 / 바람·맑음: 독수리↑
+                    if (rain) {
+                        a = ran < 0.65 ? "고슴도치" : (ran < 0.85 ? "다람쥐" : "토끼");
+                    } else if (night) {
+                        a = ran < 0.50 ? "부엉이" : (ran < 0.80 ? "고슴도치" : "다람쥐");
+                    } else if (windy) {
+                        a = ran < 0.55 ? "독수리" : (ran < 0.75 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이"));
+                    } else if (clear) {
+                        a = ran < 0.50 ? "독수리" : (ran < 0.72 ? "다람쥐" : (ran < 0.88 ? "토끼" : "부엉이"));
+                    } else {
+                        a = ran < 0.40 ? "독수리" : (ran < 0.70 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이"));
+                    }
+                    if (!animalDB["부엉이"].isCaught && !night && !rain && Math.random() < 0.05)
                         msg("🦉 나뭇가지 위에 무언가 앉아있다… 밤에 다시 와봐야겠다.");
                 }
             }
@@ -2594,9 +2623,10 @@
                 'polar':      ["펭귄","북극곰","순록","북극여우","바다표범"],
                 'sea':        ["게","짱뚱어","조개","상어","갈매기","펠리컨"],
                 'deepsea':    ["불가사리","해파리","문어","오징어"],
-                'jungle':     ["고릴라","앵무새","카멜레온","나무늘보","피라냐"]
+                'jungle':     ["고릴라","앵무새","카멜레온","나무늘보","피라냐"],
+                'forest':     ["다람쥐","토끼","고슴도치","독수리","부엉이"]
             };
-            const mapKo = {'garden':'화단','underground':'땅속','pond':'연못','desert':'사막','polar':'극지','sea':'바다','deepsea':'바닷속','jungle':'열대우림'};
+            const mapKo = {'garden':'화단','underground':'땅속','pond':'연못','desert':'사막','polar':'극지','sea':'바다','deepsea':'바닷속','jungle':'열대우림','forest':'숲'};
             const list = mapAnimals[mapName];
             const prog = document.getElementById('map-progress');
             if (!list || !prog) { if (prog) prog.style.display = 'none'; return; }
@@ -2628,9 +2658,9 @@
             l.innerHTML = '';
             const searchVal = (document.getElementById('dex-search')?.value || '').trim().toLowerCase();
             const allKeys = Object.keys(animalDB);
-            // 일반 동물 먼저, 보스(멸종위기종) 나중
-            const normalKeys = allKeys.filter(k => !animalDB[k].isBoss);
-            const bossKeys   = allKeys.filter(k =>  animalDB[k].isBoss);
+            // 일반 동물 먼저(id 순), 보스(멸종위기종) 나중(id 순)
+            const normalKeys = allKeys.filter(k => !animalDB[k].isBoss).sort((a, b) => animalDB[a].id - animalDB[b].id);
+            const bossKeys   = allKeys.filter(k =>  animalDB[k].isBoss).sort((a, b) => animalDB[a].id - animalDB[b].id);
             let firstVisible = null;
 
             function appendItem(k) {
