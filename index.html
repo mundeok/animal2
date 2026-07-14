@@ -188,7 +188,6 @@
         .battle-field.underground { background: linear-gradient(to bottom, #8b5cf6 0%, #ffffff 100%); }
         .battle-field.jungle { background: linear-gradient(to bottom, #86efac 0%, #ffffff 100%); }
         .battle-field.deepsea { background: linear-gradient(to bottom, #1a237e 0%, #04072e 100%); }
-        .battle-field.forest  { background: linear-gradient(to bottom, #bbf7d0 0%, #ffffff 100%); }
         .battle-field.boss-battle { background: linear-gradient(to bottom, #fef9c3 0%, #fde047 30%, #ffffff 100%) !important; }
         .battle-container.is-boss { border-color: #dc2626 !important; animation: bossGlow 1.5s ease-in-out infinite; }
         @keyframes bossGlow { 0%,100%{box-shadow:0 0 0 4px rgba(220,38,38,0.25);} 50%{box-shadow:0 0 0 12px rgba(220,38,38,0.55);} }
@@ -205,6 +204,42 @@
         /* ===== 보스 강화 연출 ===== */
         @keyframes screenShake { 0%,100%{transform:translate(0,0);} 20%{transform:translate(-6px,3px);} 40%{transform:translate(6px,-3px);} 60%{transform:translate(-4px,4px);} 80%{transform:translate(4px,-2px);} }
         .boss-shake { animation: screenShake 0.45s ease-in-out; }
+        /* 콤보 */
+        #combo-display { position:absolute; top:8px; right:10px; font-size:1.1rem; font-weight:900;
+            color:#f59e0b; text-shadow:0 0 8px #fbbf24,1px 1px 0 #000; z-index:20; transition:transform .15s; pointer-events:none; }
+        #combo-display.combo-pop { transform:scale(1.6); }
+        #combo-display.combo-hidden { opacity:0; }
+        /* 퀘스트 패널 */
+        #quest-tab-btn { position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.75);
+            border:3px solid #fbbf24; border-radius:8px; padding:5px 10px; z-index:51;
+            color:#fbbf24; font-weight:900; font-size:clamp(11px,2.2vmin,15px); cursor:pointer; }
+        #quest-panel { position:absolute; top:44px; left:10px; background:rgba(0,0,0,0.88);
+            border:3px solid #fbbf24; border-radius:10px; padding:8px 12px; z-index:50;
+            min-width:200px; max-width:260px; color:#fff; font-size:clamp(11px,2.2vmin,15px); pointer-events:auto; }
+        #quest-panel.qp-hidden { display:none !important; }
+        #quest-panel .qp-title { color:#fbbf24; font-weight:900; margin-bottom:4px; }
+        #quest-panel .qp-item { display:flex; align-items:center; gap:5px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.1); }
+        #quest-panel .qp-item.done { opacity:0.5; }
+        #quest-panel .qp-check { font-size:13px; }
+        #quest-toast { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+            background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#1a1a1a;
+            border:4px solid #1a1a1a; border-radius:14px; padding:18px 28px; z-index:9999;
+            font-size:clamp(16px,4vmin,24px); font-weight:900; text-align:center;
+            transition:transform .2s cubic-bezier(.34,1.56,.64,1); pointer-events:none; }
+        #quest-toast.show { transform:translate(-50%,-50%) scale(1); }
+        /* 통계/오답 화면 */
+        #stats-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.92); z-index:8000; justify-content:center; align-items:center; }
+        #stats-overlay.active { display:flex; }
+        #stats-box { background:#1a1a2e; border:4px solid #fbbf24; border-radius:16px; padding:24px 20px;
+            width:90%; max-width:420px; color:#fff; max-height:85vh; overflow-y:auto; }
+        #stats-box h2 { color:#fbbf24; font-size:1.3rem; margin-bottom:14px; text-align:center; }
+        .stat-row { display:flex; justify-content:space-between; padding:7px 4px;
+            border-bottom:1px solid rgba(255,255,255,0.1); font-size:clamp(12px,2.5vmin,16px); }
+        .stat-val { color:#4ade80; font-weight:900; }
+        #review-wrong-btn { background:#dc2626; border:none; border-radius:8px; color:#fff;
+            padding:10px 18px; font-size:clamp(13px,2.8vmin,17px); font-weight:900;
+            font-family:inherit; cursor:pointer; margin-top:12px; width:100%; }
         @keyframes warnFloat { 0%{opacity:1;transform:translateY(0) scale(1);} 100%{opacity:0;transform:translateY(-60px) scale(1.6);} }
         .warn-particle { position:fixed; font-size:28px; pointer-events:none; z-index:6000; animation:warnFloat 1s ease-out forwards; }
 
@@ -575,12 +610,15 @@
     
     <div class="game-container">
         <div id="map-view" class="view-section">
-            <div class="status-bar" id="ride-status">👟 도보 탐사 중 | 🏅 <span id="badge-count-text">0</span>개</div>
+            <div class="status-bar" id="ride-status">👟 도보 탐사 중 | 🏅 <span id="badge-count-text">0</span>개 | <span onclick="openStats()" style="cursor:pointer;color:#4ade80;">📊 기록</span></div>
             <div id="map-progress">
                 <div class="prog-label" id="prog-label">화단 0/6</div>
                 <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-bar-fill" style="width:0%"></div></div>
             </div>
             
+            <div id="quest-tab-btn" onclick="toggleQuestPanel()" style="display:none">📋 퀘스트</div>
+            <div id="quest-panel" class="qp-hidden"></div>
+
             <div class="map-wrapper">
                 <div class="map-screen" id="map-bg">
                     <div id="fade-overlay"></div>
@@ -618,6 +656,7 @@
         <div id="battle-view" class="view-section">
             <div class="battle-container">
                 <div class="battle-field">
+                    <div id="combo-display" class="combo-hidden"></div>
                     <div id="boss-indicator">⚠️ 멸종위기종!</div>
                     <div class="enemy-status" id="enemy-hp-panel">
                         <span id="enemy-name" style="font-size:clamp(14px,2.8vmin,24px); font-weight:bold;">동물</span>
@@ -909,6 +948,259 @@
         let isReviewBattle  = false; // ★ 복습 배틀 (이미 잡은 동물)
         let shinyDB = {};            // { "동물명": true } 색다른 표본 포획 기록
         let battleCorrectCount = 0; // 현재 배틀에서 맞힌 퀴즈 수 (완벽한 배틀 배지용)
+        let comboCount = 0;
+        let completedQuests = new Set();
+        let questProgress   = {};
+        let questPanelOpen  = false;
+
+        /* ===== 퀘스트 데이터 ===== */
+        const QUESTS = {
+            garden: [
+                { id:'gd1', label:'배추흰나비 관찰 — 날개 구조 탐구',
+                  story:'곤충 연구소입니다! 배추흰나비는 날개가 몇 쌍인지 알고 있나요? 직접 잡아서 날개를 세어봐요!',
+                  rewardStory:'잘했어요! 🦋 곤충은 날개가 2쌍(4장), 다리가 3쌍(6개)이에요. 이게 곤충의 기본 특징이랍니다!',
+                  type:'catch', target:'배추흰나비', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'gd2', label:'무당벌레 잡기 — 포식자 역할 탐구',
+                  story:'농업 연구소입니다! 무당벌레는 진딧물을 잡아먹는 농부의 친구예요. 한 마리만 잡아 볼까요?',
+                  rewardStory:'대단해요! 🐞 무당벌레 한 마리가 하루에 진딧물을 100마리 넘게 먹어요. 농약 없이 해충을 잡아주는 고마운 곤충이랍니다!',
+                  type:'catch', target:'무당벌레', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'gd3', label:'완전탈바꿈 vs 불완전탈바꿈 비교',
+                  story:'생물 교과서 편집팀이에요! 배추흰나비(완전탈바꿈)와 메뚜기(불완전탈바꿈)를 비교하고 싶어요. 둘 다 잡아줄 수 있어요?',
+                  rewardStory:'완벽해요! 📚 배추흰나비: 알→애벌레→번데기→어른벌레(완전탈바꿈). 메뚜기: 알→애벌레→어른벌레(불완전탈바꿈). 번데기 단계가 있냐 없냐가 핵심이에요!',
+                  type:'catch_any', targets:['배추흰나비','메뚜기'], count:2, exp:250, rewardItem:{'관찰 노트':5} },
+            ],
+            underground: [
+                { id:'ug1', label:'지렁이 채집 — 토양 생태 탐구',
+                  story:'토양 연구소입니다! 지렁이는 흙을 갈아엎어 식물이 잘 자라게 도와줘요. 한 마리 잡아볼까요?',
+                  rewardStory:'훌륭해요! 🪱 지렁이 배설물에는 영양분이 많아서 최고의 천연 비료가 된답니다. 다윈도 지렁이를 연구했어요!',
+                  type:'catch', target:'지렁이', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'ug2', label:'땅속 동물 3종 비교',
+                  story:'생태 다큐 제작팀이에요! 땅속에 사는 동물들의 특징을 비교하고 싶어요. 개미, 지렁이, 두더지를 잡아줄 수 있나요?',
+                  rewardStory:'대단해요! 🌍 땅속 동물들은 각자 다른 방법으로 살아요 — 개미는 집을 짓고, 지렁이는 흙을 먹고, 두더지는 굴을 파며 사냥해요!',
+                  type:'catch_any', targets:['개미','지렁이','두더지'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+            pond: [
+                { id:'pd1', label:'개구리 잡기 — 양서류 탐구',
+                  story:'환경부 연구원입니다! 개구리는 물과 육지 양쪽에서 사는 양서류예요. 한 마리만 잡아봐요!',
+                  rewardStory:'잘했어요! 🐸 개구리는 피부로 숨을 쉬어요. 피부가 항상 촉촉해야 살 수 있어서 수질 오염에 매우 민감한 환경 지표종이랍니다!',
+                  type:'catch', target:'개구리', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'pd2', label:'소금쟁이 — 표면장력 탐구',
+                  story:'물리 실험실입니다! 소금쟁이가 물 위를 걷는 건 표면장력 때문이에요. 직접 잡아서 확인해봐요!',
+                  rewardStory:'놀랍죠? 🌊 물 분자들이 서로 끌어당기는 힘(표면장력) 덕분에 소금쟁이의 긴 다리가 물을 뚫지 않고 걸을 수 있어요!',
+                  type:'catch', target:'소금쟁이', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'pd3', label:'연못 먹이사슬 탐구',
+                  story:'생태 연구소예요! 연못의 먹이사슬을 파악하고 싶어요 — 붕어, 잠자리, 개구리를 잡아 줄 수 있어요?',
+                  rewardStory:'완벽해요! 🔗 연못 먹이사슬: 수초→물방개→개구리→수달. 먹이사슬 어느 하나가 없어지면 전체 생태계가 흔들려요!',
+                  type:'catch_any', targets:['붕어','잠자리','개구리'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+            desert: [
+                { id:'ds1', label:'낙타 — 건조 적응 탐구',
+                  story:'사막 탐험대입니다! 낙타가 사막에서 오래 버티는 비결을 연구 중이에요. 낙타를 한 마리 잡아봐요!',
+                  rewardStory:'대단해요! 🐪 낙타 혹은 지방 덩어리예요 — 물이 아니에요! 이 지방을 에너지로 쓰고 코로 수분 손실을 최소화해 사막에서 살아남아요!',
+                  type:'catch', target:'낙타', count:1, exp:180, rewardItem:{'관찰 노트':3} },
+                { id:'ds2', label:'사막 동물 생존 전략 비교',
+                  story:'BBC 다큐팀이에요! 사막 동물 3종의 생존 전략을 비교하고 싶어요. 낙타, 사막여우, 도마뱀을 잡아줄 수 있어요?',
+                  rewardStory:'훌륭해요! 🌵 낙타는 혹에 지방 저장, 사막여우는 큰 귀로 열 방출, 도마뱀은 변온동물로 에너지 절약 — 각자의 방식으로 사막에서 살아남아요!',
+                  type:'catch_any', targets:['낙타','사막여우','도마뱀'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+            polar: [
+                { id:'pl1', label:'북극곰 — 극지 적응 탐구',
+                  story:'극지 연구소입니다! 북극곰의 털은 사실 투명해요. 어떻게 하얗게 보이는지 알아보러 잡아봐요!',
+                  rewardStory:'놀랍죠? 🐻‍❄️ 북극곰 털은 속이 빈 투명 관이에요! 빛을 산란시켜 하얗게 보이고, 햇빛을 피부까지 전달해 보온해요. 피부는 검은색이랍니다!',
+                  type:'catch', target:'북극곰', count:1, exp:180, rewardItem:{'관찰 노트':3} },
+                { id:'pl2', label:'극지 동물 3종 비교',
+                  story:'기후변화 연구팀이에요! 극지방 동물들이 어떻게 추위에 적응했는지 비교하고 싶어요. 펭귄, 북극곰, 바다표범을 잡아줄 수 있어요?',
+                  rewardStory:'훌륭해요! ❄️ 펭귄은 두꺼운 지방층+촘촘한 깃털, 북극곰은 이중 털구조, 바다표범은 두꺼운 지방층 — 모두 다른 방법으로 극한 추위를 버텨요!',
+                  type:'catch_any', targets:['펭귄','북극곰','바다표범'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+            sea: [
+                { id:'se1', label:'짱뚱어 — 특이한 물고기 탐구',
+                  story:'해양생물 연구소예요! 짱뚱어는 물 밖에서도 걷는 특이한 물고기예요. 한 마리 잡아봐요!',
+                  rewardStory:'신기하죠? 🐟 짱뚱어는 가슴지느러미로 걷고 피부로 호흡해요. 물고기가 육지에서 걷는 연습을 하다가 양서류로 진화했다는 이론의 증거랍니다!',
+                  type:'catch', target:'짱뚱어', count:1, exp:180, rewardItem:{'관찰 노트':3} },
+            ],
+            jungle: [
+                { id:'jg1', label:'카멜레온 — 색깔 변화 탐구',
+                  story:'생물 연구소입니다! 카멜레온이 색을 바꾸는 이유가 보호색만이 아니라는 걸 알고 있나요? 잡아서 확인해봐요!',
+                  rewardStory:'대단해요! 🦎 카멜레온은 감정과 체온 조절을 위해 색을 바꿔요! 피부 속 색소세포가 빛을 반사하는 방식을 바꾸는 거랍니다. 위장은 부수 효과예요!',
+                  type:'catch', target:'카멜레온', count:1, exp:180, rewardItem:{'관찰 노트':3} },
+                { id:'jg2', label:'열대우림 먹이사슬',
+                  story:'자연 다큐 제작팀이에요! 열대우림 먹이사슬을 기록하고 싶어요. 고릴라, 앵무새, 피라냐를 잡아줄 수 있어요?',
+                  rewardStory:'완벽해요! 🌴 열대우림은 지구 생물 종의 절반 이상이 사는 생명의 보고예요. 이 생태계가 파괴되면 지구 전체 생물 다양성에 큰 위협이 된답니다!',
+                  type:'catch_any', targets:['고릴라','앵무새','피라냐'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+            deepsea: [
+                { id:'dp1', label:'문어 — 두족류 탐구',
+                  story:'해양 연구소입니다! 문어는 다리가 8개인 두족류예요. 지능도 매우 높아요! 한 마리 잡아봐요!',
+                  rewardStory:'놀랍죠? 🐙 문어는 도구를 사용하고 문제를 풀 수 있는 매우 영리한 동물이에요. 뇌가 9개(중앙 1개+다리마다 1개)랍니다!',
+                  type:'catch', target:'문어', count:1, exp:180, rewardItem:{'관찰 노트':3} },
+            ],
+            forest: [
+                { id:'fr1', label:'다람쥐 — 겨울잠 준비 탐구',
+                  story:'생태 연구소예요! 다람쥐는 겨울잠을 자기 전에 도토리를 땅에 숨겨요. 잡아서 관찰해봐요!',
+                  rewardStory:'귀엽죠? 🐿️ 다람쥐가 숨겨둔 도토리를 다 찾지 못하면 그게 새로운 나무가 되어요! 다람쥐는 알지 못한 채 나무를 심는 거랍니다!',
+                  type:'catch', target:'다람쥐', count:1, exp:150, rewardItem:{'관찰 노트':3} },
+                { id:'fr2', label:'숲 먹이사슬 탐구',
+                  story:'환경부 연구원이에요! 숲의 먹이사슬을 완성하고 싶어요. 토끼, 독수리, 고슴도치를 잡아줄 수 있어요?',
+                  rewardStory:'훌륭해요! 🌲 숲 먹이사슬: 도토리→다람쥐/토끼→여우→독수리. 최상위 포식자가 사라지면 중간 동물이 폭발적으로 늘어나 식물이 다 사라질 수 있어요!',
+                  type:'catch_any', targets:['토끼','독수리','고슴도치'], count:3, exp:300, rewardItem:{'관찰 노트':5} },
+            ],
+        };
+
+        function saveQuestState() {
+            try {
+                localStorage.setItem('animalQuests', JSON.stringify([...completedQuests]));
+                localStorage.setItem('animalQuestProg', JSON.stringify(questProgress));
+            } catch(e) {}
+        }
+        function loadQuestState() {
+            try {
+                completedQuests = new Set(JSON.parse(localStorage.getItem('animalQuests') || '[]'));
+                questProgress = JSON.parse(localStorage.getItem('animalQuestProg') || '{}');
+            } catch(e) {}
+        }
+        function toggleQuestPanel() {
+            const panel = document.getElementById('quest-panel');
+            if (!panel) return;
+            questPanelOpen = !questPanelOpen;
+            if (questPanelOpen) panel.classList.remove('qp-hidden');
+            else panel.classList.add('qp-hidden');
+        }
+        function renderQuestPanel() {
+            const panel = document.getElementById('quest-panel');
+            const btn   = document.getElementById('quest-tab-btn');
+            if (!panel) return;
+            const qs = QUESTS[mapName];
+            if (!qs || qs.length === 0) {
+                if (btn) btn.style.display = 'none';
+                panel.classList.add('qp-hidden');
+                questPanelOpen = false;
+                return;
+            }
+            if (btn) btn.style.display = 'block';
+            const mapKo = {garden:'화단',underground:'땅속',pond:'연못',desert:'사막',
+                           polar:'극지',sea:'바다',deepsea:'바닷속',jungle:'열대우림',forest:'숲'};
+            let html = `<div class="qp-title">📋 ${mapKo[mapName]||''} 퀘스트</div>`;
+            qs.forEach(q => {
+                const done = completedQuests.has(q.id);
+                const cur  = questProgress[q.id] || 0;
+                const prog = q.count > 1 && !done ? ` (${Math.min(cur,q.count)}/${q.count})` : '';
+                html += `<div class="qp-item${done?' done':''}">
+                    <span class="qp-check">${done?'✅':'⬜'}</span>
+                    <span>${q.label}${prog}</span>
+                    <span style="color:#fbbf24;margin-left:auto">+${q.exp}EXP</span>
+                </div>`;
+            });
+            panel.innerHTML = html;
+            if (questPanelOpen) panel.classList.remove('qp-hidden');
+            else panel.classList.add('qp-hidden');
+        }
+        function showQuestToast(text) {
+            const t = document.getElementById('quest-toast');
+            if (!t) return;
+            t.innerHTML = text;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+        function completeQuest(q) {
+            if (completedQuests.has(q.id)) return;
+            completedQuests.add(q.id);
+            saveQuestState();
+            gainExp(q.exp);
+            if (q.rewardItem) {
+                Object.entries(q.rewardItem).forEach(([item, cnt]) => {
+                    if (inventory[item] !== undefined) inventory[item] += cnt;
+                });
+                saveGame();
+            }
+            const itemText = q.rewardItem
+                ? '<br>' + Object.entries(q.rewardItem).map(([k,v])=>`${k} ×${v}`).join(' · ')
+                : '';
+            showQuestToast(`🎉 퀘스트 완료!<br><span style="font-size:0.8em">${q.label}</span><br>+${q.exp} EXP${itemText}`);
+            renderQuestPanel();
+        }
+        function checkQuestOnCatch(animalName) {
+            const qs = QUESTS[mapName];
+            if (!qs) return;
+            qs.forEach(q => {
+                if (completedQuests.has(q.id)) return;
+                if (q.type === 'catch' && q.target === animalName) {
+                    const cur = (questProgress[q.id] || 0) + 1;
+                    questProgress[q.id] = cur;
+                    saveQuestState();
+                    if (cur >= q.count) completeQuest(q);
+                    else renderQuestPanel();
+                } else if (q.type === 'catch_any' && q.targets.includes(animalName)) {
+                    const cur = (questProgress[q.id] || 0) + 1;
+                    questProgress[q.id] = cur;
+                    saveQuestState();
+                    if (cur >= q.count) completeQuest(q);
+                    else renderQuestPanel();
+                }
+            });
+        }
+
+        /* ===== 통계 & 오답 복습 ===== */
+        function openStats() {
+            const caught = Object.values(animalDB).filter(a => a.isCaught).length;
+            const total  = Object.keys(animalDB).length;
+            const correct = parseInt(localStorage.getItem('quizCorrect') || '0');
+            const perfect = parseInt(localStorage.getItem('perfectBattle') || '0');
+            const hardCatch = parseInt(localStorage.getItem('hardModeCatch') || '0');
+            const bossCatch = parseInt(localStorage.getItem('bossCatch') || '0');
+            // 오답 수 계산
+            let wrongCount = 0;
+            try {
+                Object.keys(localStorage).forEach(k => { if (k.startsWith('wrongQ_')) wrongCount++; });
+            } catch(e) {}
+            const questDone = completedQuests.size;
+            const questTotal = Object.values(QUESTS).reduce((s,qs)=>s+qs.length,0);
+            document.getElementById('stats-content').innerHTML = `
+                <div class="stat-row"><span>📦 잡은 동물</span><span class="stat-val">${caught} / ${total}마리</span></div>
+                <div class="stat-row"><span>✅ 맞힌 문제 수</span><span class="stat-val">${correct}번</span></div>
+                <div class="stat-row"><span>⭐ 완벽한 배틀</span><span class="stat-val">${perfect}회</span></div>
+                <div class="stat-row"><span>🔬 박사모드 포획</span><span class="stat-val">${hardCatch}마리</span></div>
+                <div class="stat-row"><span>🏆 희귀동물 포획</span><span class="stat-val">${bossCatch}마리</span></div>
+                <div class="stat-row"><span>📋 퀘스트 완료</span><span class="stat-val">${questDone} / ${questTotal}</span></div>
+                <div class="stat-row"><span>❌ 틀린 문제 기록</span><span class="stat-val">${wrongCount}개</span></div>
+            `;
+            document.getElementById('review-wrong-btn').style.display = wrongCount > 0 ? 'block' : 'none';
+            document.getElementById('stats-overlay').classList.add('active');
+        }
+        function closeStats() {
+            document.getElementById('stats-overlay').classList.remove('active');
+        }
+        function startWrongReview() {
+            // 틀린 문제들 수집
+            const wrongItems = [];
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (!k.startsWith('wrongQ_')) return;
+                    const parts = k.replace('wrongQ_','').split('_');
+                    const animalName = parts.slice(0, parts.length-1).join('_');
+                    const qIdx = parseInt(parts[parts.length-1]);
+                    if (animalDB[animalName] && animalDB[animalName].q[qIdx]) {
+                        wrongItems.push({ animal: animalName, q: animalDB[animalName].q[qIdx] });
+                    }
+                });
+            } catch(e) {}
+            if (wrongItems.length === 0) { msg('틀린 문제 기록이 없어요!'); closeStats(); return; }
+            wrongItems.sort(() => Math.random() - 0.5);
+            closeStats();
+            currentBattleQuizzes = wrongItems.map(w => w.q);
+            curA = wrongItems[0].animal;
+            isReviewBattle = true;
+            isBossEncounter = false;
+            stg = 0; hp = 100;
+            document.getElementById('map-view').style.display = 'none';
+            document.getElementById('battle-view').style.display = 'flex';
+            document.getElementById('enemy-sprite').style.backgroundImage = `url('static/${fullFileMap[curA] || "ant.png"}')`;
+            document.getElementById('enemy-name').innerText = `❌복습: ${curA}`;
+            document.getElementById('battle-text').innerText = '틀렸던 문제를 다시 풀어봐요!';
+            const enemyHp = document.getElementById('enemy-hp');
+            if (enemyHp) updateHpBar(enemyHp, hp);
+            setTimeout(() => { loadQ(); _unlockQuiz(); }, 500);
+        }
         let charFrame = 0, charDir = 0;
         let visualX = 7, visualY = 12;   // ★ 시각적 위치 (소수점 허용, 부드러운 이동용)
         let isMoving = false;            // 이동 애니메이션 진행 중 여부
@@ -1039,7 +1331,7 @@
             const allCaught = caught === totalAnimals;
             const shinyCount = Object.keys(shinyDB || {}).length;
             const score = calcTotalScore();
-            if (score > 35000) return; // 클라이언트 1차 유효성 방어
+            if (score > 30000) return; // 클라이언트 1차 유효성 방어
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
             const entry = { name: playerName, score, caught, level: pLevel, quizScore: finalQuizBestScore, allCaught, shinyCount, date: dateStr };
@@ -1053,8 +1345,6 @@
                 return;
             }
             const medals = ['👑','🥈','🥉'];
-            const maxHabitats = new Set(Object.values(animalDB).map(d => d.habitat)).size;
-            const totalAnimals = Object.keys(animalDB).length;
             list.innerHTML = rankings.map((r, i) => {
                 const isMe = isTutorialDone && r.name === playerName;
                 const medalClass = i < 3 ? `rank-${i+1}` : '';
@@ -1062,7 +1352,7 @@
                 const medal = i < 3 ? medals[i] : `${i+1}위`;
                 const tags = [];
                 if (r.allCaught) tags.push('🏅완주');
-                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/${maxHabitats}`);
+                if (r.quizScore > 0) tags.push(`퀴즈 ${r.quizScore}/8`);
                 if (r.shinyCount > 0) tags.push(`✨×${r.shinyCount}`);
                 return `<div class="rank-row ${medalClass}${meClass}">
                     <div class="rank-num">${medal}</div>
@@ -1105,7 +1395,7 @@
 
         /* ===== 맵 완료 알림 ===== */
         function checkMapComplete() {
-            const habitatMap = { garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', deepsea:'바닷속', jungle:'열대우림', forest:'숲' };
+            const habitatMap = { garden:'화단', underground:'땅속', pond:'연못', desert:'사막', polar:'극지', sea:'바다', deepsea:'바닷속', jungle:'열대우림' };
             const hab = habitatMap[mapName];
             if (!hab) return;
             const key = 'mapDone_' + mapName;
@@ -1250,7 +1540,7 @@
                     shinyDB            = sData.shinyDB            || {};
                     // ★ 맵 위치 복원
                     if (sData.mapName) {
-                        const mapLookup = { lab, garden, pond, desert, polar, sea, underground, jungle, deepsea, forest };
+                        const mapLookup = { lab, garden, pond, desert, polar, sea, underground, jungle, deepsea };
                         if (mapLookup[sData.mapName]) {
                             mapName = sData.mapName;
                             curMap  = mapLookup[sData.mapName];
@@ -1567,7 +1857,7 @@
             grid.style.gridTemplateRows    = `repeat(${MAP_H}, 1fr)`;
             grid.style.width  = (MAP_W / VIEW * 100) + '%';
             grid.style.height = (MAP_H / VIEW * 100) + '%';
-            const bgMap = { garden: '#d2b48c', pond: '#60a5fa', desert: '#fcd34d', polar: '#f0fdfa', lab: '#94a3b8', underground: '#3e2723', sea: '#1a237e', deepsea: '#04072e', jungle: '#14532d', forest: '#1a4728' };
+            const bgMap = { garden: '#d2b48c', pond: '#60a5fa', desert: '#fcd34d', polar: '#f0fdfa', lab: '#94a3b8', underground: '#3e2723', sea: '#1a237e', deepsea: '#04072e', jungle: '#14532d' };
             document.getElementById('map-bg').style.backgroundColor = bgMap[mapName];
             const cls = ['tile-dirt', 'tile-grass', 'tile-flower', 'tile-tree', 'tile-school', 'tile-door', 'tile-water', 'tile-lilypad', 'tile-bridge', 'tile-wetgrass', 'tile-portal', 'tile-rock', 'tile-sand', 'tile-cactus', 'tile-snow', 'tile-snowtree', 'tile-igloo', 'tile-ice', 'tile-lab-floor', 'tile-wall', 'tile-desk', 'tile-npc', 'tile-board', 'tile-hole', 'tile-deepdirt', 'tile-root', 'tile-ladder', 'tile-mud', 'tile-seaweed', 'tile-deepsea', 'tile-jfloor', 'tile-jtree'];
             // 전경 레이어(플레이어 앞에 그려야 할 타일) 인덱스
@@ -1609,8 +1899,8 @@
                 setTimeout(() => {
                     if (mapName === 'garden' && t === 5) { mapName = 'lab'; curMap = lab; px = 7; py = 14; msg("과학실로 들어왔다."); }
                     else if (mapName === 'lab' && t === 10) { mapName = 'garden'; curMap = garden; px = 7; py = 1; msg("화단으로 나왔다."); }
-                    else if (mapName === 'garden' && t === 23) { mapName = 'underground'; curMap = underground; px = 7; py = 8; msg("땅속으로 들어왔다!"); }
-                    else if (mapName === 'underground' && t === 26) { mapName = 'garden'; curMap = garden; px = 7; py = 8; msg("눈부신 햇살! 땅 위로 올라왔다."); }
+                    else if (mapName === 'garden' && t === 23) { mapName = 'underground'; curMap = underground; px = 7; py = 8; msg("땅속으로 들어왔다!"); updateMapProgress(); renderQuestPanel(); }
+                    else if (mapName === 'underground' && t === 26) { mapName = 'garden'; curMap = garden; px = 7; py = 8; msg("눈부신 햇살! 땅 위로 올라왔다."); updateMapProgress(); renderQuestPanel(); }
                     else {
                         const seq = ['garden', 'pond', 'desert', 'polar', 'sea', 'deepsea', 'jungle', 'forest'];
                         const maps = [garden, pond, desert, polar, sea, deepsea, jungle, forest];
@@ -1620,6 +1910,7 @@
                         mapName = seq[idx]; curMap = maps[idx];
                         try { localStorage.setItem('visited_' + mapName, '1'); } catch(e) {}
                         updateMapProgress();
+                        renderQuestPanel();
                         const mapMsgs = { deepsea: '🌊 바닷속 깊이 들어왔다!', jungle: '🌴 열대우림에 왔다!', forest: '🌲 울창한 숲에 들어왔다!' };
                         msg(mapMsgs[mapName] || '새로운 지역이다!');
                     }
@@ -1690,7 +1981,7 @@
                     return;
                 }
 
-                // ★ 전체 62종 포획 → 최종 탐험 시험
+                // ★ 전체 56종 포획 → 최종 탐험 시험
                 const allCaught = Object.values(animalDB).every(d => d.isCaught);
                 if (allCaught) {
                     if (!earnedBadges.includes('final_exam_passed')) {
@@ -1709,13 +2000,6 @@
                     msg(`👨‍🔬 박사: 세상에! 일반 동물 ${_normalTot}마리를 모두 잡았군!<br>자네야말로 진정한 <span style='color:#ef4444;'>[동물 마스터]</span>일세!!`);
                     return;
                 } }
-
-                if (normalCaught >= 45 && !earnedBadges.includes("milestone_45")) {
-                    earnedBadges.push("milestone_45");
-                    inventory["마스터 포충망"] += 2;
-                    msg("👨‍🔬 박사: 45마리?! 놀라운 탐험가일세!<br>마지막 고비를 위해 <span style='color:#facc15;'>[마스터 포충망 ×2]</span>를 드리겠네! 남은 동물들을 모두 찾아보게!");
-                    saveGame(); return;
-                }
 
                 if (normalCaught >= 35 && !earnedBadges.includes("milestone_35")) {
                     earnedBadges.push("milestone_35");
@@ -1859,35 +2143,16 @@
             else if (mapName === 'jungle' && t === 30) { a = ran < 0.2 ? "고릴라" : (ran < 0.4 ? "앵무새" : (ran < 0.6 ? "카멜레온" : (ran < 0.8 ? "나무늘보" : "피라냐"))); }
             else if (mapName === 'forest') {
                 if (t === 1) {
-                    // 비: 고슴도치 활발, 새 없음 / 야간: 고슴도치·다람쥐 / 바람·맑음: 독수리↑
-                    if (rain) {
-                        a = ran < 0.60 ? "고슴도치" : (ran < 0.85 ? "토끼" : "다람쥐");
-                        if (!animalDB["고슴도치"].isCaught && Math.random() < 0.05)
-                            msg("🌧️ 빗속에서 무언가 꿈틀댄다… 고슴도치는 비 올 때 활발한 것 같다!");
-                    } else if (night) {
-                        a = ran < 0.45 ? "고슴도치" : (ran < 0.75 ? "다람쥐" : "토끼");
-                    } else if (windy) {
-                        // 바람: 독수리 상승기류 타기 좋음
-                        a = ran < 0.28 ? "다람쥐" : (ran < 0.54 ? "토끼" : (ran < 0.70 ? "고슴도치" : "독수리"));
-                    } else if (clear) {
-                        a = ran < 0.30 ? "다람쥐" : (ran < 0.62 ? "토끼" : (ran < 0.78 ? "고슴도치" : "독수리"));
-                    } else {
-                        a = ran < 0.35 ? "다람쥐" : (ran < 0.70 ? "토끼" : (ran < 0.88 ? "고슴도치" : "독수리"));
-                    }
+                    // 숲 바닥 — 지상 동물 중심
+                    a = night
+                        ? (ran < 0.45 ? "고슴도치" : (ran < 0.75 ? "다람쥐" : "토끼"))
+                        : (ran < 0.35 ? "다람쥐" : (ran < 0.70 ? "토끼" : (ran < 0.88 ? "고슴도치" : "독수리")));
                 } else if (t === 2) {
-                    // 비: 새 없음 고슴도치↑ / 야간: 부엉이 / 바람·맑음: 독수리↑
-                    if (rain) {
-                        a = ran < 0.65 ? "고슴도치" : (ran < 0.85 ? "다람쥐" : "토끼");
-                    } else if (night) {
-                        a = ran < 0.50 ? "부엉이" : (ran < 0.80 ? "고슴도치" : "다람쥐");
-                    } else if (windy) {
-                        a = ran < 0.55 ? "독수리" : (ran < 0.75 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이"));
-                    } else if (clear) {
-                        a = ran < 0.50 ? "독수리" : (ran < 0.72 ? "다람쥐" : (ran < 0.88 ? "토끼" : "부엉이"));
-                    } else {
-                        a = ran < 0.40 ? "독수리" : (ran < 0.70 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이"));
-                    }
-                    if (!animalDB["부엉이"].isCaught && !night && !rain && Math.random() < 0.05)
+                    // 나무 그늘 — 야간엔 부엉이, 낮엔 독수리
+                    a = night
+                        ? (ran < 0.50 ? "부엉이" : (ran < 0.80 ? "고슴도치" : "다람쥐"))
+                        : (ran < 0.40 ? "독수리" : (ran < 0.70 ? "다람쥐" : (ran < 0.90 ? "토끼" : "부엉이")));
+                    if (!animalDB["부엉이"].isCaught && !night && Math.random() < 0.05)
                         msg("🦉 나뭇가지 위에 무언가 앉아있다… 밤에 다시 와봐야겠다.");
                 }
             }
@@ -2134,7 +2399,8 @@
             inQuizMode = false;
             lastBattleSelectAt = 0;
             isBossEncounter = false;
-            battleCorrectCount = 0;
+            battleCorrectCount = 0; comboCount = 0;
+            const _ceB = document.getElementById('combo-display'); if (_ceB) { _ceB.textContent=''; _ceB.classList.add('combo-hidden'); }
             const bossIndC = document.getElementById('boss-indicator');
             if (bossIndC) bossIndC.style.display = 'none';
             const containerC = document.querySelector('.battle-container');
@@ -2304,7 +2570,18 @@
             clearQuizTimer();
             _lockQuiz();
             if (i === currentBattleQuizzes[stg].a) {
-                document.getElementById('battle-text').innerText = hardMode ? "🔬 정답! 박사 실력이네!" : "정답이다! 동물의 체력이 깎였다!";
+                comboCount++;
+                const comboEl = document.getElementById('combo-display');
+                if (comboEl && comboCount >= 2) {
+                    const labels = {2:'2콤보! 🔥',3:'3콤보! 🔥🔥',4:'4콤보! 🔥🔥🔥',5:'MAX 콤보! ⚡'};
+                    comboEl.textContent = labels[Math.min(comboCount,5)] || `${comboCount}콤보! ⚡`;
+                    comboEl.classList.remove('combo-hidden','combo-pop');
+                    void comboEl.offsetWidth;
+                    comboEl.classList.add('combo-pop');
+                    setTimeout(() => comboEl.classList.remove('combo-pop'), 200);
+                }
+                const comboMsg = comboCount >= 5 ? ' ⚡MAX콤보!' : comboCount >= 3 ? ` ${comboCount}콤보!` : '';
+                document.getElementById('battle-text').innerText = (hardMode ? '🔬 정답! 박사 실력이네!' : '정답이다! 동물의 체력이 깎였다!') + comboMsg;
                 battleCorrectCount++;
                 try { const qc = parseInt(localStorage.getItem('quizCorrect')||'0')+1; localStorage.setItem('quizCorrect', String(qc)); } catch(e) {}
 
@@ -2347,6 +2624,8 @@
                     const wk = 'wrongQ_' + curA + '_' + stg;
                     localStorage.setItem(wk, '1');
                 } catch(e) {}
+                comboCount = 0;
+                const _ce = document.getElementById('combo-display'); if (_ce) _ce.classList.add('combo-hidden');
                 document.getElementById('battle-text').innerText = i === -1 ? "⏱️ 시간 초과!" : "틀렸어!";
                 setTimeout(() => {
                     if (isReviewBattle) {
@@ -2519,6 +2798,8 @@
         }
 
         function res(w) {
+            comboCount = 0;
+            const _ceR = document.getElementById('combo-display'); if (_ceR) _ceR.classList.add('combo-hidden');
             const o = document.getElementById('result-overlay'), m = document.getElementById('result-msg');
             o.style.display = 'flex';
             const enemySprite = document.getElementById('enemy-sprite');
@@ -2526,6 +2807,12 @@
 
             if (w) {
                 animalDB[curA].isCaught = true;
+                if (navigator.vibrate) {
+                    if (isShinyBattle)        navigator.vibrate([80,60,80,60,200]);
+                    else if (isBossEncounter) navigator.vibrate([100,50,100,50,300]);
+                    else                      navigator.vibrate([60,40,120]);
+                }
+                setTimeout(() => checkQuestOnCatch(curA), 1500);
                 const hardBonus  = hardMode        ? '<br><span style="color:#a78bfa;font-size:16px">[🔬 박사 모드 포획!]</span>' : '';
                 const bossBonus  = isBossEncounter ? '<br><span style="color:#dc2626;font-size:16px">[⚠️ 멸종위기종 포획!]</span>' : '';
                 const shinyBonus = isShinyBattle   ? '<br><span style="color:#ffd700;font-size:16px">✨ 색다른 표본 획득!</span>' : '';
@@ -2544,7 +2831,8 @@
                     saveGame();
                 }
                 const baseExp = isBossEncounter ? 150 : (hardMode ? 80 : 50);
-                const expGain = isShinyBattle ? Math.round(baseExp * 2.4) : baseExp; // ★ 색다른 표본 경험치 2.4배
+                const _comboMult = comboCount >= 5 ? 1.6 : comboCount >= 3 ? 1.3 : 1.0;
+                const expGain = isShinyBattle ? Math.round(baseExp * 2.4 * _comboMult) : Math.round(baseExp * _comboMult);
                 if (battleCorrectCount >= 3) { try { const pc = parseInt(localStorage.getItem('perfectBattle')||'0')+1; localStorage.setItem('perfectBattle',String(pc)); } catch(e) {} }
                 saveGame(); gainExp(expGain);
                 updateMapProgress();
@@ -2578,6 +2866,8 @@
         }
 
         function exitB() {
+            comboCount = 0;
+            const _ceE = document.getElementById('combo-display'); if (_ceE) { _ceE.textContent=''; _ceE.classList.add('combo-hidden'); }
             clearBattleRuntimeState();
             document.getElementById('battle-view').style.display = 'none';
             document.getElementById('map-view').style.display = 'flex';
@@ -2623,10 +2913,9 @@
                 'polar':      ["펭귄","북극곰","순록","북극여우","바다표범"],
                 'sea':        ["게","짱뚱어","조개","상어","갈매기","펠리컨"],
                 'deepsea':    ["불가사리","해파리","문어","오징어"],
-                'jungle':     ["고릴라","앵무새","카멜레온","나무늘보","피라냐"],
-                'forest':     ["다람쥐","토끼","고슴도치","독수리","부엉이"]
+                'jungle':     ["고릴라","앵무새","카멜레온","나무늘보","피라냐"]
             };
-            const mapKo = {'garden':'화단','underground':'땅속','pond':'연못','desert':'사막','polar':'극지','sea':'바다','deepsea':'바닷속','jungle':'열대우림','forest':'숲'};
+            const mapKo = {'garden':'화단','underground':'땅속','pond':'연못','desert':'사막','polar':'극지','sea':'바다','deepsea':'바닷속','jungle':'열대우림'};
             const list = mapAnimals[mapName];
             const prog = document.getElementById('map-progress');
             if (!list || !prog) { if (prog) prog.style.display = 'none'; return; }
@@ -2658,9 +2947,9 @@
             l.innerHTML = '';
             const searchVal = (document.getElementById('dex-search')?.value || '').trim().toLowerCase();
             const allKeys = Object.keys(animalDB);
-            // 일반 동물 먼저(id 순), 보스(멸종위기종) 나중(id 순)
-            const normalKeys = allKeys.filter(k => !animalDB[k].isBoss).sort((a, b) => animalDB[a].id - animalDB[b].id);
-            const bossKeys   = allKeys.filter(k =>  animalDB[k].isBoss).sort((a, b) => animalDB[a].id - animalDB[b].id);
+            // 일반 동물 먼저, 보스(멸종위기종) 나중
+            const normalKeys = allKeys.filter(k => !animalDB[k].isBoss);
+            const bossKeys   = allKeys.filter(k =>  animalDB[k].isBoss);
             let firstVisible = null;
 
             function appendItem(k) {
@@ -3102,6 +3391,8 @@
             });
             setPlayerFrame(charFrame, charDir);
             loadGame();
+            loadQuestState();
+            renderQuestPanel();
             // 저장된 모드 설정 → 버튼 UI 반영
             const _hBtn = document.getElementById('hard-mode-btn');
             if (_hBtn && hardMode) { _hBtn.classList.add('active'); _hBtn.innerText = '🔬 ON'; }
@@ -3128,5 +3419,18 @@
             }
         }
     </script>
+
+    <!-- 퀘스트 완료 토스트 -->
+    <div id="quest-toast"></div>
+
+    <!-- 통계/오답 오버레이 -->
+    <div id="stats-overlay" onclick="if(event.target===this)closeStats()">
+        <div id="stats-box">
+            <h2>📊 내 탐험 기록</h2>
+            <div id="stats-content"></div>
+            <button id="review-wrong-btn" onclick="startWrongReview()">❌ 틀린 문제 다시 풀기</button>
+            <button onclick="closeStats()" style="background:#374151;border:none;border-radius:8px;color:#fff;padding:10px 18px;font-size:clamp(13px,2.8vmin,17px);font-weight:900;font-family:inherit;cursor:pointer;margin-top:8px;width:100%">닫기</button>
+        </div>
+    </div>
 </body>
 </html>
