@@ -521,25 +521,40 @@
         const db = getFirestore(app);
 
         // 익명 로그인 — Promise를 보관해 race condition 방지
-        const _authReady = signInAnonymously(auth).catch(e => console.warn("익명 로그인 실패:", e));
+        const _authReady = signInAnonymously(auth)
+            .then(cred => { window._myUid = cred.user.uid; })
+            .catch(e => console.warn("익명 로그인 실패:", e));
+        window._myUid = null;
 
-        // Firestore에 랭킹 저장 (최고 점수만 유지)
+        // 이름 중복 확인 (다른 uid가 같은 이름 사용 중이면 true 반환)
+        window._fbCheckNameTaken = async function(name) {
+            try {
+                await _authReady.catch(() => {});
+                const user = auth.currentUser;
+                const { getDocs: _gd, query: _q, where } = await import("https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js");
+                const snap = await _gd(_q(collection(db, "rankings"), where("name", "==", name)));
+                // uid 있는 신규 doc만 중복 판단 (uid 없는 구기록은 무시)
+                return snap.docs.some(d => {
+                    const data = d.data();
+                    return data.uid && data.uid !== (user && user.uid);
+                });
+            } catch(e) { return false; }
+        };
+
+        // Firestore에 랭킹 저장 (doc ID = uid → 이름 충돌 없음)
         window._fbSaveRanking = async function(entry) {
-            // ① 로그인 완료 대기 (race condition 방지)
             await _authReady.catch(() => {});
             let user = auth.currentUser;
             if (!user) {
-                try { await signInAnonymously(auth); user = auth.currentUser; } catch(e) {}
+                try { const c = await signInAnonymously(auth); user = c.user; window._myUid = user.uid; } catch(e) {}
                 if (!user) return;
             }
-            // ② 점수 유효성 검사 (조작 방지)
             if (!entry.name || entry.score > 35000 || entry.caught > 62 || entry.quizScore > 9 || entry.shinyCount > 62) return;
             try {
-                const ref = doc(db, "rankings", entry.name);
+                const ref = doc(db, "rankings", user.uid); // ★ doc ID = uid
                 const existing = await getDoc(ref);
-                // ③ 기존 최고 점수보다 낮으면 덮어쓰지 않음
                 if (existing.exists() && existing.data().score >= entry.score) return;
-                await setDoc(ref, entry);
+                await setDoc(ref, { ...entry, uid: user.uid }); // ★ uid 필드도 저장
             } catch(e) { console.warn("랭킹 저장 실패:", e); }
         };
 
@@ -1346,7 +1361,10 @@
             }
             const medals = ['👑','🥈','🥉'];
             list.innerHTML = rankings.map((r, i) => {
-                const isMe = isTutorialDone && r.name === playerName;
+                // 신규(uid 있음): uid 비교 / 구기록(uid 없음): 이름 비교 폴백
+                const isMe = isTutorialDone && (
+                    r.uid ? r.uid === window._myUid : r.name === playerName
+                );
                 const medalClass = i < 3 ? `rank-${i+1}` : '';
                 const meClass = isMe ? ' rank-me' : '';
                 const medal = i < 3 ? medals[i] : `${i+1}위`;
@@ -1486,9 +1504,42 @@
                     }, 2000);
                     return;
                 }
+                // 이름 중복 체크
+                if (val && window._fbCheckNameTaken) {
+                    const okBtn = document.getElementById('modal-name-ok');
+                    okBtn.disabled = true;
+                    okBtn.textContent = '확인 중...';
+                    window._fbCheckNameTaken(val).then(taken => {
+                        okBtn.disabled = false;
+                        okBtn.textContent = '확인';
+                        if (taken) {
+                            input.style.borderColor = '#dc2626';
+                            input.value = '';
+                            input.placeholder = '⚠️ 이미 사용 중인 이름이에요!';
+                            setTimeout(() => {
+                                input.style.borderColor = '#1a1a1a';
+                                input.placeholder = '이름 입력 (최대 8글자)';
+                            }, 2500);
+                            return;
+                        }
+                        modal.style.display = 'none';
+                        document.getElementById('modal-name-ok').removeEventListener('click', onOk);
+                        input.removeEventListener('keydown', onEnter);
+                        callback(val || null);
+                    }).catch(() => {
+                        // 네트워크 오류 시 중복 체크 없이 통과
+                        okBtn.disabled = false;
+                        okBtn.textContent = '확인';
+                        modal.style.display = 'none';
+                        document.getElementById('modal-name-ok').removeEventListener('click', onOk);
+                        input.removeEventListener('keydown', onEnter);
+                        callback(val || null);
+                    });
+                    return;
+                }
                 modal.style.display = 'none';
                 document.getElementById('modal-name-ok').removeEventListener('click', onOk);
-                input.removeEventListener('keydown', onEnter); // ★ 클릭으로 OK 눌러도 keydown 제거
+                input.removeEventListener('keydown', onEnter);
                 callback(val || null);
             };
             onEnter = (e) => { if (e.key === 'Enter') onOk(); };
