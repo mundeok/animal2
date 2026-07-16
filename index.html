@@ -61,6 +61,58 @@
         .tile-board { background-color: #78350f; border: 2px solid #92400e !important; position: relative; }
         .tile-board::after { content: '📋'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70%; }
 
+        /* 전시관 관련 스타일 */
+        @keyframes shinyGlowBorder {
+            0%, 100% { box-shadow: 0 0 4px #fbbf24, inset 0 0 4px #fbbf24; border-color: #fbbf24; }
+            50% { box-shadow: 0 0 15px #f59e0b, inset 0 0 10px #f59e0b; border-color: #f59e0b; }
+        }
+        .trophy-item {
+            aspect-ratio: 1;
+            background: #fef9c3;
+            border: 3px solid #78350f;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .trophy-item.obtained {
+            background: #fef08a;
+            animation: shinyGlowBorder 2s infinite ease-in-out;
+        }
+        .trophy-item.obtained .trophy-icon {
+            font-size: clamp(20px, 4vmin, 28px);
+            filter: sepia(1) saturate(6) hue-rotate(12deg) brightness(1.3);
+        }
+        .trophy-item.locked {
+            background: #d97706;
+            opacity: 0.45;
+        }
+        .trophy-item.locked .trophy-icon {
+            font-size: clamp(20px, 4vmin, 28px);
+            filter: grayscale(1) brightness(0.6);
+        }
+        .trophy-tooltip {
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translate(-50%, 100%);
+            background: rgba(0,0,0,0.85);
+            color: #fff;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            display: none;
+            z-index: 100;
+        }
+        .trophy-item:hover .trophy-tooltip {
+            display: block;
+        }
+
         @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
 
         /* ===== 오프닝 슬라이드쇼 ===== */
@@ -649,6 +701,7 @@
 <div class="map-ui-bottom">
                 <div class="message-box-map" id="msg-box">맵 터치 또는 방향키로 이동하세요!</div>
                 <div class="ui-buttons-container">
+                    <div class="btn-ui" id="cabinet-btn" style="background:#fbbf24 !important; display:none;" onclick="openShinyTrophyCabinet()">🔍 조사하기</div>
                     <div class="btn-ui pokedex-btn" onclick="openPokedex()">📖 도감</div>
                     <div class="btn-ui" id="hard-mode-btn" onclick="toggleHardMode()">🔬 박사</div>
                     <div class="btn-ui" id="reenc-btn" onclick="toggleReEncounter()">🔁 재조우</div>
@@ -795,6 +848,22 @@
             </div>
             <div class="fq-options" id="fq-options"></div>
             <div class="fq-feedback" id="fq-feedback"></div>
+        </div>
+    </div>
+
+    <!-- ===== 색다른 표본 전시관 오버레이 ===== -->
+    <div id="shiny-trophy-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:900; justify-content:center; align-items:center;">
+        <div class="trophy-container" style="width:min(600px, 95vw); height:min(550px, 90vh); background:#854d0e; border:8px solid #3f2c06; border-radius:16px; display:flex; flex-direction:column; padding:15px; box-shadow:0 0 30px rgba(251,191,36,0.5); font-family:'NeoDunggeunmo',monospace;">
+            <div class="trophy-header" style="text-align:center; font-size:clamp(16px, 4vmin, 24px); font-weight:bold; color:#fef08a; border-bottom:4px solid #3f2c06; padding-bottom:8px;">
+                ✨ 색다른 표본 전시관 ✨
+            </div>
+            <div class="trophy-stats" id="trophy-stats-text" style="text-align:center; font-size:14px; color:#fef9c3; margin:8px 0;">
+                전체 수집: 0 / 0마리
+            </div>
+            <div class="trophy-grid" id="trophy-grid-list" style="flex:1; background:#fefcbf; border:4px solid #3f2c06; border-radius:8px; display:grid; grid-template-columns:repeat(auto-fill, minmax(72px, 1fr)); gap:10px; padding:12px; overflow-y:auto;">
+                <!-- Javascript가 렌더링 -->
+            </div>
+            <button class="t-btn" onclick="closeShinyTrophyCabinet()" style="margin-top:12px; background:#451a03; color:#fef08a; border:3px solid #3f2c06; border-radius:8px; padding:10px; font-size:16px; cursor:pointer; font-weight:bold; font-family:inherit;">✕ 전시관 닫기</button>
         </div>
     </div>
 
@@ -1227,6 +1296,161 @@
         let observeUsedInBattle = false;
         let isObserveBuffActive = false;
         let finalQuizQuestions = [], finalQuizIndex = 0, finalQuizScore = 0, finalQuizBestScore = 0;
+        let isRivalBattle = false;
+
+        /* ========== 레벨 기반 확률 및 전시관/라이벌 배틀 함수 ========== */
+        function getDynamicEncounterRate() {
+            return Math.min(0.10, Math.max(0.02, pLevel * 0.01));
+        }
+
+        function showTrophyCabinetButton(active) {
+            const btn = document.getElementById('cabinet-btn');
+            if (btn) btn.style.display = active ? 'block' : 'none';
+        }
+
+        function openShinyTrophyCabinet() {
+            document.getElementById('map-view').style.display = 'none';
+            document.getElementById('shiny-trophy-overlay').style.display = 'flex';
+            renderTrophyCabinet();
+        }
+
+        function closeShinyTrophyCabinet() {
+            document.getElementById('shiny-trophy-overlay').style.display = 'none';
+            document.getElementById('map-view').style.display = 'flex';
+        }
+
+        function renderTrophyCabinet() {
+            const grid = document.getElementById('trophy-grid-list');
+            const stats = document.getElementById('trophy-stats-text');
+            if (!grid || !stats) return;
+            grid.innerHTML = '';
+
+            const allAnimals = Object.keys(animalDB);
+            let shinyCount = 0;
+            
+            allAnimals.forEach(k => {
+                const d = animalDB[k];
+                const isObtained = !!shinyDB[k];
+                if (isObtained) shinyCount++;
+
+                const item = document.createElement('div');
+                item.className = 'trophy-item ' + (isObtained ? 'obtained' : 'locked');
+                
+                const icon = document.createElement('div');
+                icon.className = 'trophy-icon';
+                icon.innerText = isObtained ? d.icon : '❓';
+                item.appendChild(icon);
+
+                const label = document.createElement('span');
+                label.style.cssText = 'font-size:9px; margin-top:2px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;';
+                label.innerText = isObtained ? k : '???';
+                item.appendChild(label);
+
+                // Tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'trophy-tooltip';
+                tooltip.innerText = isObtained ? `✨ 색다른 ${k}` : '미발견 색다른 표본';
+                item.appendChild(tooltip);
+
+                grid.appendChild(item);
+            });
+
+            stats.innerText = `전체 수집: ${shinyCount} / ${allAnimals.length}마리 (수집 진행률: ${Math.round(shinyCount/allAnimals.length*100)}%)`;
+        }
+
+        function rivalBattle() {
+            clearBattleRuntimeState();
+            isRivalBattle = true;
+            locked = true;
+            stg = 0;
+            hp = 100;
+            battleCorrectCount = 0;
+
+            const rivals = [
+                { name: '👦 라이벌 민수', sprite: 'static/rival.jpg' },
+                { name: '👧 과학부 수진', sprite: 'static/rival.jpg' }
+            ];
+            const curRival = rivals[Math.floor(Math.random() * rivals.length)];
+            curA = curRival.name; 
+
+            const fl = document.getElementById('encounter-flash');
+            if (fl) {
+                fl.style.background = '#dc2626';
+                fl.style.transition = 'none'; fl.style.opacity = '1'; fl.style.display = 'block';
+                setTimeout(() => { fl.style.transition = 'opacity 0.6s'; fl.style.opacity = '0'; setTimeout(() => { fl.style.display = 'none'; fl.style.background = '#fff'; }, 600); }, 300);
+            }
+            const gc = document.querySelector('.game-container');
+            gc.classList.remove('boss-shake'); void gc.offsetWidth; gc.classList.add('boss-shake');
+            setTimeout(() => gc.classList.remove('boss-shake'), 600);
+
+            // 복습 퀴즈 선정: 전체 동물 데이터베이스에서 무작위 5개 가져옴
+            const allQs = [];
+            Object.values(animalDB).forEach(animal => {
+                if (animal.q) {
+                    animal.q.forEach(q => allQs.push(q));
+                }
+            });
+            allQs.sort(() => Math.random() - 0.5);
+            currentBattleQuizzes = allQs.slice(0, 5);
+
+            document.getElementById('map-view').style.display = 'none';
+            document.getElementById('battle-view').style.display = 'flex';
+
+            const field = document.querySelector('.battle-field');
+            field.className = 'battle-field ' + mapName;
+            
+            const container = document.querySelector('.battle-container');
+            container.classList.add('is-boss');
+
+            const enemySprite = document.getElementById('enemy-sprite');
+            enemySprite.innerText = "";
+            enemySprite.style.backgroundImage = `url('${curRival.sprite}')`;
+            enemySprite.style.opacity = '1';
+            enemySprite.classList.remove('enemy-entrance', 'enemy-floating', 'monster-hit', 'monster-caught');
+            void enemySprite.offsetWidth;
+            enemySprite.classList.add('enemy-entrance');
+            setTimeout(() => { enemySprite.classList.remove('enemy-entrance'); enemySprite.classList.add('enemy-floating'); }, 820);
+
+            document.getElementById('enemy-name').innerText = curRival.name;
+
+            const enemyHp = document.getElementById('enemy-hp');
+            if (enemyHp) {
+                enemyHp.style.width = '100%';
+                enemyHp.style.background = '#22c55e';
+            }
+            document.getElementById('enemy-hp-panel').style.display = 'none';
+            document.getElementById('player-hp-panel').style.display = 'none';
+            document.getElementById('action-menu').style.display = 'none';
+            document.getElementById('quiz-box').style.display = 'none';
+            _unlockQuiz();
+            document.getElementById('msg-box-battle').classList.remove('split');
+
+            const introMsg = `📢 ${curRival.name}이(가)\n승부를 걸어왔다!\n(5문제 복습 배틀!)`;
+            type(introMsg, () => {
+                document.getElementById('battle-text').innerHTML += '<br><span class="blink-cursor">▼</span><span style="display:block;text-align:center;font-size:14px;color:#888;margin-top:6px;">화면을 탭하세요</span>';
+                wait = true;
+                document.getElementById('ui-panel').classList.add('waiting');
+            });
+        }
+
+        function rivalVictory() {
+            const o = document.getElementById('result-overlay');
+            const m = document.getElementById('result-msg');
+            o.style.display = 'flex';
+            inventory["마스터 포충망"] += 1;
+            m.innerHTML = `⚔️ 라이벌 배틀 승리!<br><span style="color:#fbbf24;">[마스터 포충망 ×1]</span> 획득!<br><span style="color:#4ade80;font-size:18px;">+150 EXP</span>`;
+            saveGame();
+            gainExp(150);
+            setTimeout(() => { o.style.display = 'none'; exitB(); }, 2500);
+        }
+
+        function rivalDefeat() {
+            const o = document.getElementById('result-overlay');
+            const m = document.getElementById('result-msg');
+            o.style.display = 'flex';
+            m.innerHTML = `패배...<br>라이벌이 비웃으며 지나갔다.<br><span style="color:#9ca3af;font-size:14px;">(패널티는 없습니다)</span>`;
+            setTimeout(() => { o.style.display = 'none'; exitB(); }, 2500);
+        }
 
         /* ========== 파이널 퀴즈 & 엔딩 시스템 ========== */
         function startFinalQuiz() {
@@ -2092,6 +2316,18 @@
                 msg(`👨‍🔬 박사: 훌륭해! 현재 도감을 일반 ${normalCaught}마리 (보스 포함 ${caught}마리) 채웠군!`);
                 return;
             }
+
+            // ★ 색다른 표본 전시관 위치 (px: 5, py: 2) 체크 및 조사 버튼 활성화
+            if (mapName === 'lab' && px === 5 && py === 2) {
+                stopAllMovement();
+                locked = true;
+                setTimeout(() => { locked = false; }, 500);
+                msg("✨ <b>[색다른 표본 전시관]</b> 앞이다.<br>(하단의 [🔍 조사하기] 버튼을 누르면 보관함이 열립니다!)");
+                showTrophyCabinetButton(true);
+                return;
+            } else {
+                showTrophyCabinetButton(false);
+            }
             
             if (mapName !== 'lab' && t !== 10 && t !== 5 && Math.random() < 0.04) {
                 // 맵별 바닥 아이템: 동물 종류에 맞는 도구 위주로 드롭
@@ -2119,10 +2355,16 @@
             // 가운데 통로(열 7·8, 포탈 경로) — 몬스터 조우 없는 안전 구역
             if (px === 7 || px === 8) return;
 
-            // 보스(멸종위기종) 조우: 맵당 0.5% 확률
+            // ★ 깜짝 라이벌 배틀 조우 판정: 걸음당 1.0% 확률 (튜토리얼 완료 후, 과학실 이외 맵)
+            if (mapName !== 'lab' && isTutorialDone && Math.random() < 0.01) {
+                rivalBattle();
+                return;
+            }
+
+            // 보스(멸종위기종) 조우: 레벨 비례 확률 적용 (동적 확률)
             const bossEncMap = {'garden':'장수하늘소','pond':'황쏘가리','desert':'설표범','polar':'일각고래','sea':'흰수염고래','jungle':'수마트라 호랑이','underground':'맹꽁이','deepsea':'돌고래','forest':'반달가슴곰'};
             const bossName = bossEncMap[mapName];
-            if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < 0.005) { battle(bossName); return; }
+            if (bossName && (reEncounterMode || !animalDB[bossName].isCaught) && Math.random() < getDynamicEncounterRate()) { battle(bossName); return; }
 
             const night = isNightTime();
             const rain  = currentWeather === 'rain';
@@ -2300,8 +2542,8 @@
             _unlockQuiz();
             document.getElementById('msg-box-battle').classList.remove('split');
 
-            // ★ 색다른 표본 판정 (1/200 확률, 보스 제외)
-            isShinyBattle = !isBossEncounter && Math.random() < 0.005;
+            // ★ 색다른 표본 판정 (레벨 비례 확률 적용, 보스 제외)
+            isShinyBattle = !isBossEncounter && Math.random() < getDynamicEncounterRate();
             if (isShinyBattle) {
                 enemySprite.classList.add('shiny-enemy');
                 // ✨ 별 파티클 연출
@@ -2338,7 +2580,12 @@
 
         function updateActionMenuMode() {
             const items = document.querySelectorAll('#action-menu .menu-item');
-            if (isReviewBattle) {
+            if (isRivalBattle) {
+                if (items[0]) items[0].innerText = '1. ⚔️ 퀴즈 승부! (5문제)';
+                if (items[1]) { items[1].innerText = '—'; items[1].style.opacity = '0.25'; items[1].style.pointerEvents = 'none'; }
+                if (items[2]) items[2].innerText = '3. 관찰하기';
+                if (items[3]) items[3].innerText = '4. 도망치다';
+            } else if (isReviewBattle) {
                 if (items[0]) items[0].innerText = '1. ⚔️ 도전! (4문제)';
                 if (items[1]) { items[1].innerText = '—'; items[1].style.opacity = '0.25'; items[1].style.pointerEvents = 'none'; }
                 if (items[2]) items[2].innerText = '3. 관찰하기';
@@ -2438,6 +2685,7 @@
             battleSessionId++;
             isShinyBattle  = false;
             isReviewBattle = false;
+            isRivalBattle  = false;
             // ★ shiny-enemy CSS 클래스 제거 (다음 배틀에 황금빛 잔류 방지)
             const _es = document.getElementById('enemy-sprite');
             if (_es) _es.classList.remove('shiny-enemy');
@@ -2490,7 +2738,7 @@
         if (enemySpriteEscape) {
             ['touchstart', 'pointerdown', 'click'].forEach(evType => {
                 enemySpriteEscape.addEventListener(evType, (e) => {
-                    if (!inQuizMode) return;
+                    if (!inQuizMode || isRivalBattle) return;
                     e.preventDefault();
                     e.stopPropagation();
                     inQuizMode = false;
@@ -2645,7 +2893,7 @@
                 }
 
                 const totalQuizzes = currentBattleQuizzes.length;
-                const dmg = Math.floor(70 / totalQuizzes);
+                const dmg = isRivalBattle ? 20 : Math.floor(70 / totalQuizzes);
                 hp -= dmg;
 
                 const enemyHpBar = document.getElementById('enemy-hp');
@@ -2654,6 +2902,17 @@
                 stg++;
                 setTimeout(() => {
                     if (stg >= currentBattleQuizzes.length) {
+                        if (isRivalBattle) {
+                            if (battleCorrectCount >= 4) {
+                                hp = 0; updateHpBar(enemyHpBar, hp);
+                                document.getElementById('battle-text').innerText = "승리했다! 라이벌을 상대로 이겼다!";
+                                setTimeout(() => rivalVictory(), 1000);
+                            } else {
+                                document.getElementById('battle-text').innerText = "아쉽다! 4문제 이상 맞히지 못해 패배했다...";
+                                setTimeout(() => rivalDefeat(), 1000);
+                            }
+                            return;
+                        }
                         if (isReviewBattle) {
                             hp = 0; updateHpBar(enemyHpBar, hp);
                             document.getElementById('battle-text').innerText = "완벽하다! 4문제 전부 맞혔다!";
@@ -2679,6 +2938,23 @@
                 const _ce = document.getElementById('combo-display'); if (_ce) _ce.classList.add('combo-hidden');
                 document.getElementById('battle-text').innerText = i === -1 ? "⏱️ 시간 초과!" : "틀렸어!";
                 setTimeout(() => {
+                    if (isRivalBattle) {
+                        stg++;
+                        if (stg >= 5) {
+                            if (battleCorrectCount >= 4) {
+                                hp = 0; updateHpBar(enemyHpBar, hp);
+                                document.getElementById('battle-text').innerText = "승리했다! 라이벌을 상대로 이겼다!";
+                                setTimeout(() => rivalVictory(), 1000);
+                            } else {
+                                document.getElementById('battle-text').innerText = "아쉽다! 4문제 이상 맞히지 못해 패배했다...";
+                                setTimeout(() => rivalDefeat(), 1000);
+                            }
+                        } else {
+                            loadQ();
+                            _unlockQuiz();
+                        }
+                        return;
+                    }
                     if (isReviewBattle) {
                         document.getElementById('battle-text').innerText = "아쉽다! 도망쳐 버렸다...";
                         setTimeout(() => exitB(), 1000);
