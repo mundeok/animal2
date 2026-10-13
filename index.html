@@ -556,6 +556,18 @@
         .rank-close-btn { width:100%; padding:14px; background:#1e3a5f; color:#7dd3fc; border:2px solid #3b82f6; border-radius:10px; font-size:16px; cursor:pointer; font-family:inherit; margin-top:4px; }
         .rank-close-btn:active { background:#2d5180; }
         .rank-divider { border:none; border-top:1px solid #1e293b; margin:2px 0; }
+    
+        /* Garden palette and low resolution explorer share a quiet handheld style. */
+        #map-bg[data-area="garden"] { background: #83ac62 !important; }
+        .garden-ground { box-shadow: none; border-radius: 0; background-color: #83ac62; border: 0 !important; transform: none; filter: none; }
+        .garden-ground.edge-left { border-left: 3px solid #90ad67 !important; }
+        .garden-ground.edge-right { border-right: 3px solid #90ad67 !important; }
+        .garden-ground.edge-top { border-top: 3px solid #90ad67 !important; }
+        .garden-ground.edge-bottom { border-bottom: 3px solid #90ad67 !important; }
+        #player { width: calc(100% / 9); height: calc(100% / 9 * 1.25); margin-top: calc(-100% / 9 * .25); }
+        #player::before { content: ''; position: absolute; bottom: -2%; left: 23%; width: 54%; height: 14%; background: #273e3445; border-radius: 50%; }
+        #player-inner { background-size: 100% 100%; }
+
     </style>
     <!-- Firebase SDK -->
     <script type="module">
@@ -1302,7 +1314,8 @@
         let visualX = 7, visualY = 12;   // ★ 시각적 위치 (소수점 허용, 부드러운 이동용)
         let isMoving = false;            // 이동 애니메이션 진행 중 여부
         let heldDir = null;              // 현재 누르고 있는 방향
-        const TILE_MOVE_MS = 140;        // 타일 1칸 이동 시간 (ms)
+        const TILE_MOVE_MS = 180;
+        let walkStartedAt = null;        // 타일 1칸 이동 시간 (ms)
         let playerName = "탐험가"; 
         let isTutorialDone = false;  
         let currentBattleQuizzes = []; 
@@ -1980,7 +1993,7 @@
             const inner = document.getElementById('player-inner');
             if (!inner) return;
             // 개별 PNG → CSS contain으로 표시 (방향별 크기 달라도 항상 풀 캐릭터 표시)
-            inner.style.backgroundImage = `url('static/sprites/player_d${dir}_f${frame}.png')`;
+            inner.style.backgroundImage = `url('static/garden-gpt-v1/explorer-${dir}-${frame}.png')`;
         }
 
         // 나무/장애물 레이어 데이터 (draw()에서 채워짐)
@@ -2007,7 +2020,7 @@
             fg.innerHTML = '';
             const playerTileY = Math.floor(visualY);
             const tw = 100 / VIEW; // 타일 1칸 = % 단위
-            _fgTiles.forEach(({cls, x, y, emoji}) => {
+            _fgTiles.forEach(({cls, x, y, emoji, background}) => {
                 if (y < playerTileY) return;          // 플레이어보다 위 → 뒤에 있음, 스킵
                 const vx = (x - vCamX) * tw;
                 const vy = (y - vCamY) * tw;
@@ -2015,6 +2028,7 @@
                 const d = document.createElement('div');
                 d.className = 'tile ' + cls;
                 d.style.cssText = `position:absolute;left:${vx.toFixed(3)}%;top:${vy.toFixed(3)}%;width:${tw.toFixed(3)}%;height:${tw.toFixed(3)}%;`;
+                if (background) { d.style.backgroundImage = background; d.classList.add('garden-ground'); }
                 if (emoji) d.innerText = emoji;
                 fg.appendChild(d);
             });
@@ -2027,7 +2041,7 @@
             let dx = 0, dy = 0;
             if (dir === 'down')  { dy =  1; charDir = 0; p.style.transform = "scaleX(1)"; }
             if (dir === 'left')  { dx = -1; charDir = 1; p.style.transform = "scaleX(1)"; }
-            if (dir === 'right') { dx =  1; charDir = 1; p.style.transform = "scaleX(-1)"; }
+            if (dir === 'right') { dx =  1; charDir = 2; p.style.transform = "scaleX(1)"; }
             if (dir === 'up')    { dy = -1; charDir = 3; p.style.transform = "scaleX(1)"; }
             heldDir = dir;
             if (!isMoving && !locked) doMove(dx, dy);
@@ -2037,7 +2051,7 @@
         // 방향 해제 → 현재 애니메이션이 끝난 후 자동으로 멈춤
         function stopAllMovement() {
             heldDir = null;
-            if (!isMoving) { charFrame = 0; setPlayerFrame(0, charDir); }
+            if (!isMoving) { walkStartedAt = null; charFrame = 0; setPlayerFrame(0, charDir); }
         }
 
         let _hybridInited = false;
@@ -2193,6 +2207,7 @@
             const grid = document.getElementById('map-grid');
             if (!grid) return;
             grid.innerHTML = '';
+            document.getElementById('map-bg').dataset.area = mapName;
             const MAP_W = curMap[0].length, MAP_H = curMap.length, VIEW = 9;
             grid.style.gridTemplateColumns = `repeat(${MAP_W}, 1fr)`;
             grid.style.gridTemplateRows    = `repeat(${MAP_H}, 1fr)`;
@@ -2212,9 +2227,27 @@
                     const tileCls = isReturnPortal ? 'tile-portal' : (cls[t] || 'tile-dirt');
                     const d = document.createElement('div');
                     d.className = 'tile ' + tileCls;
+                    if (mapName === 'garden') {
+                        const variation = ((x * 17 + y * 31) ^ (x * y)) & 3;
+                        if ([0, 1, 2, 3, 23].includes(t)) {
+                            const bed = t === 2 && ((x < 6 && y % 6 < 3) || (x > 10 && (x + y * 2) % 9 < 4));
+                            const surface = t === 0 ? 'path' : bed ? 'flowers' : 'grass';
+                            d.style.backgroundImage = `url('static/garden-gpt-v1/${surface}-${variation}.png')`;
+                            d.classList.add('garden-ground');
+                            if (t === 3) d.style.backgroundImage = "url('static/garden-gpt-v1/tree.png')";
+                            if (t === 23) d.style.backgroundImage = "url('static/garden-gpt-v1/hole.png')";
+                            if (t === 0) {
+                                const borders = [[-1,0,'left'],[1,0,'right'],[0,-1,'top'],[0,1,'bottom']];
+                                borders.forEach(([dx,dy,side]) => {
+                                    const neighbor = curMap[y+dy]?.[x+dx];
+                                    if (neighbor === 1 || neighbor === 2) d.classList.add('edge-' + side);
+                                });
+                            }
+                        }
+                    }
                     const emoji = (t === 10 || isReturnPortal) ? '🌀' : t === 21 ? '👨‍🔬' : null;
                     if (emoji) d.innerText = emoji;
-                    if (FG_TILES.has(t)) _fgTiles.push({cls: tileCls, x, y, emoji});
+                    if (FG_TILES.has(t)) _fgTiles.push({cls: tileCls, x, y, emoji, background: mapName === 'garden' ? d.style.backgroundImage : ''});
                     grid.appendChild(d);
                 }
             }
@@ -2277,7 +2310,8 @@
                 if (!startTime) startTime = now;
                 const ratio = Math.min((now - startTime) / TILE_MOVE_MS, 1);
                 // 걷기 프레임 자동 순환
-                const f = Math.floor(ratio * 4) % 4;
+                if (walkStartedAt === null) walkStartedAt = now;
+                const f = [0, 1, 0, 3][Math.floor((now - walkStartedAt) / 105) % 4];
                 if (f !== charFrame) { charFrame = f; setPlayerFrame(charFrame, charDir); }
                 // 보간 이동
                 visualX = startX + dx * ratio;
@@ -2290,7 +2324,7 @@
                     px = nx; py = ny;
                     visualX = nx; visualY = ny;
                     isMoving = false;
-                    charFrame = 0; setPlayerFrame(0, charDir);
+                    if (!heldDir) { walkStartedAt = null; charFrame = 0; setPlayerFrame(0, charDir); }
                     updateVisualPos();
                     check(t);
                     // 방향 유지 중이면 즉시 다음 칸 이동
@@ -3624,7 +3658,7 @@
         window.onkeyup = (e) => {
             if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
                 heldDir = null;
-                if (!isMoving) { charFrame = 0; setPlayerFrame(0, charDir); }
+                if (!isMoving) { walkStartedAt = null; charFrame = 0; setPlayerFrame(0, charDir); }
             }
         };
 
@@ -3779,8 +3813,8 @@
 
         window.onload = () => {
             // 스프라이트 사전 로드
-            [0, 1, 3].forEach(dir => {
-                for (let f = 0; f < 4; f++) new Image().src = `static/sprites/player_d${dir}_f${f}.png`;
+            [0, 1, 2, 3].forEach(dir => {
+                for (let f = 0; f < 4; f++) new Image().src = `static/garden-gpt-v1/explorer-${dir}-${f}.png`;
             });
             setPlayerFrame(charFrame, charDir);
             loadGame();
